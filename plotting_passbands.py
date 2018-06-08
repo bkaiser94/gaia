@@ -1,3 +1,13 @@
+"""
+Created by Ben Kaiser (UNC-Chapel Hill)
+
+Plot the DR2 passbands and the "Revised DR2 passbands" for the GAIA mission.
+
+Requires one to already have downloaded the gaia passband files from the gaia website and update the file paths to get to them.
+
+"""
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 
