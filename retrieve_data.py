@@ -11,12 +11,13 @@ import numpy as np
 from astroquery.gaia import Gaia
 import astropy.units as u
 import astropy.coordinates as coord
+from astropy.table import Table
 
 """
 SELECT TOP 500 source_id,ra,ra_error,dec,dec_error,parallax,parallax_error,phot_g_mean_mag,bp_rp,radial_velocity,radial_velocity_error,phot_variable_flag,teff_val,a_g_val FROM gaiadr2.gaia_source  WHERE CONTAINS(POINT('ICRS',gaiadr2.gaia_source.ra,gaiadr2.gaia_source.dec),CIRCLE('ICRS',0,0,360))=1    AND  (parallax>=0 AND phot_g_mean_mag<=6)
 """
 
-output_name = 'top500_nearby_gaia.txt'
+output_name = 'top500_nearby_gaia.csv'
 
 distance_limit = 100 #pc
 
@@ -139,6 +140,7 @@ def asynchronous_query():
 
 
 output_table = asynchronous_query()
+output_table.write(output_name, format = 'ascii.csv')
 
 
 
