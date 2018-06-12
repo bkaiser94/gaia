@@ -19,12 +19,15 @@ SELECT TOP 500 source_id,ra,ra_error,dec,dec_error,parallax,parallax_error,phot_
 
 target_ra = "" #values on page 43 of General Clemens II
 target_dec =  ""
-num_targs = 99999
+num_targs = 5e6
+distance_limit = 100 #pc
+
 num_targs = int(num_targs)
 #output_name = 'top500_nearby_gaia.csv'
 #output_name = 'top5000_nearby_gaia.csv'
 
 output_name = 'top' +str(int(num_targs)) + '_nearby_gaia.csv'
+#output_name = 'top'+str(num_targs) + '_' +str(distance_limit)+'pc_gaia.csv'
 
 target_output_name = "target_gaia.csv"
 
@@ -32,7 +35,6 @@ target_output_name = "target_gaia.csv"
 #output_name = 'all_nearby_gaia.csv'
 
 
-distance_limit = 100 #pc
 
 parallax_min = 1./distance_limit #arcseconds of parallax
 parallax_min= parallax_min*1e-3 #milliarcseconds of parallax
