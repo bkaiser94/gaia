@@ -12,24 +12,30 @@ import matplotlib.pyplot as plt
 import scipy.stats as scistats
 import seaborn as sns
 
-g_0 = 1. #G-band correction 
-bp_0= 1. #BP -band correction
-rp_0 = 1. #rp-band correction
-
-parallax_correction = -0.29 #from Lindgren et al 2018
-#parallax_correction = 0 #so nothing done
+#parallax_correction = -0.29 #from Lindgren et al 2018
+parallax_correction = 0 #so nothing done
 
 num_targs = 'all'
-#distance = 100
-distance = 25
+distance = 100
+#distance = 25
 #grid_num = 220
 grid_num = 225
 mc_number = 10000
 percent_off = 34 #1-sigma equivalent
+
+
 target_label = "PSRJ1435-4715"
-#other_target_label= "PSRJ1816+4510"
-other_target_label= "PSRJ1023+0038"
+other_target_label= "PSRJ1816+4510"
+#other_target_label= "PSRJ1023+0038"
 #other_target_label = "Crab Pulsar"
+
+
+target_input = 'target_gaia.csv'
+other_target_input = "PSRJ1816p4510_gaia.csv"
+#other_target_input = "PSRJ1023p0038_gaia.csv"
+#other_target_input = "Crab_gaia.csv"
+
+
 zeropoint_dict={"g": [25.6884, 0.0018],
                 "bp": [25.3514, 0.0014],
                 "rp": [24.7619, 0.0019]} #from Evans et al 2018, the DR2 values [ZP, sigma]
@@ -42,19 +48,17 @@ pulsar_list_all = np.genfromtxt(pulsar_list_file, delimiter = '\t', names = True
 
 if num_targs == 'all':
     print('Distance-limited Sample like Figure 6 from DR2HRD')
-    #generic_input = 'all_'+str(distance)+'pc_gaia.csv'
-    generic_input = 'all_'+str(distance)+'pc_gaia_corr.csv'
-    title_suffix = ' in the ' + str(distance)+ 'pc sample following DR2HRD Figure 6'
+    generic_input = 'all_'+str(distance)+'pc_gaia.csv'
+    #generic_input = 'all_'+str(distance)+'pc_gaia_corr.csv'
+    title_suffix =' and ' + other_target_label+ '(green) in ' + str(distance)+ 'pc (DR2HRD Figure 6)'
+    #title_suffix = ' and ' + other_target_label+ '(green) in ' + str(distance)+ 'pc (DR2HRD Figure 6) (-0.29 mas correction)'
 else:
     num_targs = int(num_targs)
     generic_input = 'top'+str(num_targs) + '_nearby_gaia.csv'
     #title_suffix= str(num_targs)+ 'stars in the'  +str(distance) + 'pc Gaia CMD'
     title_suffix = 'in the ' +str(num_targs)+ ' star sample following DR2HRD Figure 1'
     #generic_input = 'top'+str(num_targs) + '_' +str(distance)+'pc_gaia.csv'
-target_input = 'target_gaia.csv'
-#other_target_input = "PSRJ1816p4510_gaia.csv"
-other_target_input = "PSRJ1023p0038_gaia.csv"
-#other_target_input = "Crab_gaia.csv"
+
 
 
 #generic_table = Table.read('top500_nearby_gaia.csv')
@@ -134,6 +138,41 @@ def get_bp_rp(table, plot_all = False):
         plt.legend()
         plt.show()
     return bp_rp, bp_rp_error
+
+
+def get_g_abs_mag(table, plot_all = False):
+    g_mean_flux, g_dist = get_filter_vals(table, 'g')
+    g_mag = get_mag(g_mean_flux, 'g')
+    g_mag_dist = get_mag(g_dist, 'g')
+    print("g_calc-g_measured", g_mag - table['phot_g_mean_mag'])
+    parallax = table['parallax']+parallax_correction
+    parallax = parallax*1e-3
+    distance = 1./parallax
+    parallax_error = table['parallax_error']*1e-3
+    parallax_dist = get_mc_distribution(parallax, parallax_error)
+    parallax_dist = remove_negative(parallax_dist)
+    distance_dist = 1./parallax_dist
+    index_length = distance_dist.shape[0]
+    print("g_mag_dist.shape", g_mag_dist.shape, "distance_dist.shape", distance_dist.shape)
+    g_mag_dist = g_mag_dist[:index_length]
+    print("g_mag_dist.shape", g_mag_dist.shape, "distance_dist.shape", distance_dist.shape)
+    g_abs_mag = distance_modulus(g_mag, distance)
+    g_abs_mag_dist = distance_modulus(g_mag_dist, distance_dist)
+    g_abs_mag_error= get_errors(g_abs_mag_dist)
+
+    #extinction= table['a_g_val']
+
+    if plot_all:
+        plt.hist(g_abs_mag_dist, bins=75, normed=1, label = 'MC Distribution', color = 'g')
+        plt.axvline(np.nanmedian(g_abs_mag_dist), color = 'k', linestyle = '--', label = 'Median of MC Dist')
+        plt.axvline(np.nanpercentile(g_abs_mag_dist, 84), color = 'cyan')
+        plt.errorbar(g_abs_mag, 0.5, xerr = g_abs_mag_error, marker = '*', markersize = 8, color = 'b', label = r"$M_G$", capsize = 4)
+        #plt.axvline(x=target_g_absmag, color = 'r', linestyle = ':', label = 'Measured value')
+        plt.xlabel(r'$M_{G}$')
+        #plt.title(target_label)
+        plt.legend()
+        plt.show()
+    return g_abs_mag, g_abs_mag_error
     
 try:
     generic_parallax = generic_table ['parallax']+parallax_correction
@@ -155,26 +194,26 @@ except KeyError as error:
 print(generic_g_absmag.shape)
 #print(target_table['ra'])
 #print(target_table['dec'])
-target_parallax = target_table['parallax']+parallax_correction
-target_parallax = target_parallax*1e-3
-target_distance = 1./target_parallax
-target_parallax_error = target_table['parallax_error']*1e-3
-target_parallax_dist = get_mc_distribution(target_parallax, target_parallax_error)
-target_parallax_dist = remove_negative(target_parallax_dist)
-#remove_negative(target_parallax_dist)
-target_distance_dist = 1./target_parallax_dist
-#target_distance =  1700 #from Jennings et al 2018 d_LK
+#target_parallax = target_table['parallax']+parallax_correction
+#target_parallax = target_parallax*1e-3
+#target_distance = 1./target_parallax
+#target_parallax_error = target_table['parallax_error']*1e-3
+#target_parallax_dist = get_mc_distribution(target_parallax, target_parallax_error)
+#target_parallax_dist = remove_negative(target_parallax_dist)
+##remove_negative(target_parallax_dist)
+#target_distance_dist = 1./target_parallax_dist
+##target_distance =  1700 #from Jennings et al 2018 d_LK
 
-#target_distance_err_bounds = 
+##target_distance_err_bounds = 
 
-target_extinction= target_table['a_g_val']
+#target_extinction= target_table['a_g_val']
 
-target_g_mag = target_table['phot_g_mean_mag']
-#target_bp_rp = target_table['bp_rp']
-target_bp_rp, target_bp_rp_err = get_bp_rp(target_table, plot_all = True)
+#target_g_mag = target_table['phot_g_mean_mag']
+##target_bp_rp = target_table['bp_rp']
+#target_bp_rp, target_bp_rp_err = get_bp_rp(target_table, plot_all = True)
 
 
-target_g_flux = target_table['phot_g_mean_flux']
+#target_g_flux = target_table['phot_g_mean_flux']
 
 
 
@@ -182,48 +221,50 @@ target_g_flux = target_table['phot_g_mean_flux']
 
 
 #generic_g_absmag = distance_modulus(generic_g_mag, generic_distance, extinction = generic_extinction)
-target_g_absmag = distance_modulus(target_g_mag, target_distance,extinction= target_extinction)
-target_g_absmag_dist = distance_modulus(target_g_mag, target_distance_dist, extinction = target_extinction)
-target_g_absmag_err = get_errors(target_g_absmag_dist)
+#target_g_absmag = distance_modulus(target_g_mag, target_distance,extinction= target_extinction)
+#target_g_absmag_dist = distance_modulus(target_g_mag, target_distance_dist, extinction = target_extinction)
+#target_g_absmag_err = get_errors(target_g_absmag_dist)
 
-plt.hist(target_g_absmag_dist, bins=75, normed=1, label = 'MC Distribution', color = 'g')
-plt.axvline(np.nanmedian(target_g_absmag_dist), color = 'k', linestyle = '--', label = 'Median of MC Dist')
-plt.axvline(np.nanpercentile(target_g_absmag_dist, 84), color = 'cyan')
-plt.errorbar( target_g_absmag, 0.5, xerr = target_g_absmag_err, marker = '*', markersize = 8, color = 'b', label = target_label, capsize = 4)
-#plt.axvline(x=target_g_absmag, color = 'r', linestyle = ':', label = 'Measured value')
-plt.xlabel(r'$M_G$')
-plt.title(target_label)
-plt.legend()
-plt.show()
-
+#plt.hist(target_g_absmag_dist, bins=75, normed=1, label = 'MC Distribution', color = 'g')
+#plt.axvline(np.nanmedian(target_g_absmag_dist), color = 'k', linestyle = '--', label = 'Median of MC Dist')
+#plt.axvline(np.nanpercentile(target_g_absmag_dist, 84), color = 'cyan')
+#plt.errorbar( target_g_absmag, 0.5, xerr = target_g_absmag_err, marker = '*', markersize = 8, color = 'b', label = target_label, capsize = 4)
+##plt.axvline(x=target_g_absmag, color = 'r', linestyle = ':', label = 'Measured value')
+#plt.xlabel(r'$M_G$')
+#plt.title(target_label)
+#plt.legend()
+#plt.show()
+target_g_absmag, target_g_absmag_err = get_g_abs_mag(target_table, plot_all = True)
+target_bp_rp, target_bp_rp_err= get_bp_rp(target_table, plot_all = True)
 
 #print(generic_parallax)
-print(target_g_mag)
-print(target_extinction)
-print(target_table['a_g_percentile_lower'],target_table['a_g_percentile_upper'])
-print(target_g_absmag)
-print(target_bp_rp)
-print(target_g_absmag_err)
+#print(target_g_mag)
+#print(target_extinction)
+#print(target_table['a_g_percentile_lower'],target_table['a_g_percentile_upper'])
+#print(target_g_absmag)
+#print(target_bp_rp)
+#print(target_g_absmag_err)
 
 ########3 other
 
 
 
-other_target_parallax = other_target_table['parallax']+parallax_correction
-other_target_parallax = other_target_parallax*1e-3
-other_target_distance = 1./other_target_parallax
-other_target_parallax_error = other_target_table['parallax_error']*1e-3
-other_target_parallax_dist = get_mc_distribution(other_target_parallax, other_target_parallax_error)
-other_target_parallax_dist = remove_negative(other_target_parallax_dist)
-#remove_negative(target_parallax_dist)
-other_target_distance_dist = 1./other_target_parallax_dist
+#other_target_parallax = other_target_table['parallax']+parallax_correction
+#other_target_parallax = other_target_parallax*1e-3
+#other_target_distance = 1./other_target_parallax
+#other_target_parallax_error = other_target_table['parallax_error']*1e-3
+#other_target_parallax_dist = get_mc_distribution(other_target_parallax, other_target_parallax_error)
+#other_target_parallax_dist = remove_negative(other_target_parallax_dist)
+##remove_negative(target_parallax_dist)
+#other_target_distance_dist = 1./other_target_parallax_dist
 
-#target_distance_err_bounds = 
+##target_distance_err_bounds = 
 
-other_target_extinction= other_target_table['a_g_val']
+#other_target_extinction= other_target_table['a_g_val']
 
-other_target_g_mag =other_target_table['phot_g_mean_mag']
-#other_target_bp_rp = other_target_table['bp_rp']
+#other_target_g_mag =other_target_table['phot_g_mean_mag']
+##other_target_bp_rp = other_target_table['bp_rp']
+other_target_g_absmag, other_target_g_absmag_err= get_g_abs_mag(other_target_table, plot_all = True)
 other_target_bp_rp, other_target_bp_rp_err = get_bp_rp(other_target_table, plot_all = True)
 
 
@@ -231,18 +272,18 @@ other_target_bp_rp, other_target_bp_rp_err = get_bp_rp(other_target_table, plot_
 
 
 #generic_g_absmag = distance_modulus(generic_g_mag, generic_distance, extinction = generic_extinction)
-other_target_g_absmag = distance_modulus(other_target_g_mag, other_target_distance,extinction= other_target_extinction)
-other_target_g_absmag_dist = distance_modulus(other_target_g_mag, other_target_distance_dist, extinction = other_target_extinction)
-other_target_g_absmag_err = get_errors(other_target_g_absmag_dist)
+#other_target_g_absmag = distance_modulus(other_target_g_mag, other_target_distance,extinction= other_target_extinction)
+#other_target_g_absmag_dist = distance_modulus(other_target_g_mag, other_target_distance_dist, extinction = other_target_extinction)
+#other_target_g_absmag_err = get_errors(other_target_g_absmag_dist)
 
-plt.hist(other_target_g_absmag_dist, bins=75, normed=1, label = 'MC Distribution', color = 'g')
-plt.axvline(np.nanmedian(other_target_g_absmag_dist), color = 'k', linestyle = '--', label = 'Median of MC Dist')
-plt.errorbar( other_target_g_absmag, 0.5, xerr = other_target_g_absmag_err, marker = '*', markersize = 8, color = 'b', label = 'Measured value', capsize = 4, linestyle = 'none')
-#plt.axvline(x=target_g_absmag, color = 'r', linestyle = ':', label = 'Measured value')
-plt.xlabel(r'$M_G$')
-plt.title(other_target_label)
-plt.legend()
-plt.show()
+#plt.hist(other_target_g_absmag_dist, bins=75, normed=1, label = 'MC Distribution', color = 'g')
+#plt.axvline(np.nanmedian(other_target_g_absmag_dist), color = 'k', linestyle = '--', label = 'Median of MC Dist')
+#plt.errorbar( other_target_g_absmag, 0.5, xerr = other_target_g_absmag_err, marker = '*', markersize = 8, color = 'b', label = 'Measured value', capsize = 4, linestyle = 'none')
+##plt.axvline(x=target_g_absmag, color = 'r', linestyle = ':', label = 'Measured value')
+#plt.xlabel(r'$M_G$')
+#plt.title(other_target_label)
+#plt.legend()
+#plt.show()
 
 
 ####### 
@@ -323,122 +364,123 @@ pulsar_g_mag= np.float_(pulsar_list_all['G_mag'])
 
 
 
-##########################3
+###########################3
 
-pulsar_abs_g_mag = distance_modulus(pulsar_g_mag, np.float_(pulsar_list_all['d_pi'])*1000)
-pulsar_abs_g_mag_lo = distance_modulus(pulsar_g_mag, np.float_(pulsar_list_all['d_pi'])*1000-np.float_(pulsar_list_all['d_pi_lo'])*1000)
-pulsar_abs_g_mag_hi = distance_modulus(pulsar_g_mag, np.float_(pulsar_list_all['d_pi'])*1000+np.float_(pulsar_list_all['d_pi_hi'])*1000)
-pulsar_abs_g_mag_lo = pulsar_abs_g_mag-pulsar_abs_g_mag_lo #because higher numbers mean dimmer and farther, so 
-pulsar_abs_g_mag_hi = pulsar_abs_g_mag_hi- pulsar_abs_g_mag #difference on the high side
-pulsar_abs_g_mag_err = np.vstack([pulsar_abs_g_mag_lo, pulsar_abs_g_mag_hi]) #hopefully correctly shaped
-
-standin_bp_rp = np.random.rand(pulsar_abs_g_mag.shape[0])
-plt.errorbar(standin_bp_rp, pulsar_abs_g_mag, yerr= pulsar_abs_g_mag_err, linestyle = 'none', marker = '*', color = 'b', capsize = 4)
-plot_names(pulsar_names, pulsar_abs_g_mag, standin_bp_rp)
-polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(1000,1000), cmap = 'hot', mincnt = 1)
-polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
-counts = polything.get_array()
-print(counts.shape)
-counts= np.sqrt(counts)
-polything.set_array(counts)
-polything.autoscale()
-#plt.hist2d(generic_bp_rp, generic_g_absmag, bins = 100, cmap = 'Reds')
-#plt.title('PSR J1431-4715' + title_suffix)
-plt.title('d_pi' + title_suffix +'(random BP-RP) from Jennings et al. 2018')
-
-#plt.ylim([-4, 16])
-
-plt.gca().invert_yaxis()
-plt.xlabel(r'$G_{BP} - G_{RP}$')
-#plt.xlim([-1,5])
-plt.ylabel(r'$M_G$')
-#plt.legend()
-plt.show()
-
-
-
-##############3
-
-
-
-pulsar_abs_g_mag = distance_modulus(pulsar_g_mag, np.float_(pulsar_list_all['d_LK'])*1000)
-pulsar_abs_g_mag_lo = distance_modulus(pulsar_g_mag, np.float_(pulsar_list_all['d_LK'])*1000-np.float_(pulsar_list_all['d_LK_lo'])*1000)
-pulsar_abs_g_mag_hi = distance_modulus(pulsar_g_mag, np.float_(pulsar_list_all['d_LK'])*1000+np.float_(pulsar_list_all['d_LK_hi'])*1000)
-pulsar_abs_g_mag_lo = pulsar_abs_g_mag-pulsar_abs_g_mag_lo #because higher numbers mean dimmer and farther, so 
-pulsar_abs_g_mag_hi = pulsar_abs_g_mag_hi- pulsar_abs_g_mag #difference on the high side
-pulsar_abs_g_mag_err = np.vstack([pulsar_abs_g_mag_lo, pulsar_abs_g_mag_hi]) #hopefully correctly shaped
+#pulsar_abs_g_mag = distance_modulus(pulsar_g_mag, np.float_(pulsar_list_all['d_pi'])*1000)
+#pulsar_abs_g_mag_lo = distance_modulus(pulsar_g_mag, np.float_(pulsar_list_all['d_pi'])*1000-np.float_(pulsar_list_all['d_pi_lo'])*1000)
+#pulsar_abs_g_mag_hi = distance_modulus(pulsar_g_mag, np.float_(pulsar_list_all['d_pi'])*1000+np.float_(pulsar_list_all['d_pi_hi'])*1000)
+#pulsar_abs_g_mag_lo = pulsar_abs_g_mag-pulsar_abs_g_mag_lo #because higher numbers mean dimmer and farther, so 
+#pulsar_abs_g_mag_hi = pulsar_abs_g_mag_hi- pulsar_abs_g_mag #difference on the high side
+#pulsar_abs_g_mag_err = np.vstack([pulsar_abs_g_mag_lo, pulsar_abs_g_mag_hi]) #hopefully correctly shaped
 
 #standin_bp_rp = np.random.rand(pulsar_abs_g_mag.shape[0])
-print(standin_bp_rp.shape)
-print(pulsar_abs_g_mag.shape)
-plt.errorbar(standin_bp_rp, pulsar_abs_g_mag, yerr= pulsar_abs_g_mag_err, linestyle = 'none', marker = '*', color = 'b', capsize = 4)
-plot_names(pulsar_names, pulsar_abs_g_mag, standin_bp_rp)
+#bp_rp_errorbars = np.ones(standin_bp_rp.shape)*6
+#plt.errorbar(standin_bp_rp, pulsar_abs_g_mag, yerr= pulsar_abs_g_mag_err, xerr= bp_rp_errorbars, linestyle = 'none', marker = '*', color = 'b', capsize = 4)
+#plot_names(pulsar_names, pulsar_abs_g_mag, standin_bp_rp)
+#polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(1000,1000), cmap = 'hot', mincnt = 1)
+#polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
+#counts = polything.get_array()
+#print(counts.shape)
+#counts= np.sqrt(counts)
+#polything.set_array(counts)
+#polything.autoscale()
+##plt.hist2d(generic_bp_rp, generic_g_absmag, bins = 100, cmap = 'Reds')
+##plt.title('PSR J1431-4715' + title_suffix)
+#plt.title('d_pi' + title_suffix +'(random BP-RP) from Jennings et al. 2018')
 
-polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(1000,1000), cmap = 'hot', mincnt = 1)
-polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
-counts = polything.get_array()
-print(counts.shape)
-counts= np.sqrt(counts)
-polything.set_array(counts)
-polything.autoscale()
-#plt.hist2d(generic_bp_rp, generic_g_absmag, bins = 100, cmap = 'Reds')
-#plt.title('PSR J1431-4715' + title_suffix)
-plt.title('d_LK' + title_suffix + ' random BP-RP from Jennings et al 2018')
+##plt.ylim([-4, 16])
 
-#plt.ylim([-4, 16])
-
-plt.gca().invert_yaxis()
-plt.xlabel(r'$G_{BP} - G_{RP}$')
-#plt.xlim([-1,5])
-plt.ylabel(r'$M_G$')
-#plt.legend()
-plt.show()
+#plt.gca().invert_yaxis()
+#plt.xlabel(r'$G_{BP} - G_{RP}$')
+##plt.xlim([-1,5])
+#plt.ylabel(r'$M_G$')
+##plt.legend()
+#plt.show()
 
 
-#####################
 
-pulsar_parallax =  np.float_(pulsar_list_all['pi'])
-pulsar_parallax_error = np.float_(pulsar_list_all['pi_error'])
-
-pulsar_parallax =pulsar_parallax*1e-3
-pulsar_distance = 1./pulsar_parallax
-pulsar_parallax_error = pulsar_parallax_error*1e-3
-
-print(pulsar_parallax.shape, pulsar_parallax_error.shape)
-pulsar_parallax_dist = get_mc_distribution(pulsar_parallax, pulsar_parallax_error)
-pulsar_parallax_dist = remove_negative(pulsar_parallax_dist)
-#remove_negative(target_parallax_dist)
-pulsar_distance_dist = 1./pulsar_parallax_dist
-
-pulsar_g_absmag = distance_modulus(pulsar_g_mag, pulsar_distance)
-pulsar_g_absmag_dist = distance_modulus(pulsar_g_mag, pulsar_distance_dist)
-#pulsar_g_absmag_err = get_errors(pulsar_g_absmag_dist)
-print("pulsar_g_absmag_dist.shape", pulsar_g_absmag_dist.shape)
-pulsar_g_agmsag_err = np.std(pulsar_g_absmag_dist, axis = 0)
+###############3
 
 
-standin_bp_rp = np.random.rand(pulsar_abs_g_mag.shape[0])
-plt.errorbar(standin_bp_rp, pulsar_g_absmag, yerr= pulsar_g_absmag_err, linestyle = 'none', marker = '*', color = 'b', capsize = 4)
-plot_names(pulsar_names, pulsar_g_absmag, standin_bp_rp)
-polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(1000,1000), cmap = 'hot', mincnt = 1)
-polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
-counts = polything.get_array()
-print(counts.shape)
-counts= np.sqrt(counts)
-polything.set_array(counts)
-polything.autoscale()
-#plt.hist2d(generic_bp_rp, generic_g_absmag, bins = 100, cmap = 'Reds')
-#plt.title('PSR J1431-4715' + title_suffix)
-plt.title('Inverse parallax' + title_suffix +'(random BP-RP)')
 
-#plt.ylim([-4, 16])
+#pulsar_abs_g_mag = distance_modulus(pulsar_g_mag, np.float_(pulsar_list_all['d_LK'])*1000)
+#pulsar_abs_g_mag_lo = distance_modulus(pulsar_g_mag, np.float_(pulsar_list_all['d_LK'])*1000-np.float_(pulsar_list_all['d_LK_lo'])*1000)
+#pulsar_abs_g_mag_hi = distance_modulus(pulsar_g_mag, np.float_(pulsar_list_all['d_LK'])*1000+np.float_(pulsar_list_all['d_LK_hi'])*1000)
+#pulsar_abs_g_mag_lo = pulsar_abs_g_mag-pulsar_abs_g_mag_lo #because higher numbers mean dimmer and farther, so 
+#pulsar_abs_g_mag_hi = pulsar_abs_g_mag_hi- pulsar_abs_g_mag #difference on the high side
+#pulsar_abs_g_mag_err = np.vstack([pulsar_abs_g_mag_lo, pulsar_abs_g_mag_hi]) #hopefully correctly shaped
 
-plt.gca().invert_yaxis()
-plt.xlabel(r'$G_{BP} - G_{RP}$')
-#plt.xlim([-1,5])
-plt.ylabel(r'$M_G$')
-#plt.legend()
-plt.show()
+##standin_bp_rp = np.random.rand(pulsar_abs_g_mag.shape[0])
+#print(standin_bp_rp.shape)
+#print(pulsar_abs_g_mag.shape)
+#plt.errorbar(standin_bp_rp, pulsar_abs_g_mag, yerr= pulsar_abs_g_mag_err, xerr= bp_rp_errorbars, linestyle = 'none', marker = '*', color = 'b', capsize = 4)
+#plot_names(pulsar_names, pulsar_abs_g_mag, standin_bp_rp)
+
+#polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(1000,1000), cmap = 'hot', mincnt = 1)
+#polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
+#counts = polything.get_array()
+#print(counts.shape)
+#counts= np.sqrt(counts)
+#polything.set_array(counts)
+#polything.autoscale()
+##plt.hist2d(generic_bp_rp, generic_g_absmag, bins = 100, cmap = 'Reds')
+##plt.title('PSR J1431-4715' + title_suffix)
+#plt.title('d_LK' + title_suffix + ' random BP-RP from Jennings et al 2018')
+
+##plt.ylim([-4, 16])
+
+#plt.gca().invert_yaxis()
+#plt.xlabel(r'$G_{BP} - G_{RP}$')
+##plt.xlim([-1,5])
+#plt.ylabel(r'$M_G$')
+##plt.legend()
+#plt.show()
+
+
+######################
+
+#pulsar_parallax =  np.float_(pulsar_list_all['pi'])
+#pulsar_parallax_error = np.float_(pulsar_list_all['pi_error'])
+
+#pulsar_parallax =pulsar_parallax*1e-3
+#pulsar_distance = 1./pulsar_parallax
+#pulsar_parallax_error = pulsar_parallax_error*1e-3
+
+#print(pulsar_parallax.shape, pulsar_parallax_error.shape)
+#pulsar_parallax_dist = get_mc_distribution(pulsar_parallax, pulsar_parallax_error)
+#pulsar_parallax_dist = remove_negative(pulsar_parallax_dist)
+##remove_negative(target_parallax_dist)
+#pulsar_distance_dist = 1./pulsar_parallax_dist
+
+#pulsar_g_absmag = distance_modulus(pulsar_g_mag, pulsar_distance)
+#pulsar_g_absmag_dist = distance_modulus(pulsar_g_mag, pulsar_distance_dist)
+##pulsar_g_absmag_err = get_errors(pulsar_g_absmag_dist)
+#print("pulsar_g_absmag_dist.shape", pulsar_g_absmag_dist.shape)
+#pulsar_g_agmsag_err = np.std(pulsar_g_absmag_dist, axis = 0)
+
+
+#standin_bp_rp = np.random.rand(pulsar_abs_g_mag.shape[0])
+#plt.errorbar(standin_bp_rp, pulsar_g_absmag, yerr= pulsar_g_absmag_err, linestyle = 'none', marker = '*', color = 'b', capsize = 4)
+#plot_names(pulsar_names, pulsar_g_absmag, standin_bp_rp)
+#polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(1000,1000), cmap = 'hot', mincnt = 1)
+#polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
+#counts = polything.get_array()
+#print(counts.shape)
+#counts= np.sqrt(counts)
+#polything.set_array(counts)
+#polything.autoscale()
+##plt.hist2d(generic_bp_rp, generic_g_absmag, bins = 100, cmap = 'Reds')
+##plt.title('PSR J1431-4715' + title_suffix)
+#plt.title('Inverse parallax' + title_suffix +'(random BP-RP)')
+
+##plt.ylim([-4, 16])
+
+#plt.gca().invert_yaxis()
+#plt.xlabel(r'$G_{BP} - G_{RP}$')
+##plt.xlim([-1,5])
+#plt.ylabel(r'$M_G$')
+##plt.legend()
+#plt.show()
 
 
 

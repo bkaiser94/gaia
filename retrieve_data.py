@@ -17,10 +17,11 @@ from astropy.table import Table
 SELECT TOP 500 source_id,ra,ra_error,dec,dec_error,parallax,parallax_error,phot_g_mean_mag,bp_rp,radial_velocity,radial_velocity_error,phot_variable_flag,teff_val,a_g_val FROM gaiadr2.gaia_source  WHERE CONTAINS(POINT('ICRS',gaiadr2.gaia_source.ra,gaiadr2.gaia_source.dec),CIRCLE('ICRS',0,0,360))=1    AND  (parallax>=0 AND phot_g_mean_mag<=6)
 """
 
+parallax_correction = -0.29
 target_ra = "08 35 20.65525" #values on page 43 of General Clemens II
 target_dec =  "-45 10 35.1545"
 num_targs = 1e6
-distance_limit = 25 #pc
+distance_limit = 50 #pc
 
 num_targs = int(num_targs)
 #output_name = 'top500_nearby_gaia.csv'
@@ -28,8 +29,8 @@ num_targs = int(num_targs)
 
 #output_name = 'top' +str(int(num_targs)) + '_nearby_gaia.csv'
 #output_name = 'top'+str(num_targs) + '_' +str(distance_limit)+'pc_gaia.csv'
-output_name = 'all_' +str(distance_limit)+'pc_gaia.csv'
-#output_name = 'all_' +str(distance_limit)+'pc_gaia_corr.csv'
+#output_name = 'all_' +str(distance_limit)+'pc_gaia.csv'
+output_name = 'all_' +str(distance_limit)+'pc_gaia_corr.csv'
 #output_name = 'all_' +str(distance_limit)+'pc_gaia_bailer.csv'
 #output_name = 'bailer.csv'
 
@@ -71,8 +72,12 @@ condition_string = "(parallax>=" +str(parallax_min) + " AND parallax_over_error>
 
 #search_statement = "SELECT TOP " + str(num_targs)+ " phot_g_mean_mag+5*log10(parallax-0.29)-10 AS mg, bp_rp FROM gaiadr2.gaia_source WHERE parallax_over_error > 10 AND phot_g_mean_flux_over_error>50 AND phot_rp_mean_flux_over_error>20 AND phot_bp_mean_flux_over_error>20 AND phot_bp_rp_excess_factor < 1.3+0.06*power(phot_bp_mean_mag-phot_rp_mean_mag,2) AND phot_bp_rp_excess_factor > 1.0+0.015*power(phot_bp_mean_mag-phot_rp_mean_mag,2) AND visibility_periods_used>8 AND astrometric_chi2_al/(astrometric_n_good_obs_al-5)<1.44*greatest(1,exp(-0.4*(phot_g_mean_mag-19.5)))" #search statement from Gaia DR2HRD 2018
 
+#############Working distance-limited to match the actual paper
+#search_statement = "SELECT phot_g_mean_mag+5*log10(parallax)-10 AS mg, bp_rp FROM gaiadr2.gaia_source WHERE parallax_over_error > 10 AND phot_g_mean_flux_over_error>50 AND phot_rp_mean_flux_over_error>20 AND phot_bp_mean_flux_over_error>20 AND phot_bp_rp_excess_factor < 1.3+0.06*power(phot_bp_mean_mag-phot_rp_mean_mag,2) AND phot_bp_rp_excess_factor > 1.0+0.015*power(phot_bp_mean_mag-phot_rp_mean_mag,2) AND visibility_periods_used>8 AND astrometric_chi2_al/(astrometric_n_good_obs_al-5)<1.44*greatest(1,exp(-0.4*(phot_g_mean_mag-19.5)))" #modified to have number limit search statement from Gaia DR2HRD 2018
+#search_statement= search_statement + " AND parallax > " + str(parallax_min)
+########################
 
-search_statement = "SELECT phot_g_mean_mag+5*log10(parallax)-10 AS mg, bp_rp FROM gaiadr2.gaia_source WHERE parallax_over_error > 10 AND phot_g_mean_flux_over_error>50 AND phot_rp_mean_flux_over_error>20 AND phot_bp_mean_flux_over_error>20 AND phot_bp_rp_excess_factor < 1.3+0.06*power(phot_bp_mean_mag-phot_rp_mean_mag,2) AND phot_bp_rp_excess_factor > 1.0+0.015*power(phot_bp_mean_mag-phot_rp_mean_mag,2) AND visibility_periods_used>8 AND astrometric_chi2_al/(astrometric_n_good_obs_al-5)<1.44*greatest(1,exp(-0.4*(phot_g_mean_mag-19.5)))" #modified to have number limit search statement from Gaia DR2HRD 2018
+search_statement = "SELECT phot_g_mean_mag+5*log10(parallax+(" + str(parallax_correction)+"))-10 AS mg, bp_rp FROM gaiadr2.gaia_source WHERE parallax_over_error > 10 AND phot_g_mean_flux_over_error>50 AND phot_rp_mean_flux_over_error>20 AND phot_bp_mean_flux_over_error>20 AND phot_bp_rp_excess_factor < 1.3+0.06*power(phot_bp_mean_mag-phot_rp_mean_mag,2) AND phot_bp_rp_excess_factor > 1.0+0.015*power(phot_bp_mean_mag-phot_rp_mean_mag,2) AND visibility_periods_used>8 AND astrometric_chi2_al/(astrometric_n_good_obs_al-5)<1.44*greatest(1,exp(-0.4*(phot_g_mean_mag-19.5)))" #modified to have number limit search statement from Gaia DR2HRD 2018
 search_statement= search_statement + " AND parallax > " + str(parallax_min)
 
 #bailer_ex_search = "SELECT source_id, ra, dec, phot_g_mean_mag, r_est, r_lo, r_hi, teff_val FROM gaiadr2_complements.geometric_distance JOIN gaiadr2.gaia_source USING source_id WHERE r_est < 10 AND teff_val > 7000"
@@ -185,7 +190,7 @@ def asynchronous_query():
 
 
 output_table = asynchronous_query()
-output_table.write(output_name, format = 'ascii.csv')
+output_table.write(output_name, format = 'ascii.csv', overwrite= True)
 
 #target_output = cone_search(target_ra, target_dec)
 #target_output.write(target_output_name, format = 'ascii.csv')
