@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import scipy.stats as scistats
 import seaborn as sns
 
-#parallax_correction = -0.29 #from Lindgren et al 2018
+#parallax_correction = -0.029 #from Lindgren et al 2018
 parallax_correction = 0 #so nothing done
 
 num_targs = 'all'
