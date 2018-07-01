@@ -17,9 +17,9 @@ from astropy.table import Table
 SELECT TOP 500 source_id,ra,ra_error,dec,dec_error,parallax,parallax_error,phot_g_mean_mag,bp_rp,radial_velocity,radial_velocity_error,phot_variable_flag,teff_val,a_g_val FROM gaiadr2.gaia_source  WHERE CONTAINS(POINT('ICRS',gaiadr2.gaia_source.ra,gaiadr2.gaia_source.dec),CIRCLE('ICRS',0,0,360))=1    AND  (parallax>=0 AND phot_g_mean_mag<=6)
 """
 
-parallax_correction = -0.29
-target_ra = "08 35 20.65525" #values on page 43 of General Clemens II
-target_dec =  "-45 10 35.1545"
+parallax_correction = 0.029
+target_ra = "19:03:05.7937" #values on page 43 of General Clemens II
+target_dec =  "+03:27:19.222"
 num_targs = 1e6
 distance_limit = 50 #pc
 
@@ -38,6 +38,7 @@ pulsar_list = np.genfromtxt('pulsar_names.txt', dtype = 'S32') #still presents a
 
 #target_output_name = "target_gaia.csv"
 #target_output_name= "Vela_gaia.csv"
+target_output_name = 'PSRJ1903p0327.csv'
 
 
 
@@ -101,7 +102,7 @@ def coordinate_search():
     
 def cone_search(ra, dec):
     coordinate = coord.SkyCoord(ra = ra, dec =dec, unit = (u.hourangle, u.deg), frame = 'icrs')
-    radius = 0.1*u.arcsecond
+    radius = 3*u.arcsecond
     j= Gaia.cone_search_async(coordinate, radius)
     r=j.get_results()
     r.pprint()
@@ -189,11 +190,11 @@ def asynchronous_query():
 #synchronous_query_uptab()
 
 
-output_table = asynchronous_query()
-output_table.write(output_name, format = 'ascii.csv', overwrite= True)
+#output_table = asynchronous_query()
+#output_table.write(output_name, format = 'ascii.csv', overwrite= True)
 
-#target_output = cone_search(target_ra, target_dec)
-#target_output.write(target_output_name, format = 'ascii.csv')
+target_output = cone_search(target_ra, target_dec)
+target_output.write(target_output_name, format = 'ascii.csv', overwrite= True)
 
 #thing = Gaia.query_object('PSR J1431-4715', width = 0.5 *u.arcsecond, height = 0.5*u.arcsecond )
 #thing.pprint()

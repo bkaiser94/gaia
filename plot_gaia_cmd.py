@@ -12,8 +12,13 @@ import matplotlib.pyplot as plt
 import scipy.stats as scistats
 import seaborn as sns
 
-#parallax_correction = -0.029 #from Lindgren et al 2018
-parallax_correction = 0 #so nothing done
+plt.rc('font', size =18)
+#plt.rc('lines', markersize=12)
+#plt.rc('font', size = 11)
+plt.rc('lines', markersize = 5)
+
+parallax_correction = 0.029 #from Lindgren et al 2018
+#parallax_correction = 0 #so nothing done
 
 num_targs = 'all'
 distance = 100
@@ -25,15 +30,18 @@ percent_off = 34 #1-sigma equivalent
 
 
 target_label = "PSRJ1435-4715"
-other_target_label= "PSRJ1816+4510"
+#other_target_label= "PSRJ1816+4510"
 #other_target_label= "PSRJ1023+0038"
 #other_target_label = "Crab Pulsar"
+other_target_label = "PSRJ1435-6100"
 
 
 target_input = 'target_gaia.csv'
-other_target_input = "PSRJ1816p4510_gaia.csv"
+#other_target_input = "PSRJ1816p4510_gaia.csv"
 #other_target_input = "PSRJ1023p0038_gaia.csv"
 #other_target_input = "Crab_gaia.csv"
+other_target_input= "PSRJ1435m6100.csv"
+#other_target_input= 'PSRJ1903p0327.csv'
 
 
 zeropoint_dict={"g": [25.6884, 0.0018],
@@ -48,10 +56,12 @@ pulsar_list_all = np.genfromtxt(pulsar_list_file, delimiter = '\t', names = True
 
 if num_targs == 'all':
     print('Distance-limited Sample like Figure 6 from DR2HRD')
-    generic_input = 'all_'+str(distance)+'pc_gaia.csv'
-    #generic_input = 'all_'+str(distance)+'pc_gaia_corr.csv'
-    title_suffix =' and ' + other_target_label+ '(green) in ' + str(distance)+ 'pc (DR2HRD Figure 6)'
-    #title_suffix = ' and ' + other_target_label+ '(green) in ' + str(distance)+ 'pc (DR2HRD Figure 6) (-0.29 mas correction)'
+    #generic_input = 'all_'+str(distance)+'pc_gaia.csv'
+    generic_input = 'all_'+str(distance)+'pc_gaia_corr.csv'
+    #title_suffix =' and ' + other_target_label+ '(green) in ' + str(distance)+ 'pc (DR2HRD Figure 6)'
+    #title_suffix = ' and ' + other_target_label+ '(green) in ' + str(distance)+ 'pc (DR2HRD Figure 6) (0.029 mas correction)''
+    title_suffix = ' in the ' + str(distance)+ 'pc Gaia DR2 CMD'
+
 else:
     num_targs = int(num_targs)
     generic_input = 'top'+str(num_targs) + '_nearby_gaia.csv'
@@ -151,6 +161,11 @@ def get_g_abs_mag(table, plot_all = False):
     parallax_error = table['parallax_error']*1e-3
     parallax_dist = get_mc_distribution(parallax, parallax_error)
     parallax_dist = remove_negative(parallax_dist)
+    if parallax < 0:
+        parallax_median = np.nanmedian(parallax_dist)
+        print("PARALLAX < 0!", parallax, "setting to median of positive distribution:", parallax_median)
+        parallax = parallax_median
+    distance = 1./parallax
     distance_dist = 1./parallax_dist
     index_length = distance_dist.shape[0]
     print("g_mag_dist.shape", g_mag_dist.shape, "distance_dist.shape", distance_dist.shape)
@@ -216,7 +231,7 @@ print(generic_g_absmag.shape)
 #target_g_flux = target_table['phot_g_mean_flux']
 
 
-
+print("special thing: ", distance_modulus(18.44, 2.2*1000))
 
 
 
@@ -252,6 +267,9 @@ target_bp_rp, target_bp_rp_err= get_bp_rp(target_table, plot_all = True)
 #other_target_parallax = other_target_table['parallax']+parallax_correction
 #other_target_parallax = other_target_parallax*1e-3
 #other_target_distance = 1./other_target_parallax
+####other_target_distance = 2.2*1000
+###other_target_distance = 6.4*1000
+
 #other_target_parallax_error = other_target_table['parallax_error']*1e-3
 #other_target_parallax_dist = get_mc_distribution(other_target_parallax, other_target_parallax_error)
 #other_target_parallax_dist = remove_negative(other_target_parallax_dist)
@@ -272,7 +290,7 @@ other_target_bp_rp, other_target_bp_rp_err = get_bp_rp(other_target_table, plot_
 
 
 #generic_g_absmag = distance_modulus(generic_g_mag, generic_distance, extinction = generic_extinction)
-#other_target_g_absmag = distance_modulus(other_target_g_mag, other_target_distance,extinction= other_target_extinction)
+#other_target_g_absmag = distance_modulus(other_target_g_mag, other_target_distance)
 #other_target_g_absmag_dist = distance_modulus(other_target_g_mag, other_target_distance_dist, extinction = other_target_extinction)
 #other_target_g_absmag_err = get_errors(other_target_g_absmag_dist)
 
@@ -311,7 +329,10 @@ def make_density_plot(g_abs, bp_rp):
 plt.errorbar(target_bp_rp, target_g_absmag, yerr = target_g_absmag_err, xerr = target_bp_rp_err, marker = '*', markersize = 8, color = 'b', capsize = 4, label = target_label, linestyle = 'none')
 
 #plt.errorbar(other_target_bp_rp, other_target_g_absmag, yerr = other_target_g_absmag_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
-plt.errorbar(other_target_bp_rp, other_target_g_absmag, yerr = other_target_g_absmag_err, xerr= other_target_bp_rp_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
+#This one \/ \/ \/
+#plt.errorbar(other_target_bp_rp, other_target_g_absmag, yerr = other_target_g_absmag_err, xerr= other_target_bp_rp_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
+
+#plt.errorbar(other_target_bp_rp, other_target_g_absmag, xerr= other_target_bp_rp_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
 
 polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(1000,1000), cmap = 'hot', mincnt = 1)
 polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
@@ -331,6 +352,7 @@ plt.xlabel(r'$G_{BP} - G_{RP}$')
 plt.xlim([-1,5])
 plt.ylabel(r'$M_G$')
 #plt.legend()
+plt.subplots_adjust(wspace = 0, hspace = 0, top = 0.90, bottom = 0.10, left = 0.10, right = 0.90)
 plt.show()
 
 #plt.hist2d(generic_bp_rp, generic_g_absmag, bins = 100, cmap = 'Reds')
@@ -364,16 +386,16 @@ pulsar_g_mag= np.float_(pulsar_list_all['G_mag'])
 
 
 
-###########################3
+##########################3
 
-#pulsar_abs_g_mag = distance_modulus(pulsar_g_mag, np.float_(pulsar_list_all['d_pi'])*1000)
-#pulsar_abs_g_mag_lo = distance_modulus(pulsar_g_mag, np.float_(pulsar_list_all['d_pi'])*1000-np.float_(pulsar_list_all['d_pi_lo'])*1000)
+pulsar_abs_g_mag = distance_modulus(pulsar_g_mag, np.float_(pulsar_list_all['d_pi'])*1000)
+pulsar_abs_g_mag_lo = distance_modulus(pulsar_g_mag, np.float_(pulsar_list_all['d_pi'])*1000-np.float_(pulsar_list_all['d_pi_lo'])*1000)
 #pulsar_abs_g_mag_hi = distance_modulus(pulsar_g_mag, np.float_(pulsar_list_all['d_pi'])*1000+np.float_(pulsar_list_all['d_pi_hi'])*1000)
 #pulsar_abs_g_mag_lo = pulsar_abs_g_mag-pulsar_abs_g_mag_lo #because higher numbers mean dimmer and farther, so 
 #pulsar_abs_g_mag_hi = pulsar_abs_g_mag_hi- pulsar_abs_g_mag #difference on the high side
 #pulsar_abs_g_mag_err = np.vstack([pulsar_abs_g_mag_lo, pulsar_abs_g_mag_hi]) #hopefully correctly shaped
 
-#standin_bp_rp = np.random.rand(pulsar_abs_g_mag.shape[0])
+standin_bp_rp = np.random.rand(pulsar_abs_g_mag.shape[0])
 #bp_rp_errorbars = np.ones(standin_bp_rp.shape)*6
 #plt.errorbar(standin_bp_rp, pulsar_abs_g_mag, yerr= pulsar_abs_g_mag_err, xerr= bp_rp_errorbars, linestyle = 'none', marker = '*', color = 'b', capsize = 4)
 #plot_names(pulsar_names, pulsar_abs_g_mag, standin_bp_rp)
@@ -413,7 +435,8 @@ pulsar_g_mag= np.float_(pulsar_list_all['G_mag'])
 ##standin_bp_rp = np.random.rand(pulsar_abs_g_mag.shape[0])
 #print(standin_bp_rp.shape)
 #print(pulsar_abs_g_mag.shape)
-#plt.errorbar(standin_bp_rp, pulsar_abs_g_mag, yerr= pulsar_abs_g_mag_err, xerr= bp_rp_errorbars, linestyle = 'none', marker = '*', color = 'b', capsize = 4)
+##plt.errorbar(standin_bp_rp, pulsar_abs_g_mag, yerr= pulsar_abs_g_mag_err, xerr= bp_rp_errorbars, linestyle = 'none', marker = '*', color = 'b', capsize = 4)
+#plt.errorbar(standin_bp_rp, pulsar_abs_g_mag, yerr= pulsar_abs_g_mag_err, linestyle = 'none', marker = '*', color = 'b', capsize = 4)
 #plot_names(pulsar_names, pulsar_abs_g_mag, standin_bp_rp)
 
 #polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(1000,1000), cmap = 'hot', mincnt = 1)
