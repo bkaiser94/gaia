@@ -10,15 +10,24 @@ import astropy.coordinates as coord
 from astropy.table import Table, QTable
 import matplotlib.pyplot as plt
 import scipy.stats as scistats
-import seaborn as sns
+#import seaborn as sns
+import astropy
+
+import passband_model_convolution as pmc
 
 plt.rc('font', size =18)
 #plt.rc('lines', markersize=12)
 #plt.rc('font', size = 11)
 plt.rc('lines', markersize = 5)
-
+precision = 2
 parallax_correction = 0.029 #from Lindgren et al 2018
 #parallax_correction = 0 #so nothing done
+
+teff = 7250
+logg = 6.0
+
+#test_radii = np.array([0.01, 0.1, 0.5, 1, 2, 5, 10, 20, 100]) * u.Rsun
+test_radii = np.array([0.01, 0.1, 1, 10]) * u.Rsun
 
 num_targs = 'all'
 distance = 100
@@ -48,6 +57,10 @@ zeropoint_dict={"g": [25.6884, 0.0018],
                 "bp": [25.3514, 0.0014],
                 "rp": [24.7619, 0.0019]} #from Evans et al 2018, the DR2 values [ZP, sigma]
 
+
+#zeropoint_dict={"g": [ 25.7933969562,  0.0017848281],
+                #"bp": [25.3805596387,  0.0013917453], 
+                #"rp": [25.1161276701, 0.001914645] } #AB from Evans et al 2018, the DR2 values [ZP, sigma]
 dtype_list = ['S32', 'float', 'float', 'float', 'float','float', 'float', 'float', 'float', 'float','float', 'float', 'float', 'float', 'float']
 pulsar_list_file = 'Jennings_table2.txt'
 pulsar_list_all = np.genfromtxt(pulsar_list_file, delimiter = '\t', names = True, dtype = dtype_list)
@@ -114,7 +127,11 @@ def get_errors(distribution, percent_off = percent_off):
     low_bar = np.nanpercentile(distribution, 50-percent_off)
     median = np.nanmedian(distribution)
     high_bar = np.nanpercentile(distribution, 50+percent_off)
-    return np.array([[median-low_bar],[high_bar-median]])
+    try:
+        return np.array([[median-low_bar],[high_bar-median]])
+    except astropy.units.core.UnitsError as error:
+        print(error)
+        return  np.array([[median.value-low_bar],[high_bar-median.value]])
     #return np.vstack([np.array(median-low_bar),np.array(high_bar-median)])
 
 
@@ -187,7 +204,11 @@ def get_g_abs_mag(table, plot_all = False):
         #plt.title(target_label)
         plt.legend()
         plt.show()
-    return g_abs_mag, g_abs_mag_error
+    return g_abs_mag, g_abs_mag_error, g_abs_mag_dist
+
+
+#def get_mass(radius, logg=logg):
+    #logg = logg*u.
     
 try:
     generic_parallax = generic_table ['parallax']+parallax_correction
@@ -249,16 +270,41 @@ print("special thing: ", distance_modulus(18.44, 2.2*1000))
 #plt.title(target_label)
 #plt.legend()
 #plt.show()
-target_g_absmag, target_g_absmag_err = get_g_abs_mag(target_table, plot_all = True)
+target_g_absmag, target_g_absmag_err, target_g_absmag_dist = get_g_abs_mag(target_table, plot_all = True)
 target_bp_rp, target_bp_rp_err= get_bp_rp(target_table, plot_all = True)
 
-#print(generic_parallax)
-#print(target_g_mag)
-#print(target_extinction)
-#print(target_table['a_g_percentile_lower'],target_table['a_g_percentile_upper'])
-#print(target_g_absmag)
-#print(target_bp_rp)
-#print(target_g_absmag_err)
+target_g_radius = pmc.get_radius(target_g_absmag, teff= teff, logg= logg, passband_string= 'G')
+target_g_radius_dist = pmc.get_radius(target_g_absmag_dist, teff= teff, logg= logg, passband_string= 'G')
+
+
+target_g_radius_err = get_errors(target_g_radius_dist)
+
+target_g_mass = pmc.get_mass(target_g_radius, logg)
+print("Mass: " , target_g_mass.to(u.Msun))
+
+print("Radius for expected mass:", pmc.get_radius_from_mass(0.1325*u.Msun, logg))
+print("Radius for double expected mass:", pmc.get_radius_from_mass(2*0.1325*u.Msun, logg))
+print("Radius for triple expected mass:", pmc.get_radius_from_mass(3*0.1325*u.Msun, logg))
+test_masses = 0.1325*np.array([1,2,3])*u.Msun
+new_test_radii = pmc.get_radius_from_mass(test_masses, logg)
+mass_gabsmag, mass_bp_rp = pmc.get_model_CMD_loc(logg= logg, teff= teff, radius =new_test_radii)
+
+
+
+plt.hist(target_g_radius_dist.value, bins=75, normed=1, label = 'MC Distribution', color = 'g')
+plt.axvline(np.nanmedian(target_g_radius_dist.value), color = 'k', linestyle = '--', label = 'Median of MC Dist')
+plt.axvline(np.nanpercentile(target_g_radius_dist.value, 84), color = 'cyan')
+plt.errorbar(target_g_radius.value, 0.5, xerr = target_g_radius_err, marker = '*', markersize = 8, color = 'b', label = r"$R_{*}$", capsize = 4)
+#plt.axvline(x=target_g_absmag, color = 'r', linestyle = ':', label = 'Measured value')
+plt.xlabel(r'$R_{*}(R_{\odot}$')
+#plt.title(target_label)
+plt.legend()
+plt.show()
+print("Target Radius:", target_g_radius, "+/-", target_g_radius_err)
+
+
+model_g_absmag, model_bp_rp = pmc.get_model_CMD_loc(logg= logg, teff = teff, radius = test_radii)
+
 
 ########3 other
 
@@ -282,7 +328,7 @@ target_bp_rp, target_bp_rp_err= get_bp_rp(target_table, plot_all = True)
 
 #other_target_g_mag =other_target_table['phot_g_mean_mag']
 ##other_target_bp_rp = other_target_table['bp_rp']
-other_target_g_absmag, other_target_g_absmag_err= get_g_abs_mag(other_target_table, plot_all = True)
+other_target_g_absmag, other_target_g_absmag_err, other_target_g_absmag_dist= get_g_abs_mag(other_target_table, plot_all = True)
 other_target_bp_rp, other_target_bp_rp_err = get_bp_rp(other_target_table, plot_all = True)
 
 
@@ -333,6 +379,15 @@ plt.errorbar(target_bp_rp, target_g_absmag, yerr = target_g_absmag_err, xerr = t
 #plt.errorbar(other_target_bp_rp, other_target_g_absmag, yerr = other_target_g_absmag_err, xerr= other_target_bp_rp_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
 
 #plt.errorbar(other_target_bp_rp, other_target_g_absmag, xerr= other_target_bp_rp_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
+
+#plt.plot(model_bp_rp*np.ones(model_g_absmag.shape[0]), model_g_absmag, marker = '*', markersize= 8, color = 'green', label = "Model spectra at various radii " + str(np.round(test_radii.value, precision))+ " logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
+
+plt.plot(model_bp_rp*np.ones(model_g_absmag.shape[0]), model_g_absmag, marker = '*', markersize= 8, color = 'cyan', label = "Model spectra at various radii  logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
+plt.legend()
+
+
+plt.plot( mass_bp_rp*np.ones(mass_gabsmag.shape[0]), mass_gabsmag,marker = '*', markersize= 8, color = 'magenta', label = "using the mass ratio and surface gravity" + str(logg) + " Teff: " +str(teff), linestyle = 'none')
+plt.legend()
 
 polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(1000,1000), cmap = 'hot', mincnt = 1)
 polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")

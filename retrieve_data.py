@@ -22,7 +22,6 @@ target_ra = "19:03:05.7937" #values on page 43 of General Clemens II
 target_dec =  "+03:27:19.222"
 num_targs = 1e6
 distance_limit = 50 #pc
-
 num_targs = int(num_targs)
 #output_name = 'top500_nearby_gaia.csv'
 #output_name = 'top5000_nearby_gaia.csv'
@@ -87,8 +86,14 @@ search_statement= search_statement + " AND parallax > " + str(parallax_min)
 #search_statement = bailer_ex_search
 #search_statement= "SELECT TOP 100 source_id,ra,ra_error,dec,dec_error,parallax,parallax_error,phot_g_mean_mag,bp_rp,radial_velocity,radial_velocity_error,phot_variable_flag,teff_val,a_g_val FROM gaiadr2.gaia_source  WHERE CONTAINS(POINT('ICRS',gaiadr2.gaia_source.ra,gaiadr2.gaia_source.dec),BOX('ICRS',179.99997916666666,0,359.9999583333333,180))=1    AND  (parallax>=1e-5 AND parallax_over_error>=5)"
 
+coord1= coord.SkyCoord(ra= 22, dec = -60, unit=(u.hourangle, u.deg), frame = 'icrs')
+coord2= coord.SkyCoord(ra = 12, dec = -30, unit= (u.hourangle, u.deg), frame= 'icrs')
+coordinate_list = np.array([coord1,coord2])
 
-
+thingout= Gaia.cone_search_async(coordinate_list, 3*u.arcsecond)
+thingout.get_results()
+thingout.pprint()
+new_coordinates = np.array([[23,11,12],[-30,-45,-60]])
 print(search_statement)
 
 ######
@@ -101,8 +106,9 @@ def coordinate_search():
     
     
 def cone_search(ra, dec):
-    coordinate = coord.SkyCoord(ra = ra, dec =dec, unit = (u.hourangle, u.deg), frame = 'icrs')
-    radius = 3*u.arcsecond
+    #coordinate = coord.SkyCoord(ra = ra, dec =dec, unit = (u.hourangle, u.deg), frame = 'icrs')
+    coordinate = coord.SkyCoord(ra = ra*u.hourangle, dec =dec*u.degree, frame = 'icrs')
+    radius = 3*u.arcsecond*np.ones(ra.shape[0])
     j= Gaia.cone_search_async(coordinate, radius)
     r=j.get_results()
     r.pprint()
@@ -193,9 +199,10 @@ def asynchronous_query():
 #output_table = asynchronous_query()
 #output_table.write(output_name, format = 'ascii.csv', overwrite= True)
 
-target_output = cone_search(target_ra, target_dec)
-target_output.write(target_output_name, format = 'ascii.csv', overwrite= True)
+#target_output = cone_search(target_ra, target_dec)
+#target_output.write(target_output_name, format = 'ascii.csv', overwrite= True)
 
 #thing = Gaia.query_object('PSR J1431-4715', width = 0.5 *u.arcsecond, height = 0.5*u.arcsecond )
 #thing.pprint()
-
+#new_thing = Gaia.cone_search
+new_output= cone_search(new_coordinates[0],new_coordinates[1])
