@@ -53,9 +53,11 @@ other_target_input= "PSRJ1435m6100.csv"
 #other_target_input= 'PSRJ1903p0327.csv'
 
 
-zeropoint_dict={"g": [25.6884, 0.0018],
-                "bp": [25.3514, 0.0014],
-                "rp": [24.7619, 0.0019]} #from Evans et al 2018, the DR2 values [ZP, sigma]
+zeropoint_dict={"g": [25.6883657251, 0.0017850023],
+                "bp": [ 25.3513881707 , 0.0013918258],
+                "rp": [24.7619199882, 0.0019145719]} #from Evans et al 2018, the DR2 values [ZP, sigma]
+
+
 
 
 #zeropoint_dict={"g": [ 25.7933969562,  0.0017848281],
@@ -185,9 +187,9 @@ def get_g_abs_mag(table, plot_all = False):
     distance = 1./parallax
     distance_dist = 1./parallax_dist
     index_length = distance_dist.shape[0]
-    print("g_mag_dist.shape", g_mag_dist.shape, "distance_dist.shape", distance_dist.shape)
+    #print("g_mag_dist.shape", g_mag_dist.shape, "distance_dist.shape", distance_dist.shape)
     g_mag_dist = g_mag_dist[:index_length]
-    print("g_mag_dist.shape", g_mag_dist.shape, "distance_dist.shape", distance_dist.shape)
+    #print("g_mag_dist.shape", g_mag_dist.shape, "distance_dist.shape", distance_dist.shape)
     g_abs_mag = distance_modulus(g_mag, distance)
     g_abs_mag_dist = distance_modulus(g_mag_dist, distance_dist)
     g_abs_mag_error= get_errors(g_abs_mag_dist)
@@ -227,7 +229,7 @@ except KeyError as error:
     generic_g_absmag= generic_table['mg']
     generic_bp_rp= generic_table['bp_rp']
 
-print(generic_g_absmag.shape)
+#print(generic_g_absmag.shape)
 #print(target_table['ra'])
 #print(target_table['dec'])
 #target_parallax = target_table['parallax']+parallax_correction
@@ -252,7 +254,7 @@ print(generic_g_absmag.shape)
 #target_g_flux = target_table['phot_g_mean_flux']
 
 
-print("special thing: ", distance_modulus(18.44, 2.2*1000))
+#print("special thing: ", distance_modulus(18.44, 2.2*1000))
 
 
 
@@ -279,8 +281,10 @@ target_g_radius_dist = pmc.get_radius(target_g_absmag_dist, teff= teff, logg= lo
 
 target_g_radius_err = get_errors(target_g_radius_dist)
 
-target_g_mass = pmc.get_mass(target_g_radius, logg)
-print("Mass: " , target_g_mass.to(u.Msun))
+target_g_mass = (pmc.get_mass(target_g_radius, logg)).to(u.Msun)
+target_g_mass_dist= (pmc.get_mass(target_g_radius_dist, logg)).to(u.Msun)
+target_g_mass_err = get_errors(target_g_mass_dist)
+
 
 print("Radius for expected mass:", pmc.get_radius_from_mass(0.1325*u.Msun, logg))
 print("Radius for double expected mass:", pmc.get_radius_from_mass(2*0.1325*u.Msun, logg))
@@ -289,10 +293,11 @@ test_masses = 0.1325*np.array([1,2,3])*u.Msun
 new_test_radii = pmc.get_radius_from_mass(test_masses, logg)
 mass_gabsmag, mass_bp_rp = pmc.get_model_CMD_loc(logg= logg, teff= teff, radius =new_test_radii)
 
+sim_target_gabsmag, sim_target_bp_rp = pmc.get_model_CMD_loc(logg= logg, teff= teff, radius =target_g_radius)
 
 
 plt.hist(target_g_radius_dist.value, bins=75, normed=1, label = 'MC Distribution', color = 'g')
-plt.axvline(np.nanmedian(target_g_radius_dist.value), color = 'k', linestyle = '--', label = 'Median of MC Dist')
+plt.axvline(np.nanmedian(target_g_radius_dist.value), color = 'r', linestyle = '--', label = 'Median of MC Dist')
 plt.axvline(np.nanpercentile(target_g_radius_dist.value, 84), color = 'cyan')
 plt.errorbar(target_g_radius.value, 0.5, xerr = target_g_radius_err, marker = '*', markersize = 8, color = 'b', label = r"$R_{*}$", capsize = 4)
 #plt.axvline(x=target_g_absmag, color = 'r', linestyle = ':', label = 'Measured value')
@@ -300,7 +305,20 @@ plt.xlabel(r'$R_{*}(R_{\odot}$')
 #plt.title(target_label)
 plt.legend()
 plt.show()
+
+plt.hist(target_g_mass_dist.value, bins=1000, label = 'MC Distribution', color = 'g')
+plt.axvline(np.nanmedian(target_g_mass_dist.value), color = 'r', linestyle = '--', label = 'Median of MC Dist')
+plt.axvline(np.nanpercentile(target_g_mass_dist.value, 84), color = 'cyan')
+plt.errorbar(target_g_mass.value, 100, xerr = target_g_mass_err, marker = '*', markersize = 8, color = 'b', label = r"$M_{*}$", capsize = 4)
+#plt.axvline(x=target_g_absmag, color = 'r', linestyle = ':', label = 'Measured value')
+plt.xlabel(r'$M_{*}(M_{\odot}$')
+#plt.title(target_label)
+plt.legend()
+plt.show()
+
 print("Target Radius:", target_g_radius, "+/-", target_g_radius_err)
+print("Target Mass:", target_g_mass, "+/-", target_g_mass_err)
+
 
 
 model_g_absmag, model_bp_rp = pmc.get_model_CMD_loc(logg= logg, teff = teff, radius = test_radii)
@@ -381,6 +399,8 @@ plt.errorbar(target_bp_rp, target_g_absmag, yerr = target_g_absmag_err, xerr = t
 #plt.errorbar(other_target_bp_rp, other_target_g_absmag, xerr= other_target_bp_rp_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
 
 #plt.plot(model_bp_rp*np.ones(model_g_absmag.shape[0]), model_g_absmag, marker = '*', markersize= 8, color = 'green', label = "Model spectra at various radii " + str(np.round(test_radii.value, precision))+ " logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
+
+plt.plot(sim_target_bp_rp, sim_target_gabsmag, marker = '*', markersize= 8, color = 'green', label = "R= "+str(np.round(target_g_radius, precision)) + " M= "+ str(np.round(target_g_mass, precision))+" logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
 
 plt.plot(model_bp_rp*np.ones(model_g_absmag.shape[0]), model_g_absmag, marker = '*', markersize= 8, color = 'cyan', label = "Model spectra at various radii  logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
 plt.legend()

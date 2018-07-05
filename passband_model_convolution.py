@@ -34,13 +34,14 @@ distance = 1.56*1000 #pc
 
 radius = 0.1*u.Rsun
 
-area = 0.725*u.m**2
+#area = 0.725*u.m**2
+area= 1.
 
-model_waves = model['w'].data
-model_flux = model['flux'].data #since we'll be arbitrarily-ish scaling this it won't work.
-model_flux = model_flux
+#model_waves = model['w'].data
+#model_flux = model['flux'].data #since we'll be arbitrarily-ish scaling this it won't work.
+#model_flux = model_flux
 
-model_spec  = np.vstack([model_waves, model_flux])
+#model_spec  = np.vstack([model_waves, model_flux])
 
 #This should really start coming from the actual text file that contains these values, and I should load them in here
 zeropoint_dict={"G": [25.6884, 0.0018],
@@ -104,6 +105,18 @@ dr2_BP_tuple = good_for_plots_dr2(BPband_dr2, BPband_sig_dr2)
 #upper_wavebound = np.nanmax(dr2_RP_tuple[0])
 #model_spec= spt.clean_spectrum(model_spec, lower_wavebound, upper_wavebound, [])
 
+
+def get_model_spec(teff= teff, logg= logg):
+    wd=wdatmos.wdmodel(filename='ELM.hdf5')
+    model = wd(Teff = teff, logg = logg)
+    model_waves = model['w'].data
+    #model_flux = model['flux'].data #since we'll be arbitrarily-ish scaling this it won't work.
+    #model_flux = model['flux'].data/4. #since we'll be arbitrarily-ish scaling this it won't work.
+    model_flux =np.pi* model['flux'].data #since we'll be arbitrarily-ish scaling this it won't work.
+    model_spec  = np.vstack([model_waves, model_flux])
+    return model_spec
+
+
 def plot_tuple_error(intuple, label):
     plt.errorbar(intuple[0], intuple[1], intuple[2], label = label)
     return
@@ -132,7 +145,7 @@ def convolve_with_passband(input_spec, passband_string):
     input_waves = np.copy(input_spec[0])*u.angstrom
     input_flux= interpolated_transmission*input_flux
     #input_flux= input_flux
-    print ("before anything", input_flux.unit)
+    #print ("before anything", input_flux.unit)
     #plt.plot(input_waves, input_flux, label = "transmitted")
     #plt.legend()
     #plt.show()
@@ -142,16 +155,18 @@ def convolve_with_passband(input_spec, passband_string):
     input_waves = input_waves[1:]
     delta_lambda= delta_lambda[1:]
     input_flux = input_flux*delta_lambda
-    print("times wavelength", input_flux.unit)
+    #print("times wavelength", input_flux.unit)
     photon_energies = get_photon_energy(input_waves)
     input_photons = input_flux/photon_energies
-    print("divided by energy:",  input_photons.unit)
-    input_photons = input_photons*area #now it's in units of photons/s
-    print("times area:",  input_photons.unit)
+    #print("divided by energy:",  input_photons.unit)
+    #input_photons = input_photons*area #now it's in units of photons/s
+    input_photons = input_photons
+    #print("times area:",  input_photons.unit)
     #print delta_lambda
     summed_flux = np.sum(input_photons) #photons/s in the telescope
     print(passband_string, summed_flux.cgs)
-    return summed_flux
+    #return summed_flux
+    return summed_flux.si
     
     
 
@@ -192,12 +207,13 @@ def inverse_distance_modulus(apparent_mag, abs_mag):
     return (10**((apparent_mag- abs_mag+5)/5.))*u.pc
 
 def get_radius(absolute_mag, teff=teff, logg= logg, passband_string= 'G'):
-    wd=wdatmos.wdmodel(filename='ELM.hdf5')
-    model = wd(Teff = teff, logg = logg)
-    #print("model['flux']:", model['flux'])
-    model_waves = model['w'].data
-    model_flux = model['flux'].data #since we'll be arbitrarily-ish scaling this it won't work.
-    model_spec  = np.vstack([model_waves, model_flux])
+    #wd=wdatmos.wdmodel(filename='ELM.hdf5')
+    #model = wd(Teff = teff, logg = logg)
+    ##print("model['flux']:", model['flux'])
+    #model_waves = model['w'].data
+    #model_flux = model['flux'].data #since we'll be arbitrarily-ish scaling this it won't work.
+    #model_spec  = np.vstack
+    model_spec = get_model_spec(teff = teff, logg=logg)
     model_band_flux = convolve_with_passband(model_spec,passband_string)
     band_mag= get_mag(model_band_flux.value, passband_string)
     radius = inverse_distance_modulus(band_mag, absolute_mag).to(u.Rsun)
@@ -205,11 +221,12 @@ def get_radius(absolute_mag, teff=teff, logg= logg, passband_string= 'G'):
     
 
 def get_model_bp_rp(logg=logg, teff=teff, radius = radius):
-    wd=wdatmos.wdmodel(filename='ELM.hdf5')
-    model = wd(Teff = teff, logg = logg)
-    model_waves = model['w'].data
-    model_flux = model['flux'].data #since we'll be arbitrarily-ish scaling this it won't work.
-    model_spec  = np.vstack([model_waves, model_flux])
+    #wd=wdatmos.wdmodel(filename='ELM.hdf5')
+    #model = wd(Teff = teff, logg = logg)
+    #model_waves = model['w'].data
+    #model_flux = model['flux'].data #since we'll be arbitrarily-ish scaling this it won't work.
+    #model_spec  = np.vstack([model_waves, model_flux])
+    model_spec = get_model_spec(logg= logg, teff= teff)
     model_BP =convolve_with_passband(model_spec, 'BP')
     model_RP = convolve_with_passband(model_spec, 'RP')
     BPmag = get_mag(model_BP.value, 'BP')
@@ -218,11 +235,13 @@ def get_model_bp_rp(logg=logg, teff=teff, radius = radius):
     return BP_RP
 
 def get_model_absmag(logg= logg, teff= teff, radius = radius, passband_string = 'G'):
-    wd=wdatmos.wdmodel(filename='ELM.hdf5')
-    model = wd(Teff = teff, logg = logg)
-    model_waves = model['w'].data
-    model_flux = model['flux'].data #since we'll be arbitrarily-ish scaling this it won't work.
-    model_spec  = np.vstack([model_waves, model_flux])
+    #wd=wdatmos.wdmodel(filename='ELM.hdf5')
+    #model = wd(Teff = teff, logg = logg)
+    #model_waves = model['w'].data
+    #model_flux = model['flux'].data 
+    ##model_flux = model['flux'].data/4. #apparently it's 4 times the eddington flux
+    #model_spec  = np.vstack([model_waves, model_flux])
+    model_spec = get_model_spec(logg= logg, teff= teff)
     wavelengths = np.arange(np.nanmin(model_spec[0]), np.nanmax(model_spec[0]), 0.1)
     #fluxes = scinterp.interp1d(wavelengths)
     #fluxes = np.interp(wavelengths, model_spec[0], model_spec[1])
@@ -234,6 +253,9 @@ def get_model_absmag(logg= logg, teff= teff, radius = radius, passband_string = 
     absmag= distance_modulus(mag, (radius.to(u.pc)).value)
     return absmag
 
+
+#def get_BB_luminosity(teff=teff, radius=radius):
+    
 
 def get_model_CMD_loc(logg= logg, teff = teff, radius = radius):
     bp_rp = get_model_bp_rp(logg= logg, teff= teff, radius = radius)
