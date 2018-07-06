@@ -6,7 +6,7 @@ Plot the DR2 passbands and the "Revised DR2 passbands" for the GAIA mission.
 Requires one to already have downloaded the gaia passband files from the gaia website and update the file paths to get to them.
 
 """
-
+from __future__ import print_function
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
@@ -44,9 +44,9 @@ area= 1.
 #model_spec  = np.vstack([model_waves, model_flux])
 
 #This should really start coming from the actual text file that contains these values, and I should load them in here
-zeropoint_dict={"G": [25.6884, 0.0018],
-                "BP": [25.3514, 0.0014],
-                "RP": [24.7619, 0.0019]} # Vega from Evans et al 2018, the DR2 values [ZP, sigma]
+zeropoint_dict={"g": [25.6884, 0.0018],
+                "bp": [25.3514, 0.0014],
+                "rp": [24.7619, 0.0019]} # Vega from Evans et al 2018, the DR2 values [ZP, sigma]
 
 
 #zeropoint_dict={"G": [ 25.7933969562,  0.0017848281],
@@ -129,9 +129,9 @@ def get_photon_energy(wavelength):
     return (const.c*const.h/ wavelength).cgs
 
 def convolve_with_passband(input_spec, passband_string):
-    passband_dict = {"G":dr2_G_tuple,
-                     "RP": dr2_RP_tuple,
-                     "BP": dr2_BP_tuple}
+    passband_dict = {"g":dr2_G_tuple,
+                     "rp": dr2_RP_tuple,
+                     "bp": dr2_BP_tuple}
     passband_tuple = passband_dict[passband_string]
     input_spec= spt.clean_spectrum(input_spec, np.nanmin(passband_tuple[0]), np.nanmax(passband_tuple[0]), []) #trimming spectrum to wavelengths of the passband
     interpolator = scinterp.CubicSpline(passband_tuple[0], passband_tuple[1])
@@ -164,7 +164,7 @@ def convolve_with_passband(input_spec, passband_string):
     #print("times area:",  input_photons.unit)
     #print delta_lambda
     summed_flux = np.sum(input_photons) #photons/s in the telescope
-    print(passband_string, summed_flux.cgs)
+    #print(passband_string, summed_flux.cgs)
     #return summed_flux
     return summed_flux.si
     
@@ -206,7 +206,7 @@ def inverse_distance_modulus(apparent_mag, abs_mag):
     """
     return (10**((apparent_mag- abs_mag+5)/5.))*u.pc
 
-def get_radius(absolute_mag, teff=teff, logg= logg, passband_string= 'G'):
+def get_radius(absolute_mag, teff=teff, logg= logg, passband_string= 'g'):
     #wd=wdatmos.wdmodel(filename='ELM.hdf5')
     #model = wd(Teff = teff, logg = logg)
     ##print("model['flux']:", model['flux'])
@@ -227,14 +227,14 @@ def get_model_bp_rp(logg=logg, teff=teff, radius = radius):
     #model_flux = model['flux'].data #since we'll be arbitrarily-ish scaling this it won't work.
     #model_spec  = np.vstack([model_waves, model_flux])
     model_spec = get_model_spec(logg= logg, teff= teff)
-    model_BP =convolve_with_passband(model_spec, 'BP')
-    model_RP = convolve_with_passband(model_spec, 'RP')
-    BPmag = get_mag(model_BP.value, 'BP')
-    RPmag= get_mag(model_RP.value, 'RP')
+    model_BP =convolve_with_passband(model_spec, 'bp')
+    model_RP = convolve_with_passband(model_spec, 'rp')
+    BPmag = get_mag(model_BP.value, 'bp')
+    RPmag= get_mag(model_RP.value, 'rp')
     BP_RP = BPmag- RPmag
     return BP_RP
 
-def get_model_absmag(logg= logg, teff= teff, radius = radius, passband_string = 'G'):
+def get_model_absmag(logg= logg, teff= teff, radius = radius, passband_string = 'g'):
     #wd=wdatmos.wdmodel(filename='ELM.hdf5')
     #model = wd(Teff = teff, logg = logg)
     #model_waves = model['w'].data
@@ -268,37 +268,15 @@ def get_mass(radius, logg):
 def get_radius_from_mass(mass, logg):
     return (np.sqrt(mass*const.G/(10**(logg)* u.cm/u.s**2))).to(u.Rsun)
 
-#The fluxes in counts/s (only represented by s^-1 , however in astropy since counts aren't really a unit there
-#model_G = convolve_with_passband(model_spec, 'G')
-#model_BP =convolve_with_passband(model_spec, 'BP')
-#model_RP = convolve_with_passband(model_spec, 'RP')
-
-#Gmag = get_mag(model_G.value, 'G')
-#BPmag = get_mag(model_BP.value, 'BP')
-#RPmag= get_mag(model_RP.value, 'RP')
-#print("Gmag: ", Gmag)
-#print("BPmag: ", BPmag)
-#print("RPmag:", RPmag)
-
-#radius = np.array([0.1, 1, 2, 5, 10])*u.Rsun
-#Gabsmag= distance_modulus(Gmag, (radius.to(u.pc)).value)
-#BPabsmag = distance_modulus(BPmag, (radius.to(u.pc)).value)
-#RPabsmag = distance_modulus(RPmag, (radius.to(u.pc)).value)
-
-#BP_RP = BPabsmag-RPabsmag
-#print "BP_RP", BP_RP
-#print BPmag- RPmag
-
-#plt.scatter(BP_RP, Gabsmag)
-#plt.show()
+def calc_phot_bp_rp_excess(g_flux, bp_flux, rp_flux):
+    """
+    Manual calculation of the 'phot_bp_rp_excess_factor' from the original table
+    
+    """
+    return g_flux/(bp_flux+rp_flux)
 
 
 
-#plt.bar(0,model_G.value, 1, color = 'g')
-#plt.bar(1, model_BP.value, 1, color = 'b')
-#plt.bar(2, model_RP.value, 1, color = 'r')
-#plt.bar(3, (model_BP+model_RP).value, 1,color = 'purple')
-#plt.show()
 ######
 #plt.axhline(y=0, color ='k')
 
