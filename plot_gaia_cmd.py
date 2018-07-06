@@ -28,7 +28,7 @@ parallax_correction = 0.029 #from Lindgren et al 2018
 teff = 7250
 logg = 6.0
 
-
+q= 10.5823898006 #from RV fitting (it's pretty loose)
 #test_radii = np.array([0.01, 0.1, 0.5, 1, 2, 5, 10, 20, 100]) * u.Rsun
 test_radii = np.array([0.01, 0.1, 1, 10]) * u.Rsun
 
@@ -228,6 +228,22 @@ def correct_bp_flux(table, teff= teff, logg=logg):
     return
 
 
+def calc_ns_mass(comp_mass, q=q):
+    return q*comp_mass
+
+def calc_mean_density(mass, radius):
+    return (mass/(4./3 *np.pi*radius**3)).cgs
+#def get_mass(radius, logg=logg):
+    #logg = logg*u.
+    
+def calc_min_period(mass, radius):
+    """
+    Returns the minimum period in hours that a given density star could have. 
+    immediately converted to days though, so it actually returns the value in days
+    """
+    mean_density = calc_mean_density(mass, radius).cgs.value
+    return ((107./mean_density)**2*u.hour).to(u.day)
+
 def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = True):
     mean_flux, flux_dist = get_filter_vals(table, passband_string)
     mag = get_mag(mean_flux, passband_string)
@@ -295,14 +311,27 @@ def get_rad_mass(table, teff=teff, logg=logg, passband_string= 'g', plot_all = F
         plt.title(r"$M_{*}$ calculated from absolute " + passband_string + " magnitude")
         plt.legend()
         plt.show()
-    
+    mean_density = calc_mean_density(mass, radius)
+    mean_density_dist = calc_mean_density(mass_dist, radius_dist)
+    mean_density_err = get_errors(mean_density_dist)
+    ns_mass = calc_ns_mass(mass)
+    ns_mass_dist= calc_ns_mass(mass_dist)
+    ns_mass_err= get_errors(ns_mass_dist)
+    min_period = calc_min_period(mass, radius)
+    min_period_dist= calc_min_period(mass_dist, radius_dist)
+    min_period_err = get_errors(min_period_dist)
+    print(passband_string+ " Abs Mag:", abs_mag[0], "-/+", abs_mag_err[0,0], abs_mag_err[1,0])
     print(passband_string+ " Radius:", radius[0], "-/+", radius_err[0,0], radius_err[1,0])
-    print(passband_string+ " Mass:", mass[0], "-/+", mass_err[0,0],mass_err[1,0])
+    print(passband_string+ " Comp Mass:", mass[0], "-/+", mass_err[0,0],mass_err[1,0])
+    print(passband_string+ " PSR Mass:",ns_mass[0], "-/+", ns_mass_err[0,0],ns_mass_err[1,0])
+    print(passband_string+ " Mean Density:", mean_density[0], "-/+", mean_density_err[0,0], mean_density_err[1,0])
+    print(passband_string+ " Min Period:", min_period[0], "-/+", min_period_err[0,0], min_period_err[1,0])
+
     return radius, mass, radius_dist, mass_dist
 
 
-#def get_mass(radius, logg=logg):
-    #logg = logg*u.
+
+    
     
 try:
     generic_parallax = generic_table ['parallax']+parallax_correction
@@ -428,7 +457,6 @@ def make_density_plot(g_abs, bp_rp):
     #plt.show()
 
 
-
 plt.errorbar(target_bp_rp, target_g_absmag, yerr = target_g_absmag_err, xerr = target_bp_rp_err, marker = '*', markersize = 8, color = 'b', capsize = 4, label = target_label, linestyle = 'none')
 
 #plt.errorbar(other_target_bp_rp, other_target_g_absmag, yerr = other_target_g_absmag_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
@@ -481,7 +509,9 @@ wd=wdatmos.wdmodel(filename='ELM.hdf5')
 teff_array=wd.Teffs
 logg_array = wd.loggs
 
-for teff,logg in zip(teff_array, logg_array):
+#for teff,logg in zip(teff_array, logg_array):
+for logg,teff in zip( logg_array,teff_array):
+
     print("Teff:", teff, "logg:", logg)
     model = wd(Teff = teff , logg = logg)
     target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all= False, verbose= False)
@@ -491,7 +521,10 @@ for teff,logg in zip(teff_array, logg_array):
     sim_target_gabsmag, sim_target_bp_rp = pmc.get_model_CMD_loc(logg= logg, teff= teff, radius =target_g_radius)
     sim_target_gabsmag_dist, sim_target_bp_rp= pmc.get_model_CMD_loc(logg= logg, teff = teff, radius = target_g_radius_dist)
     sim_target_gabsmag_err = get_errors(sim_target_gabsmag_dist)
-    print("G absmag:", sim_target_gabsmag, "-/+", sim_target_gabsmag_err[0,0], sim_target_gabsmag_err[1,0])
+    #print("G absmag:", sim_target_gabsmag, "-/+", sim_target_gabsmag_err[0,0], sim_target_gabsmag_err[1,0])
+    #print("comp_mass:", target_g_mass, "-/+", get_errors(target_g_mass_dist))
+    #print("NS_mass: ", calc_ns_mass(target_g_mass), "-/+", get_errors(calc_ns_mass(target_g_mass_dist)))
+    print("--------------------------")
     plt.errorbar(sim_target_bp_rp, sim_target_gabsmag, yerr= sim_target_gabsmag_err, marker = '*', markersize= 8, color = 'green')
 
         
