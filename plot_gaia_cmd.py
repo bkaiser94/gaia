@@ -66,6 +66,14 @@ zeropoint_dict={"g": [25.6883657251, 0.0017850023],
 #zeropoint_dict={"g": [ 25.7933969562,  0.0017848281],
                 #"bp": [25.3805596387,  0.0013917453], 
                 #"rp": [25.1161276701, 0.001914645] } #AB from Evans et al 2018, the DR2 values [ZP, sigma]
+                
+#extinction coefficients from DR2HRD 2018 Table 1
+#the 0th entry is blank to match the indexing of the table
+c_coeffs= {'g': [0, 0.9761, -0.1704, 0.0086, 0.0011, -0.0438, 0.0013, 0.0094],
+           'bp': [0, 1.1517, -0.0871, -0.0333, 0.0173, -0.0230, 0.0006, 0.0043],
+           'rp': [0, 0.6104, -0.0170, -0.0026, -0.0017, -0.0078, 0.00005,0.0006]}
+                
+
 dtype_list = ['S32', 'float', 'float', 'float', 'float','float', 'float', 'float', 'float', 'float','float', 'float', 'float', 'float', 'float']
 pulsar_list_file = 'Jennings_table2.txt'
 pulsar_list_all = np.genfromtxt(pulsar_list_file, delimiter = '\t', names = True, dtype = dtype_list)
@@ -154,6 +162,16 @@ def get_filter_vals(table, filter_string):
     flux_distribution = get_mc_distribution(phot_mean_flux, phot_mean_flux_error)
     return phot_mean_flux, flux_distribution
 
+
+def get_a_x(bp_rp,  a_0, passband_string = 'g'):
+    """
+    Equation 1 from DR2HRD 2018
+    """
+    c_vals = c_coeffs[passband_string]
+    k_x=1
+    k_x= c_vals[1]+c_vals[2]*bp_rp+c_vals[3]*bp_rp**2+c_vals[4]*bp_rp**3+c_vals[5]*a_0+c_vals[6]*a_0**2+c[7]*bp_rp*a_0
+    a_x = a_0*k_x
+    return a_x
 
 def get_bp_rp(table, plot_all = False, verbose =True):
     bp_mean_flux, bp_dist = get_filter_vals(table, 'bp')
@@ -521,6 +539,7 @@ for logg,teff in zip( logg_array,teff_array):
     sim_target_gabsmag, sim_target_bp_rp = pmc.get_model_CMD_loc(logg= logg, teff= teff, radius =target_g_radius)
     sim_target_gabsmag_dist, sim_target_bp_rp= pmc.get_model_CMD_loc(logg= logg, teff = teff, radius = target_g_radius_dist)
     sim_target_gabsmag_err = get_errors(sim_target_gabsmag_dist)
+    print( "BP-RP:", sim_target_bp_rp)
     #print("G absmag:", sim_target_gabsmag, "-/+", sim_target_gabsmag_err[0,0], sim_target_gabsmag_err[1,0])
     #print("comp_mass:", target_g_mass, "-/+", get_errors(target_g_mass_dist))
     #print("NS_mass: ", calc_ns_mass(target_g_mass), "-/+", get_errors(calc_ns_mass(target_g_mass_dist)))

@@ -34,8 +34,8 @@ distance = 1.56*1000 #pc
 
 radius = 0.1*u.Rsun
 
-#area = 0.725*u.m**2
-area= 1.
+area = 0.725*u.m**2
+#area= 1.
 
 #model_waves = model['w'].data
 #model_flux = model['flux'].data #since we'll be arbitrarily-ish scaling this it won't work.
@@ -55,10 +55,11 @@ zeropoint_dict={"g": [25.6884, 0.0018],
 
 
 dr2_passband_file = 'GaiaDR2_Passbands_ZeroPoints/GaiaDR2_Passbands.dat'
-#dr2_rev_passband_file = 'GaiaDR2_Revised_Passbands_ZeroPoints/GaiaDR2_RevisedPassbands.dat'
+dr2_rev_passband_file = 'GaiaDR2_Revised_Passbands_ZeroPoints/GaiaDR2_RevisedPassbands.dat'
 
 
-dr2_all = np.genfromtxt(dr2_passband_file).T
+#dr2_all = np.genfromtxt(dr2_passband_file).T
+dr2_all = np.genfromtxt(dr2_rev_passband_file).T #I have changed the passbands to use the revised transmission curves
 #rev_all = np.genfromtxt(dr2_rev_passband_file).T
 print(dr2_all.shape)
 wavelengths_dr2 = dr2_all[0]*10 #converted to angstroms
@@ -159,8 +160,8 @@ def convolve_with_passband(input_spec, passband_string):
     photon_energies = get_photon_energy(input_waves)
     input_photons = input_flux/photon_energies
     #print("divided by energy:",  input_photons.unit)
-    #input_photons = input_photons*area #now it's in units of photons/s
-    input_photons = input_photons
+    input_photons = input_photons*area #now it's in units of photons/s
+    #input_photons = input_photons
     #print("times area:",  input_photons.unit)
     #print delta_lambda
     summed_flux = np.sum(input_photons) #photons/s in the telescope
