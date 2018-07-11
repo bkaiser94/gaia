@@ -35,7 +35,9 @@ c_coeffs= {'g': [0, 0.9761, -0.1704, 0.0086, 0.0011, -0.0438, 0.0013, 0.0094],
 def get_reddening(obs_bp_rp, model_bp_rp):
     obs_b_v = convert_colours.find_B_V(obs_bp_rp)
     model_b_v= convert_colours.find_B_V(model_bp_rp)
-    return model_b_v- obs_b_v
+    eb_v= obs_b_v-model_b_v
+    print("E(B-V):", eb_v)
+    return eb_v
 
 def get_a_0(reddening):
     return 3.1*reddening
@@ -48,8 +50,10 @@ def get_a_x(obs_bp_rp,  model_bp_rp,passband_string = 'g'):
     a_0= get_a_0(reddening)
     c_vals = c_coeffs[passband_string]
     k_x=1
-    k_x= c_vals[1]+c_vals[2]*bp_rp+c_vals[3]*bp_rp**2+c_vals[4]*bp_rp**3+c_vals[5]*a_0+c_vals[6]*a_0**2+c[7]*bp_rp*a_0
+    #k_x= c_vals[1]+c_vals[2]*obs_bp_rp+c_vals[3]*obs_bp_rp**2+c_vals[4]*obs_bp_rp**3+c_vals[5]*a_0+c_vals[6]*a_0**2+c_vals[7]*obs_bp_rp*a_0
+    #a_x = a_0*k_x
+    k_x= c_vals[1]+c_vals[2]*model_bp_rp+c_vals[3]*model_bp_rp**2+c_vals[4]*model_bp_rp**3+c_vals[5]*a_0+c_vals[6]*a_0**2+c_vals[7]*model_bp_rp*a_0
     a_x = a_0*k_x
-    return a_x
+    return a_x[0]
 
 

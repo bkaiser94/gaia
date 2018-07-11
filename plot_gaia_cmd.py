@@ -130,8 +130,6 @@ def get_errors(distribution, percent_off = percent_off):
     values for the error bars on the plot
     
     Returns
-    [+ value, - value], so to get the points on the plot where they'd be located you do
-    value + [+ value] , value - [- value]
     [- value, + value], so to get the points on the plot where they'd be located you do
     value - [- value] , value + [- value]
     Basically these are the width of the uncertainty range on either side.
@@ -211,11 +209,17 @@ def calc_min_period(mass, radius):
     mean_density = calc_mean_density(mass, radius).cgs.value
     return ((107./mean_density)**2*u.hour).to(u.day)
 
-def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = True):
+def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = True, use_extinction= False):
     mean_flux, flux_dist = get_filter_vals(table, passband_string)
     mag = get_mag(mean_flux, passband_string)
     mag_dist = get_mag(mean_flux, passband_string )
-    
+    if use_extinction:
+        obs_bp_rp = table['bp_rp']
+        model_bp_rp = pmc.get_model_bp_rp(logg=logg, teff= teff)
+        a_x = gaia_extinction.get_a_x(obs_bp_rp, model_bp_rp, passband_string = passband_string)
+        print("Extinction ", "a_"+passband_string+":", a_x)
+        mag = mag-a_x
+        mag_dist = mag_dist-a_x
     parallax = table['parallax']+parallax_correction
     parallax = parallax*1e-3
     distance = 1./parallax
@@ -246,13 +250,14 @@ def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = Tr
         plt.show()
     return abs_mag, abs_mag_error, abs_mag_dist
 
-def get_rad_mass(table, teff=teff, logg=logg, passband_string= 'g', plot_all = False, verbose= True):
+def get_rad_mass(table, teff=teff, logg=logg, passband_string= 'g', plot_all = False, verbose= True, use_extinction= False):
     """
     Get the radius and mass for a given model when provided with the given absolute magnitude
     for a given band. Return the radius and mass for that absolute magnitude (or distribution) for the
     provided model.
     """
-    abs_mag,abs_mag_err, abs_mag_dist = get_pass_abs_mag(table, plot_all = plot_all, passband_string=passband_string, verbose = verbose)
+    #abs_mag,abs_mag_err, abs_mag_dist = get_pass_abs_mag(table, plot_all = plot_all, passband_string=passband_string, verbose = verbose)
+    abs_mag,abs_mag_err, abs_mag_dist = get_pass_abs_mag(table, plot_all = plot_all, passband_string=passband_string, verbose = verbose, use_extinction= use_extinction)
     radius = pmc.get_radius(abs_mag, teff= teff, logg= logg, passband_string= passband_string)
     mass = (pmc.get_mass(radius, logg)).to(u.Msun)
     radius_dist = pmc.get_radius(abs_mag_dist, teff = teff, logg=logg, passband_string = passband_string)
@@ -320,7 +325,8 @@ except KeyError as error:
 
 
 #target_g_absmag, target_g_absmag_err, target_g_absmag_dist = get_g_abs_mag(target_table, plot_all = True)
-target_g_absmag, target_g_absmag_err, target_g_absmag_dist = get_pass_abs_mag(target_table, plot_all = True, passband_string = 'g')
+#target_g_absmag, target_g_absmag_err, target_g_absmag_dist = get_pass_abs_mag(target_table, plot_all = True, passband_string = 'g')
+target_g_absmag, target_g_absmag_err, target_g_absmag_dist = get_pass_abs_mag(target_table, plot_all = True, passband_string = 'g', use_extinction=True)
 target_bp_rp, target_bp_rp_err= get_bp_rp(target_table, plot_all = True)
 
 #target_g_radius = pmc.get_radius(target_g_absmag, teff= teff, logg= logg, passband_string= 'G')
@@ -333,9 +339,9 @@ target_bp_rp, target_bp_rp_err= get_bp_rp(target_table, plot_all = True)
 #target_g_mass_dist= (pmc.get_mass(target_g_radius_dist, logg)).to(u.Msun)
 #target_g_mass_err = get_errors(target_g_mass_dist)
 
-#target_g_radius, target_g_mass = get_rad_mass(target_g_absmag, logg=logg, teff= teff, passband_string= 'g')
-target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all = True)
-#target_g_radius_dist, target_g_mass_dist = get_rad_mass(target_g_absmag_dist, logg=logg, teff= teff, passband_string= 'g')
+#target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all = True)
+target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all = True, use_extinction=True)
+
 target_g_radius_err = get_errors(target_g_radius_dist)
 target_g_mass_err = get_errors(target_g_mass_dist)
 
@@ -357,7 +363,9 @@ model_g_absmag, model_bp_rp = pmc.get_model_CMD_loc(logg= logg, teff = teff, rad
 
 ###### BP
 
-target_bp_radius, target_bp_mass,target_bp_radius_dist, target_bp_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'bp', plot_all = True)
+#target_bp_radius, target_bp_mass,target_bp_radius_dist, target_bp_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'bp', plot_all = True)
+target_bp_radius, target_bp_mass,target_bp_radius_dist, target_bp_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'bp', plot_all = True, use_extinction= True)
+
 #target_bp_radius_dist, target_bp_mass_dist = get_rad_mass(, logg=logg, teff= teff, passband_string= 'bp')
 target_bp_radius_err = get_errors(target_bp_radius_dist)
 target_bp_mass_err = get_errors(target_bp_mass_dist)
@@ -374,7 +382,9 @@ sim_target_bp_absmag_err = get_errors(sim_target_bp_absmag_dist)
 
 
 
-target_rp_radius, target_rp_mass,target_rp_radius_dist, target_rp_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'rp', plot_all = True)
+#target_rp_radius, target_rp_mass,target_rp_radius_dist, target_rp_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'rp', plot_all = True)
+target_rp_radius, target_rp_mass,target_rp_radius_dist, target_rp_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'rp', plot_all = True, use_extinction=True)
+
 #target_rp_radius_dist, target_rp_mass_dist = get_rad_mass(target_rp_absmag_dist, logg=logg, teff= teff, passband_string= 'rp')
 target_rp_radius_err = get_errors(target_rp_radius_dist)
 target_rp_mass_err = get_errors(target_rp_mass_dist)
@@ -481,8 +491,8 @@ for logg,teff in zip( logg_array,teff_array):
 
     print("Teff:", teff, "logg:", logg)
     model = wd(Teff = teff , logg = logg)
-    target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all= False, verbose= False)
-    #target_g_radius_dist, target_g_mass_dist = get_rad_mass(target_g_absmag_dist, logg=logg, teff= teff, passband_string= 'g')
+    #target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all= False, verbose= False)
+    target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all= False, verbose= False, use_extinction= True)
     target_g_radius_err = get_errors(target_g_radius_dist)
     target_g_mass_err = get_errors(target_g_mass_dist)
     sim_target_gabsmag, sim_target_bp_rp = pmc.get_model_CMD_loc(logg= logg, teff= teff, radius =target_g_radius)
