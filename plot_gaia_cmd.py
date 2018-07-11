@@ -1,5 +1,6 @@
 """
 Created by Ben Kaiser (UNC-Chapel Hill) 2018-06-11
+
 Take tables output by retrieve_data.py and plot them as the color-magnitude diagram of the gaia data
 
 """
@@ -186,44 +187,6 @@ def get_bp_rp(table, plot_all = False, verbose =True):
 
 
 
-def get_g_abs_mag(table, plot_all = False):
-    g_mean_flux, g_dist = get_filter_vals(table, 'g')
-    g_mag = get_mag(g_mean_flux, 'g')
-    g_mag_dist = get_mag(g_dist, 'g')
-    print("g_calc-g_measured", g_mag - table['phot_g_mean_mag'])
-    parallax = table['parallax']+parallax_correction
-    parallax = parallax*1e-3
-    distance = 1./parallax
-    parallax_error = table['parallax_error']*1e-3
-    parallax_dist = get_mc_distribution(parallax, parallax_error)
-    parallax_dist = remove_negative(parallax_dist)
-    if parallax < 0:
-        parallax_median = np.nanmedian(parallax_dist)
-        print("PARALLAX < 0!", parallax, "setting to median of positive distribution:", parallax_median)
-        parallax = parallax_median
-    distance = 1./parallax
-    distance_dist = 1./parallax_dist
-    index_length = distance_dist.shape[0]
-    #print("g_mag_dist.shape", g_mag_dist.shape, "distance_dist.shape", distance_dist.shape)
-    g_mag_dist = g_mag_dist[:index_length]
-    #print("g_mag_dist.shape", g_mag_dist.shape, "distance_dist.shape", distance_dist.shape)
-    g_abs_mag = distance_modulus(g_mag, distance)
-    g_abs_mag_dist = distance_modulus(g_mag_dist, distance_dist)
-    g_abs_mag_error= get_errors(g_abs_mag_dist)
-
-    #extinction= table['a_g_val']
-
-    if plot_all:
-        plt.hist(g_abs_mag_dist, bins=75, normed=1, label = 'MC Distribution', color = 'g')
-        plt.axvline(np.nanmedian(g_abs_mag_dist), color = 'k', linestyle = '--', label = 'Median of MC Dist')
-        plt.axvline(np.nanpercentile(g_abs_mag_dist, 84), color = 'cyan')
-        plt.errorbar(g_abs_mag, 0.5, xerr = g_abs_mag_error, marker = '*', markersize = 8, color = 'b', label = r"$M_G$", capsize = 4)
-        #plt.axvline(x=target_g_absmag, color = 'r', linestyle = ':', label = 'Measured value')
-        plt.xlabel(r'$M_{G}$')
-        #plt.title(target_label)
-        plt.legend()
-        plt.show()
-    return g_abs_mag, g_abs_mag_error, g_abs_mag_dist
 
 #def correct_bp_flux(table, teff= teff, logg=logg):
     #obs_bp_flux, obs_bp_flux_dist = get_filter_vals(table, 'bp')
