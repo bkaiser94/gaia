@@ -1,7 +1,8 @@
 """
 Created by Ben Kaiser (UNC-Chapel Hill) 2018-07-11
 
-This should perform the Gaia colour conversions outlined in Appendix A of Evans et al. 2018 (Photometric content and validation). 
+This should perform the Gaia colour conversions outlined in Appendix A of Evans et al. 2018 (Photometric content 
+and validation). 
 
 The coefficients are taken from Table A.2 of Evans et al. 2018, and the bounds of the fit are contained in Table A.1.
 """
@@ -70,7 +71,7 @@ def find_B_V(input_colour, filter_set = 'Johnson-Cousins',start_colour= 'BP-RP',
     return soln
     
 #find_B_V(0.688)
-find_B_V(0.470)
+#find_B_V(0.470)
 
 
 

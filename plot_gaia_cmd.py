@@ -15,6 +15,7 @@ import scipy.stats as scistats
 import astropy
 
 import passband_model_convolution as pmc
+import gaia_extinction
 import wdatmos
 
 plt.rc('font', size =18)
@@ -66,13 +67,7 @@ zeropoint_dict={"g": [25.6883657251, 0.0017850023],
 #zeropoint_dict={"g": [ 25.7933969562,  0.0017848281],
                 #"bp": [25.3805596387,  0.0013917453], 
                 #"rp": [25.1161276701, 0.001914645] } #AB from Evans et al 2018, the DR2 values [ZP, sigma]
-                
-#extinction coefficients from DR2HRD 2018 Table 1
-#the 0th entry is blank to match the indexing of the table
-c_coeffs= {'g': [0, 0.9761, -0.1704, 0.0086, 0.0011, -0.0438, 0.0013, 0.0094],
-           'bp': [0, 1.1517, -0.0871, -0.0333, 0.0173, -0.0230, 0.0006, 0.0043],
-           'rp': [0, 0.6104, -0.0170, -0.0026, -0.0017, -0.0078, 0.00005,0.0006]}
-                
+ 
 
 dtype_list = ['S32', 'float', 'float', 'float', 'float','float', 'float', 'float', 'float', 'float','float', 'float', 'float', 'float', 'float']
 pulsar_list_file = 'Jennings_table2.txt'
@@ -163,15 +158,6 @@ def get_filter_vals(table, filter_string):
     return phot_mean_flux, flux_distribution
 
 
-def get_a_x(bp_rp,  a_0, passband_string = 'g'):
-    """
-    Equation 1 from DR2HRD 2018
-    """
-    c_vals = c_coeffs[passband_string]
-    k_x=1
-    k_x= c_vals[1]+c_vals[2]*bp_rp+c_vals[3]*bp_rp**2+c_vals[4]*bp_rp**3+c_vals[5]*a_0+c_vals[6]*a_0**2+c[7]*bp_rp*a_0
-    a_x = a_0*k_x
-    return a_x
 
 def get_bp_rp(table, plot_all = False, verbose =True):
     bp_mean_flux, bp_dist = get_filter_vals(table, 'bp')
@@ -239,11 +225,11 @@ def get_g_abs_mag(table, plot_all = False):
         plt.show()
     return g_abs_mag, g_abs_mag_error, g_abs_mag_dist
 
-def correct_bp_flux(table, teff= teff, logg=logg):
-    obs_bp_flux, obs_bp_flux_dist = get_filter_vals(table, 'bp')
-    obs_rp_flux, obs_rp_flux_dist = get_filter_vals(table, 'rp')
+#def correct_bp_flux(table, teff= teff, logg=logg):
+    #obs_bp_flux, obs_bp_flux_dist = get_filter_vals(table, 'bp')
+    #obs_rp_flux, obs_rp_flux_dist = get_filter_vals(table, 'rp')
     
-    return
+    #return
 
 
 def calc_ns_mass(comp_mass, q=q):
