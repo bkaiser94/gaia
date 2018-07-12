@@ -41,6 +41,7 @@ distance = 100
 grid_num = 225
 mc_number = 10000
 percent_off = 34 #1-sigma equivalent
+#percent_off =  #1-sigma equivalent
 
 
 target_label = "PSRJ1435-4715"
@@ -324,20 +325,15 @@ except KeyError as error:
 
 
 
-#target_g_absmag, target_g_absmag_err, target_g_absmag_dist = get_g_abs_mag(target_table, plot_all = True)
-#target_g_absmag, target_g_absmag_err, target_g_absmag_dist = get_pass_abs_mag(target_table, plot_all = True, passband_string = 'g')
-target_g_absmag, target_g_absmag_err, target_g_absmag_dist = get_pass_abs_mag(target_table, plot_all = True, passband_string = 'g', use_extinction=True)
+
+#target_g_absmag, target_g_absmag_err, target_g_absmag_dist = get_pass_abs_mag(target_table, plot_all = True, passband_string = 'g', use_extinction=True)
+#target_bp_rp, target_bp_rp_err= get_bp_rp(target_table, plot_all = True)
+
+target_g_absmag, target_g_absmag_err, target_g_absmag_dist = get_pass_abs_mag(target_table, plot_all = True, passband_string = 'g', use_extinction=False)
 target_bp_rp, target_bp_rp_err= get_bp_rp(target_table, plot_all = True)
 
-#target_g_radius = pmc.get_radius(target_g_absmag, teff= teff, logg= logg, passband_string= 'G')
-#target_g_radius_dist = pmc.get_radius(target_g_absmag_dist, teff= teff, logg= logg, passband_string= 'G')
 
 
-#target_g_radius_err = get_errors(target_g_radius_dist)
-
-#target_g_mass = (pmc.get_mass(target_g_radius, logg)).to(u.Msun)
-#target_g_mass_dist= (pmc.get_mass(target_g_radius_dist, logg)).to(u.Msun)
-#target_g_mass_err = get_errors(target_g_mass_dist)
 
 #target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all = True)
 target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all = True, use_extinction=True)
@@ -351,12 +347,17 @@ sim_target_gabsmag_dist, sim_target_bp_rp= pmc.get_model_CMD_loc(logg= logg, tef
 sim_target_gabsmag_err = get_errors(sim_target_gabsmag_dist)
 
 
+#sim_target_gabsmag, sim_target_bp_rp = pmc.get_model_CMD_loc(logg= logg, teff= teff, radius =target_g_radius)
+#sim_target_gabsmag_dist, sim_target_bp_rp= pmc.get_model_CMD_loc(logg= logg, teff = teff, radius = target_g_radius_dist)
+#sim_target_gabsmag_err = get_errors(sim_target_gabsmag_dist)
+
+
 print("Target Radius:", target_g_radius, "-/+", target_g_radius_err)
 print("Target Mass:", target_g_mass, "-/+", target_g_mass_err)
 
 
 
-model_g_absmag, model_bp_rp = pmc.get_model_CMD_loc(logg= logg, teff = teff, radius = test_radii)
+#model_g_absmag, model_bp_rp = pmc.get_model_CMD_loc(logg= logg, teff = teff, radius = test_radii)
 
 
 ########3 other
@@ -437,25 +438,27 @@ def make_density_plot(g_abs, bp_rp):
 plt.errorbar(target_bp_rp, target_g_absmag, yerr = target_g_absmag_err, xerr = target_bp_rp_err, marker = '*', markersize = 8, color = 'b', capsize = 4, label = target_label, linestyle = 'none')
 
 #plt.errorbar(other_target_bp_rp, other_target_g_absmag, yerr = other_target_g_absmag_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
-#This one \/ \/ \/
-#plt.errorbar(other_target_bp_rp, other_target_g_absmag, yerr = other_target_g_absmag_err, xerr= other_target_bp_rp_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
+####This one \/ \/ \/
+####plt.errorbar(other_target_bp_rp, other_target_g_absmag, yerr = other_target_g_absmag_err, xerr= other_target_bp_rp_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
 
-#plt.errorbar(other_target_bp_rp, other_target_g_absmag, xerr= other_target_bp_rp_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
+####plt.errorbar(other_target_bp_rp, other_target_g_absmag, xerr= other_target_bp_rp_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
 
-#plt.plot(model_bp_rp*np.ones(model_g_absmag.shape[0]), model_g_absmag, marker = '*', markersize= 8, color = 'green', label = "Model spectra at various radii " + str(np.round(test_radii.value, precision))+ " logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
+####plt.plot(model_bp_rp*np.ones(model_g_absmag.shape[0]), model_g_absmag, marker = '*', markersize= 8, color = 'green', label = "Model spectra at various radii " + str(np.round(test_radii.value, precision))+ " logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
 
-plt.plot(sim_target_bp_rp, sim_target_gabsmag, marker = '*', markersize= 8, color = 'green', label = "R_G= "+str(np.round(target_g_radius, precision)[0]) + " M= "+ str(np.round(target_g_mass, precision)[0])+" logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
+plt.errorbar(sim_target_bp_rp, sim_target_gabsmag, yerr = sim_target_gabsmag_err, xerr = target_bp_rp_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = "Corrected", linestyle = 'none')
 
-plt.plot(sim_target_bp_rp, sim_target_bp_absmag, marker = '*', markersize= 8, color = 'cyan', label = "R_BP= "+str(np.round(target_bp_radius, precision)[0]) + " M= "+ str(np.round(target_bp_mass, precision)[0])+" logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
+#plt.plot(sim_target_bp_rp, sim_target_gabsmag, marker = '*', markersize= 8, color = 'green', label = "R_G= "+str(np.round(target_g_radius, precision)[0]) + " M= "+ str(np.round(target_g_mass, precision)[0])+" logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
 
-plt.plot(sim_target_bp_rp, sim_target_rp_absmag, marker = '*', markersize= 8, color = 'magenta', label = "R_RP= "+str(np.round(target_rp_radius, precision)[0]) + " M= "+ str(np.round(target_rp_mass, precision)[0])+" logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
+#plt.plot(sim_target_bp_rp, sim_target_bp_absmag, marker = '*', markersize= 8, color = 'cyan', label = "R_BP= "+str(np.round(target_bp_radius, precision)[0]) + " M= "+ str(np.round(target_bp_mass, precision)[0])+" logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
 
-#plt.plot(model_bp_rp*np.ones(model_g_absmag.shape[0]), model_g_absmag, marker = '*', markersize= 8, color = 'cyan', label = "Model spectra at various radii  logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
-#plt.legend()
+#plt.plot(sim_target_bp_rp, sim_target_rp_absmag, marker = '*', markersize= 8, color = 'magenta', label = "R_RP= "+str(np.round(target_rp_radius, precision)[0]) + " M= "+ str(np.round(target_rp_mass, precision)[0])+" logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
+
+###plt.plot(model_bp_rp*np.ones(model_g_absmag.shape[0]), model_g_absmag, marker = '*', markersize= 8, color = 'cyan', label = "Model spectra at various radii  logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
+###plt.legend()
 
 
 #plt.plot( mass_bp_rp*np.ones(mass_gabsmag.shape[0]), mass_gabsmag,marker = '*', markersize= 8, color = 'magenta', label = "using the mass ratio and surface gravity" + str(logg) + " Teff: " +str(teff), linestyle = 'none')
-plt.legend()
+#plt.legend()
 
 polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(1000,1000), cmap = 'hot', mincnt = 1)
 polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
@@ -465,7 +468,7 @@ counts= np.sqrt(counts)
 polything.set_array(counts)
 polything.autoscale()
 
-plt.title('PSR J1431-4715' + title_suffix)
+#plt.title('PSR J1431-4715' + title_suffix)
 
 plt.ylim([-4, 16])
 
