@@ -1,9 +1,10 @@
 """
 Created by Ben Kaiser (UNC-Chapel Hill)
 
-Plot the DR2 passbands and the "Revised DR2 passbands" for the GAIA mission.
+Calculate the G, G_BP, or G_RP value for a given model spectrum. Also then calculate the radius and mass
+using the model parameters and the Gaia information.
 
-Requires one to already have downloaded the gaia passband files from the gaia website and update the file paths to get to them.
+Requires one to already have downloaded the gaia passband files from the gaia website and update the file paths to get to them. Also need the model spectra files around, obviously.
 
 """
 from __future__ import print_function

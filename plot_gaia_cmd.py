@@ -31,6 +31,8 @@ teff = 7250
 logg = 6.0
 
 q= 10.5823898006 #from RV fitting (it's pretty loose)
+q=10.5823898006
+q_err=0.0531987564067
 #test_radii = np.array([0.01, 0.1, 0.5, 1, 2, 5, 10, 20, 100]) * u.Rsun
 test_radii = np.array([0.01, 0.1, 1, 10]) * u.Rsun
 
@@ -126,6 +128,21 @@ def remove_negative(array, verbose= True):
         print('Removed ' +str(array.shape[0]-output_array.shape[0]) + ' negatives')
     return output_array
 
+def match_sizes(change_array, match_array):
+    """
+    Intended to keep compatibility with an array that has had negatives removed
+    """
+    #if ((type(change_array) == type(np.array([0]))) and (type(match_array) == type(np.array([0])))):
+        #print("type match")
+    try:
+        min_inds = np.nanmin([change_array.shape[0], match_array.shape[0]])
+        
+        return change_array[:min_inds], match_array[:min_inds]
+    except AttributeError:
+        #the inputs aren't actually arrays
+        return change_array, match_array
+    #else:
+        #return change_array, match_array
 def get_errors(distribution, percent_off = percent_off):
     """
     values for the error bars on the plot
@@ -193,8 +210,9 @@ def get_bp_rp(table, plot_all = False, verbose =True):
     
     #return
 
-
+q_dist = get_mc_distribution(q, q_err)
 def calc_ns_mass(comp_mass, q=q):
+    comp_mass, q = match_sizes(comp_mass, q)
     return q*comp_mass
 
 def calc_mean_density(mass, radius):
@@ -288,7 +306,7 @@ def get_rad_mass(table, teff=teff, logg=logg, passband_string= 'g', plot_all = F
     mean_density_dist = calc_mean_density(mass_dist, radius_dist)
     mean_density_err = get_errors(mean_density_dist)
     ns_mass = calc_ns_mass(mass)
-    ns_mass_dist= calc_ns_mass(mass_dist)
+    ns_mass_dist= calc_ns_mass(mass_dist,q=q_dist) #now that we have a distribution for the mass ratio to be as well
     ns_mass_err= get_errors(ns_mass_dist)
     min_period = calc_min_period(mass, radius)
     min_period_dist= calc_min_period(mass_dist, radius_dist)
