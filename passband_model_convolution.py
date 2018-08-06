@@ -36,7 +36,7 @@ distance = 1.56*1000 #pc
 radius = 0.1*u.Rsun
 
 area = 0.725*u.m**2
-#area= 1.
+#area= 1.*u.m**2
 
 #model_waves = model['w'].data
 #model_flux = model['flux'].data #since we'll be arbitrarily-ish scaling this it won't work.
@@ -112,6 +112,7 @@ def get_model_spec(teff= teff, logg= logg):
     wd=wdatmos.wdmodel(filename='ELM.hdf5')
     model = wd(Teff = teff, logg = logg)
     model_waves = model['w'].data
+    
     #model_flux = model['flux'].data #since we'll be arbitrarily-ish scaling this it won't work.
     #model_flux = model['flux'].data/4. #since we'll be arbitrarily-ish scaling this it won't work.
     model_flux =np.pi* model['flux'].data #since we'll be arbitrarily-ish scaling this it won't work.
@@ -136,8 +137,9 @@ def convolve_with_passband(input_spec, passband_string):
                      "bp": dr2_BP_tuple}
     passband_tuple = passband_dict[passband_string]
     input_spec= spt.clean_spectrum(input_spec, np.nanmin(passband_tuple[0]), np.nanmax(passband_tuple[0]), []) #trimming spectrum to wavelengths of the passband
-    interpolator = scinterp.CubicSpline(passband_tuple[0], passband_tuple[1])
-    interpolated_transmission = interpolator(input_spec[0])
+    #interpolator = scinterp.CubicSpline(passband_tuple[0], passband_tuple[1])
+    #interpolated_transmission = interpolator(input_spec[0])
+    interpolated_transmission = np.interp(input_spec[0],passband_tuple[0],passband_tuple[1])
     #plt.plot(input_spec[0], interpolated_transmission, label = passband_string)
     #plt.plot(input_spec[0], input_spec[1]/np.nanmax(input_spec[1]), label = 'data')
     #plt.legend()
@@ -246,9 +248,9 @@ def get_model_absmag(logg= logg, teff= teff, radius = radius, passband_string = 
     model_spec = get_model_spec(logg= logg, teff= teff)
     wavelengths = np.arange(np.nanmin(model_spec[0]), np.nanmax(model_spec[0]), 0.1)
     #fluxes = scinterp.interp1d(wavelengths)
-    #fluxes = np.interp(wavelengths, model_spec[0], model_spec[1])
-    interpolator= scinterp.CubicSpline(model_spec[0], model_spec[1])
-    fluxes = interpolator(wavelengths)
+    fluxes = np.interp(wavelengths, model_spec[0], model_spec[1])
+    #interpolator= scinterp.CubicSpline(model_spec[0], model_spec[1])
+    #fluxes = interpolator(wavelengths)
     model_spec = np.vstack([wavelengths, fluxes])
     model_band_flux =convolve_with_passband(model_spec, passband_string)
     mag = get_mag(model_band_flux.value, passband_string)
@@ -257,18 +259,18 @@ def get_model_absmag(logg= logg, teff= teff, radius = radius, passband_string = 
 
 
 #def get_BB_luminosity(teff=teff, radius=radius):
-    
-
-def get_model_CMD_loc(logg= logg, teff = teff, radius = radius):
-    bp_rp = get_model_bp_rp(logg= logg, teff= teff, radius = radius)
-    g_absmag= get_model_absmag(logg=logg, teff = teff, radius = radius)
-    return g_absmag, bp_rp
 
 def get_mass(radius, logg):
     return 10**(logg)*(u.cm/u.s**2)*radius**2/const.G
 
 def get_radius_from_mass(mass, logg):
     return (np.sqrt(mass*const.G/(10**(logg)* u.cm/u.s**2))).to(u.Rsun)
+
+
+def get_model_CMD_loc(logg= logg, teff = teff, radius = radius):
+    bp_rp = get_model_bp_rp(logg= logg, teff= teff, radius = radius)
+    g_absmag= get_model_absmag(logg=logg, teff = teff, radius = radius)
+    return g_absmag, bp_rp
 
 def calc_phot_bp_rp_excess(g_flux, bp_flux, rp_flux):
     """

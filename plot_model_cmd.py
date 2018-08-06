@@ -1,8 +1,8 @@
 """
-Created by Ben Kaiser (UNC-Chapel Hill) 2018-06-11
+Created by Ben Kaiser (UNC-Chapel Hill) 2018-07-18
 
-Take tables output by retrieve_data.py and plot them as the color-magnitude diagram of the gaia data
-
+Uses the outputs from plot_gaia_cmd.py for the model points to produce curves in the Gaia CMD. The naming
+scheme for these scripts isn't the best...
 """
 from __future__ import print_function
 import numpy as np
@@ -27,38 +27,27 @@ plt.rc('lines', markersize = 5)
 
 
 precision = 2
+#input_filename= 'model_values.csv'
+#input_filename= 'model_values_1,25m.csv'
+#input_filename= 'model_values_1,4m.csv'
 
-#output_filename= 'model_values.csv'
-output_filename= 'model_values_3,4m.csv'
-#output_filename= 'model_values_1,25m.csv'
-#output_filename= 'model_values_1,4m.csv'
-
-
+input_filename= 'model_values_3,4m.csv'
 
 parallax_correction = 0.029 #from Lindgren et al 2018
 #parallax_correction = 0 #so nothing done
+#m_psr = 1.25*u.Msun #Accretion-induced collapse canonical mass
 #m_psr = 1.9* u.Msun
-m_psr = 3.4*u.Msun
-#m_psr = 1.25*u.Msun
-#m_psr= 1.4*u.Msun
-
+#m_psr = 3.4*u.Msun
+m_psr = 1.4 * u.Msun
 #good_teff_range = [6000, 10000]
 good_teff_range = [6000, 14750]
 
 
 axes_x= [-0.7, 5]
-#axes_x= [-0.7, 1]
-#axes_x= [-2, 5]
-
-
 axes_y = [-2,16]
-#axes_y = [-4,18]
-
-#axes_y = [4,8]
-
 #teff = 7250
 #logg = 6.0
-
+bailer_r_vals = np.array([1196.10, 1592.85, 2342.83]) #distance estimates from Bailer-Jones table in pc
 
 teff = 7500
 logg = 5.0
@@ -81,8 +70,6 @@ percent_off = 34 #1-sigma equivalent
 
 
 target_label = "PSRJ1435-4715"
-#target_label = "WD1145"
-
 #other_target_label= "PSRJ1816+4510"
 #other_target_label= "PSRJ1023+0038"
 #other_target_label = "Crab Pulsar"
@@ -90,7 +77,6 @@ other_target_label = "PSRJ1435-6100"
 
 
 target_input = 'target_gaia.csv'
-#target_input= 'WD1145p017.csv'
 #other_target_input = "PSRJ1816p4510_gaia.csv"
 #other_target_input = "PSRJ1023p0038_gaia.csv"
 #other_target_input = "Crab_gaia.csv"
@@ -112,10 +98,6 @@ zeropoint_dict={"g": [25.6883657251, 0.0017850023],
 start_header= "teff, logg, corr_g_absmag, corr_g_absmag_err_lo, corr_g_absmag_err_hi, R_c, R_c_err_lo, R_c_err_hi, m_c, m_c_err_lo, m_c_err_hi, m_psr, m_psr_err_lo, m_psr_err_hi, mean_density, mean_density_err_lo, mean_density_err_hi, P_min, P_min_err_lo, P_min_err_hi"
 
 dtype_list = ['S32', 'float', 'float', 'float', 'float','float', 'float', 'float', 'float', 'float','float', 'float', 'float', 'float', 'float']
-pulsar_list_file = 'Jennings_table2.txt'
-pulsar_list_all = np.genfromtxt(pulsar_list_file, delimiter = '\t', names = True, dtype = dtype_list)
-
-
 
 if num_targs == 'all':
     print('Distance-limited Sample like Figure 6 from DR2HRD')
@@ -139,8 +121,8 @@ else:
 #generic_table = Table.read('top5000_nearby_gaia.csv')
 generic_table = Table.read(generic_input)
 target_table = Table.read(target_input)
-other_target_table = Table.read(other_target_input)
-
+#other_target_table = Table.read(other_target_input)
+model_table = np.genfromtxt(input_filename, names=True, delimiter= ',')
 
 def distance_modulus(g_mag, distance, extinction = 0.0):
     return g_mag - 5*np.log10(distance/10.)
@@ -176,6 +158,8 @@ def match_sizes(change_array, match_array):
         return change_array, match_array
     #else:
         #return change_array, match_array
+        
+        
 def get_errors(distribution, percent_off = percent_off):
     """
     values for the error bars on the plot
@@ -235,14 +219,6 @@ def get_bp_rp(table, plot_all = False, verbose =True):
     return bp_rp, bp_rp_error
 
 
-
-
-#def correct_bp_flux(table, teff= teff, logg=logg):
-    #obs_bp_flux, obs_bp_flux_dist = get_filter_vals(table, 'bp')
-    #obs_rp_flux, obs_rp_flux_dist = get_filter_vals(table, 'rp')
-    
-    #return
-
 q_dist = get_mc_distribution(q, q_err)
 
 def calc_ns_mass(comp_mass, q=q):
@@ -274,23 +250,6 @@ def calc_min_period(mass, radius):
     mean_density = calc_mean_density(mass, radius).cgs.value
     return ((107./mean_density)**2*u.hour).to(u.day)
 
-def get_all_extinctions(table, logg= logg, teff=teff):
-    """
-    Return all each of the A_G values for the target using each of the methods, so they can all be compared.
-    """
-    gmag = table['phot_g_mean_mag']
-    rpmag= table['phot_rp_mean_mag']
-    model_g_absmag= pmc.get_model_absmag(logg = logg, teff= teff, passband_string = 'g')
-    model_rp_absmag= pmc.get_model_absmag(logg= logg, teff = teff, passband_string = 'rp')
-    koester_a_g=gaia_extinction.get_koester_a_g(model_g_absmag, model_rp_absmag, gmag, rpmag)
-    obs_bp_rp = table['bp_rp']
-    model_bp_rp = pmc.get_model_bp_rp(logg=logg, teff= teff)
-    ebv_a_g = gaia_extinction.get_a_x(obs_bp_rp, model_bp_rp, passband_string = 'g')
-    stat_a_g = gaia_extinction.get_statistical_a_g(obs_bp_rp, model_bp_rp)
-    return np.hstack([koester_a_g, ebv_a_g, stat_a_g])
-    
-    
-
 def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = True, use_extinction= False, logg=logg, teff=teff, ext_method = 'B-V', get_extinction = False):
     mean_flux, flux_dist = get_filter_vals(table, passband_string)
     mag = get_mag(mean_flux, passband_string)
@@ -312,10 +271,6 @@ def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = Tr
             model_rp_absmag= pmc.get_model_absmag(logg= logg, teff = teff, passband_string = 'rp')
             a_x=gaia_extinction.get_koester_a_g(model_g_absmag, model_rp_absmag, gmag, rpmag)
             print("Extinction ", "a_"+passband_string+":", a_x[0])
-        elif ext_method == 'statistical':
-            obs_bp_rp = table['bp_rp']
-            model_bp_rp = pmc.get_model_bp_rp(logg=logg, teff= teff)
-            a_x = gaia_extinction.get_statistical_a_g(obs_bp_rp, model_bp_rp)
         mag = mag-a_x
         mag_dist = mag_dist-a_x
     parallax = table['parallax']+parallax_correction
@@ -361,7 +316,7 @@ def get_rad_mass(table, teff=teff, logg=logg, passband_string= 'g', plot_all = F
     
     If photometric, then the radius is computed photometrically
     """
-    #abs_mag,abs_mag_err, abs_mag_dist = get_pass_abs_mag(table, plot_all = plot_all, passband_string=passband_string, verbose = verbose)
+    
     if photometric:
         if get_extinction:
             abs_mag,abs_mag_err, abs_mag_dist, a_x = get_pass_abs_mag(table, plot_all = plot_all, passband_string=passband_string, verbose = verbose, use_extinction= use_extinction, teff= teff, logg=logg, get_extinction= get_extinction)
@@ -397,16 +352,10 @@ def get_rad_mass(table, teff=teff, logg=logg, passband_string= 'g', plot_all = F
             abs_mag,abs_mag_err, abs_mag_dist, a_x = get_pass_abs_mag(table, plot_all = plot_all, passband_string=passband_string, verbose = verbose, use_extinction= use_extinction, teff= teff, logg=logg, ext_method= 'MG-MRP', get_extinction= get_extinction)
         else:
             abs_mag,abs_mag_err, abs_mag_dist = get_pass_abs_mag(table, plot_all = plot_all, passband_string=passband_string, verbose = verbose, use_extinction= use_extinction, teff= teff, logg=logg, ext_method= 'MG-MRP', get_extinction= get_extinction)
-        #radius = pmc.get_radius(abs_mag, teff= teff, logg= logg, passband_string= passband_string)
-        #mass = (pmc.get_mass(radius, logg)).to(u.Msun)
-        #mass = get_comp_mass()
-        #mass_dist= get_comp_mass(q=q_dist)
         mass = get_comp_mass(m_psr= m_psr)
         mass_dist= get_comp_mass(q=q_dist, m_psr= m_psr)
         radius = pmc.get_radius_from_mass(mass, logg)
         radius_dist= pmc.get_radius_from_mass(mass_dist, logg)
-        #radius_dist = pmc.get_radius(abs_mag_dist, teff = teff, logg=logg, passband_string = passband_string)
-        #mass_dist = (pmc.get_mass(radius_dist, logg)).to(u.Msun)
         radius_err = get_errors(radius_dist)
         mass_err= get_errors(mass_dist)
         if plot_all:
@@ -484,23 +433,24 @@ except KeyError as error:
 
 
 
-
-#target_g_absmag, target_g_absmag_err, target_g_absmag_dist = get_pass_abs_mag(target_table, plot_all = True, passband_string = 'g', use_extinction=True)
-#target_bp_rp, target_bp_rp_err= get_bp_rp(target_table, plot_all = True)
-
-target_g_absmag, target_g_absmag_err, target_g_absmag_dist = get_pass_abs_mag(target_table, plot_all = True, passband_string = 'g', use_extinction=False)
-ptarget_g_absmag, ptarget_g_absmag_err, ptarget_g_absmag_dist = get_pass_abs_mag(target_table, plot_all = True, passband_string = 'g', use_extinction=True)
+target_g_absmag, target_g_absmag_err, target_g_absmag_dist = get_pass_abs_mag(target_table, plot_all = False, passband_string = 'g', use_extinction=False)
+ptarget_g_absmag, ptarget_g_absmag_err, ptarget_g_absmag_dist = get_pass_abs_mag(target_table, plot_all = False, passband_string = 'g', use_extinction=True)
 print("raw Abs Mag:", target_g_absmag[0], "-/+", target_g_absmag_err[0,0], target_g_absmag_err[1,0])
 print("ext corr Abs Mag:", ptarget_g_absmag[0], "-/+", ptarget_g_absmag_err[0,0], ptarget_g_absmag_err[1,0])
 target_bp_rp, target_bp_rp_err= get_bp_rp(target_table, plot_all = True)
 
 
+#########3 Calculation with Bailer-Jones values
+target_g_flux, target_g_flux_dist = get_filter_vals(target_table, 'g')
+target_g_mag = get_mag(target_g_flux, 'g')
+#target_g_mag= target_table['phot_g_mean_mag']
+bailer_g_absmags= distance_modulus(target_g_mag, bailer_r_vals)
+print("bailer_g_absmags:", bailer_g_absmags)
+bailer_errors= np.array([[bailer_g_absmags[1]-bailer_g_absmags[2]], [bailer_g_absmags[0]-bailer_g_absmags[1]]])
 
+#################3
 
-#target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all = True)
-#target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all = True, use_extinction=True)
-#target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist, tossaway_element = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all = True, use_extinction=True)
-target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist, tossaway_element, nothing_header = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all = True, use_extinction=True)
+target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist, tossaway_element, nothing_header = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all = False, use_extinction=True)
 
 
 target_g_radius_err = get_errors(target_g_radius_dist)
@@ -512,76 +462,10 @@ sim_target_gabsmag_dist, sim_target_bp_rp= pmc.get_model_CMD_loc(logg= logg, tef
 sim_target_gabsmag_err = get_errors(sim_target_gabsmag_dist)
 
 
-#sim_target_gabsmag, sim_target_bp_rp = pmc.get_model_CMD_loc(logg= logg, teff= teff, radius =target_g_radius)
-#sim_target_gabsmag_dist, sim_target_bp_rp= pmc.get_model_CMD_loc(logg= logg, teff = teff, radius = target_g_radius_dist)
-#sim_target_gabsmag_err = get_errors(sim_target_gabsmag_dist)
-
 
 print("Target Radius:", target_g_radius, "-/+", target_g_radius_err)
 print("Target Mass:", target_g_mass, "-/+", target_g_mass_err)
 
-
-
-#model_g_absmag, model_bp_rp = pmc.get_model_CMD_loc(logg= logg, teff = teff, radius = test_radii)
-
-
-########3 other
-
-###### BP
-
-#target_bp_radius, target_bp_mass,target_bp_radius_dist, target_bp_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'bp', plot_all = True)
-#target_bp_radius, target_bp_mass,target_bp_radius_dist, target_bp_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'bp', plot_all = True, use_extinction= True)
-target_bp_radius, target_bp_mass,target_bp_radius_dist, target_bp_mass_dist, tossaway_element, nothing_header = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'bp', plot_all = True, use_extinction= True)
-
-
-#target_bp_radius_dist, target_bp_mass_dist = get_rad_mass(, logg=logg, teff= teff, passband_string= 'bp')
-target_bp_radius_err = get_errors(target_bp_radius_dist)
-target_bp_mass_err = get_errors(target_bp_mass_dist)
-
-print("Target Radius bp:", target_bp_radius, "-/+", target_bp_radius_err)
-print("Target Mass bp:", target_bp_mass, "-/+", target_bp_mass_err)
-
-
-sim_target_bp_absmag, sim_target_bp_rp = pmc.get_model_CMD_loc(logg= logg, teff= teff, radius =target_bp_radius)
-sim_target_bp_absmag_dist, sim_target_bp_rp= pmc.get_model_CMD_loc(logg= logg, teff = teff, radius = target_bp_radius_dist)
-sim_target_bp_absmag_err = get_errors(sim_target_bp_absmag_dist)
-
-#####3 RP
-
-
-
-#target_rp_radius, target_rp_mass,target_rp_radius_dist, target_rp_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'rp', plot_all = True)
-#target_rp_radius, target_rp_mass,target_rp_radius_dist, target_rp_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'rp', plot_all = True, use_extinction=True)
-target_rp_radius, target_rp_mass,target_rp_radius_dist, target_rp_mass_dist, tossaway_element, nothing_header = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'rp', plot_all = True, use_extinction=True)
-
-#target_rp_radius_dist, target_rp_mass_dist = get_rad_mass(target_rp_absmag_dist, logg=logg, teff= teff, passband_string= 'rp')
-target_rp_radius_err = get_errors(target_rp_radius_dist)
-target_rp_mass_err = get_errors(target_rp_mass_dist)
-
-print("Target Radius rp:", target_rp_radius, "-/+", target_rp_radius_err)
-print("Target Mass rp:", target_rp_mass, "-/+", target_rp_mass_err)
-
-
-sim_target_rp_absmag, sim_target_bp_rp = pmc.get_model_CMD_loc(logg= logg, teff= teff, radius =target_rp_radius)
-sim_target_rp_absmag_dist, sim_target_bp_rp= pmc.get_model_CMD_loc(logg= logg, teff = teff, radius = target_rp_radius_dist)
-sim_target_rp_absmag_err = get_errors(sim_target_rp_absmag_dist)
-
-
-
-################
-#other_target_g_absmag, other_target_g_absmag_err, other_target_g_absmag_dist= get_g_abs_mag(other_target_table, plot_all = True)
-#other_target_bp_rp, other_target_bp_rp_err = get_bp_rp(other_target_table, plot_all = True)
-###################
-
-
-#plt.hist(other_target_g_absmag_dist, bins=75, normed=1, label = 'MC Distribution', color = 'g')
-#plt.axvline(np.nanmedian(other_target_g_absmag_dist), color = 'k', linestyle = '--', label = 'Median of MC Dist')
-#plt.errorbar( other_target_g_absmag, 0.5, xerr = other_target_g_absmag_err, marker = '*', markersize = 8, color = 'b', label = 'Measured value', capsize = 4, linestyle = 'none')
-##plt.axvline(x=target_g_absmag, color = 'r', linestyle = ':', label = 'Measured value')
-#plt.xlabel(r'$M_G$')
-#plt.title(other_target_label)
-#plt.legend()
-#plt.show()
 
 
 ####### 
@@ -602,39 +486,14 @@ def make_density_plot(g_abs, bp_rp):
     #plt.show()
     #plt.show()
 
+plt.errorbar(target_bp_rp, bailer_g_absmags[1], yerr = bailer_errors, xerr = target_bp_rp_err, marker = '*', markersize = 8, color = 'm', capsize = 4, label = "Bailer-Jones distances", linestyle = 'none')
 
-#the main point
 plt.errorbar(target_bp_rp, target_g_absmag, yerr = target_g_absmag_err, xerr = target_bp_rp_err, marker = '*', markersize = 8, color = 'b', capsize = 4, label = target_label, linestyle = 'none')
-
-#plt.errorbar(other_target_bp_rp, other_target_g_absmag, yerr = other_target_g_absmag_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
-####This one \/ \/ \/
-####plt.errorbar(other_target_bp_rp, other_target_g_absmag, yerr = other_target_g_absmag_err, xerr= other_target_bp_rp_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
-
-####plt.errorbar(other_target_bp_rp, other_target_g_absmag, xerr= other_target_bp_rp_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
-
-####plt.plot(model_bp_rp*np.ones(model_g_absmag.shape[0]), model_g_absmag, marker = '*', markersize= 8, color = 'green', label = "Model spectra at various radii " + str(np.round(test_radii.value, precision))+ " logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
 
 plt.errorbar(sim_target_bp_rp, sim_target_gabsmag, yerr = sim_target_gabsmag_err, xerr = target_bp_rp_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = "Corrected", linestyle = 'none')
 
-#plt.plot(sim_target_bp_rp, sim_target_gabsmag, marker = '*', markersize= 8, color = 'green', label = "R_G= "+str(np.round(target_g_radius, precision)[0]) + " M= "+ str(np.round(target_g_mass, precision)[0])+" logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
-
-#plt.plot(sim_target_bp_rp, sim_target_bp_absmag, marker = '*', markersize= 8, color = 'cyan', label = "R_BP= "+str(np.round(target_bp_radius, precision)[0]) + " M= "+ str(np.round(target_bp_mass, precision)[0])+" logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
-
-#plt.plot(sim_target_bp_rp, sim_target_rp_absmag, marker = '*', markersize= 8, color = 'magenta', label = "R_RP= "+str(np.round(target_rp_radius, precision)[0]) + " M= "+ str(np.round(target_rp_mass, precision)[0])+" logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
-
-###plt.plot(model_bp_rp*np.ones(model_g_absmag.shape[0]), model_g_absmag, marker = '*', markersize= 8, color = 'cyan', label = "Model spectra at various radii  logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
-###plt.legend()
-
-
-#plt.plot( mass_bp_rp*np.ones(mass_gabsmag.shape[0]), mass_gabsmag,marker = '*', markersize= 8, color = 'magenta', label = "using the mass ratio and surface gravity" + str(logg) + " Teff: " +str(teff), linestyle = 'none')
-##plt.legend()
-#make_density_plot( generic_g_absmag,generic_bp_rp)
-#plt.gca().invert_yaxis()
-
-#plt.show()
-
 polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(1000,1000), cmap = 'hot', mincnt = 1)
-polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
+polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1)
 counts = polything.get_array()
 print(counts.shape)
 counts= np.sqrt(counts)
@@ -651,7 +510,7 @@ plt.xlabel(r'$G_{BP} - G_{RP}$')
 #plt.xlim([-1,5])
 plt.xlim(axes_x)
 plt.ylabel(r'$M_G$')
-#plt.legend()
+plt.legend()
 plt.subplots_adjust(wspace = 0, hspace = 0, top = 0.90, bottom = 0.10, left = 0.10, right = 0.90)
 plt.show()
 
@@ -667,79 +526,67 @@ logg_array = wd.loggs
 #for teff,logg in zip(teff_array, logg_array):
 teffs_written = []
 teffs_wanted = np.arange(good_teff_range[0], good_teff_range[1]+1000, 1000)
+#teff_point = 6000
+teff_point = 14750
+
 loggs_written = []
 loggs_wanted= np.arange(3, 7, 1)
 output_list= []
-#model_Rc=[]
-#model_Rc_lo=[]
-#model_Rc_hi=[]
-#model_Mc_lo=[]
-#model_Mc_hi
-#model_Mpsr=[]
-#model_Mpsr_lo=[]
+def retrieve_model_vals(column_string, model_table = model_table):
+    main_val= model_table[column_string]
+    low_string= column_string+"_err_lo"
+    hi_string= column_string + "_err_hi"
+    #going to need this to be a try-except statement, but I don't know what the error is yet off the top.
+    low_err = model_table[low_string]
+    hi_err= model_table[hi_string]
+    errs = np.hstack([low_err, hi_err])
+    return main_val, errs
 
-#model_
-for logg,teff in zip( logg_array,teff_array):
-
-    print("Teff:", teff, "logg:", logg)
-    model = wd(Teff = teff , logg = logg)
-    #target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all= False, verbose= False)
-    #target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all= False, verbose= False, use_extinction= True)
-    #target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all= False, verbose= False, use_extinction= True, photometric= False)
-    target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist, output_element, output_header = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all= False, verbose= False, use_extinction= True, photometric= False, get_extinction=True)
-
-    #target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all= False, verbose= False, use_extinction= False)
-
-    target_g_radius_err = get_errors(target_g_radius_dist)
-    target_g_mass_err = get_errors(target_g_mass_dist)
-    sim_target_gabsmag, sim_target_bp_rp = pmc.get_model_CMD_loc(logg= logg, teff= teff, radius =target_g_radius)
-    sim_target_gabsmag_dist, sim_target_bp_rp= pmc.get_model_CMD_loc(logg= logg, teff = teff, radius = target_g_radius_dist)
-    sim_target_gabsmag_err = get_errors(sim_target_gabsmag_dist)
+def plot_logg_curve(logg):
+    trimmed_model_vals= model_table[np.where(model_table['logg']==logg)]
+    model_g_absmag, model_g_absmag_err= retrieve_model_vals('model_g_absmag', model_table = trimmed_model_vals)
+    model_bp_rp = trimmed_model_vals['model_bp_rp']
+    corr_g_absmag, corr_g_absmag_err= retrieve_model_vals('corr_g_absmag', model_table = trimmed_model_vals)
     try:
-        print("Model g Abs Mag:", sim_target_gabsmag[0], "-/+", sim_target_gabsmag_err[0,0], sim_target_gabsmag_err[1,0])
+        pointypoint= [model_bp_rp[np.where(trimmed_model_vals['teff'] == teff_point)][0], model_g_absmag[np.where(trimmed_model_vals['teff'] == teff_point)][0]]
+        print("pointypoint", pointypoint)
+        plt.plot(model_bp_rp, model_g_absmag, color= 'g', linewidth = 4, alpha = 0.5)
+        plt.errorbar(model_bp_rp, corr_g_absmag, color= 'b', linewidth = 2, alpha = 0.5) #this is where the blue line gets plotted
+        raw_g_absmag= corr_g_absmag+trimmed_model_vals['A_g']
+        stat_g_absmag = raw_g_absmag- trimmed_model_vals['a_g_stat']
+        ebv_g_absmag= raw_g_absmag - trimmed_model_vals['a_g_e_b_v']
+        plt.plot(model_bp_rp, stat_g_absmag, color = 'r', label = 'statistical extinction', alpha = 0.5, linewidth = 2)
+        plt.plot(model_bp_rp, ebv_g_absmag, color = 'm', label = 'E(B-V) extinction', alpha = 0.5, linewidth = 2)
+        #plt.annotate( "log(g)="+ str(logg), xy= (pointypoint[0], pointypoint[1]), xycoords = 'data', xytext = (pointypoint[0] +2,pointypoint[1]-2), arrowprops=dict(facecolor='black', shrink=0.05))
+        plt.text(pointypoint[0], pointypoint[1], "log(g)="+ str(logg), ha= 'right', fontsize= 12)
     except IndexError:
-        print("Model g Abs Mag:", sim_target_gabsmag, "-/+", sim_target_gabsmag_err[0,0], sim_target_gabsmag_err[1,0])
-    new_element= np.hstack([sim_target_gabsmag, sim_target_gabsmag_err.T[0], sim_target_bp_rp])
-    extinction_values = get_all_extinctions(target_table, logg=logg, teff=teff)
-    #total_element= np.hstack([output_element, new_element])
-    total_element= np.hstack([output_element, new_element, extinction_values])
-    output_list.append(total_element)
-    print( "BP-RP:", sim_target_bp_rp)
-    #print("G absmag:", sim_target_gabsmag, "-/+", sim_target_gabsmag_err[0,0], sim_target_gabsmag_err[1,0])
-    #print("comp_mass:", target_g_mass, "-/+", get_errors(target_g_mass_dist))
-    #print("NS_mass: ", calc_ns_mass(target_g_mass), "-/+", get_errors(calc_ns_mass(target_g_mass_dist)))
-    print("--------------------------")
-    #if ((teff.value >= good_teff_range[0]) and (teff.value <= good_teff_range[1])):
-        #plt.errorbar(sim_target_bp_rp, sim_target_gabsmag, yerr= sim_target_gabsmag_err, marker = '*', markersize= 8, color = 'green')
-        ##if ((int(teff.value) not in teffs_written) and (int(teff.value) in teffs_wanted)):
-        #if ((int(teff.value) not in teffs_written) and (int(teff.value) in teffs_wanted) and (logg == 5.0)):
-            ##plt.text(sim_target_bp_rp, sim_target_gabsmag, str(teff.value)+"K", rotation = 45, horizontalalignment = 'center', verticalalignment= 'center')
-            #if teff.value == 10000:
-                #plt.annotate( str(teff.value)+"K", xy= (sim_target_bp_rp, sim_target_gabsmag), xycoords = 'data', xytext = (sim_target_bp_rp - 0.5, sim_target_gabsmag +1), rotation = 45, arrowprops=dict(facecolor='black', shrink=0.05))
-            #else:
-                #plt.annotate( str(teff.value)+"K", xy= (sim_target_bp_rp, sim_target_gabsmag), xycoords = 'data', xytext = (sim_target_bp_rp - 0.5, sim_target_gabsmag +2), rotation = 45, arrowprops=dict(facecolor='black', shrink=0.05))
-            #teffs_written.append(int(teff.value))
-    if ((teff.value >= good_teff_range[0]) and (teff.value <= good_teff_range[1])):
-        plt.errorbar(sim_target_bp_rp, sim_target_gabsmag, yerr= sim_target_gabsmag_err, marker = '*', markersize= 8, color = 'green')
-        #if ((int(teff.value) not in teffs_written) and (int(teff.value) in teffs_wanted)):
-        if ((logg not in loggs_written) and (logg in loggs_wanted) and (teff.value== teffs_wanted.min())):
-            #plt.text(sim_target_bp_rp, sim_target_gabsmag, str(teff.value)+"K", rotation = 45, horizontalalignment = 'center', verticalalignment= 'center')
-            #if teff.value == 10000:
-                #plt.annotate( str(teff.value)+"K", xy= (sim_target_bp_rp, sim_target_gabsmag), xycoords = 'data', xytext = (sim_target_bp_rp - 0.5, sim_target_gabsmag +1), rotation = 45, arrowprops=dict(facecolor='black', shrink=0.05))
-            #plt.annotate( "log(g)="+ str(logg), xy= (sim_target_bp_rp, sim_target_gabsmag), xycoords = 'data', xytext = (sim_target_bp_rp - 0.6, sim_target_gabsmag), arrowprops=dict(facecolor='black', shrink=0.05))
-            plt.annotate( "log(g)="+ str(logg), xy= (sim_target_bp_rp, sim_target_gabsmag), xycoords = 'data', xytext = (sim_target_bp_rp +2, sim_target_gabsmag-2), arrowprops=dict(facecolor='black', shrink=0.05))
-            loggs_written.append(logg)
+        pass
+    return
 
-output_header= output_header+ ", model_g_absmag, model_g_absmag_err_lo, model_g_absmag_err_hi, model_bp_rp"
+def plot_corr_target(logg):
+    trimmed_model_vals= model_table[np.where(model_table['logg']==logg)]
+    corr_g_absmag, corr_g_absmag_err= retrieve_model_vals('corr_g_absmag', model_table = trimmed_model_vals)
+    model_bp_rp = trimmed_model_vals['model_bp_rp']
+    corr_g_absmag, corr_g_absmag_err= retrieve_model_vals('corr_g_absmag', model_table = trimmed_model_vals)
+    try:
+        pointypoint= [model_bp_rp[np.where(trimmed_model_vals['teff'] == teff_point)][0], model_g_absmag[np.where(trimmed_model_vals['teff'] == teff_point)][0]]
+        print("pointypoint", pointypoint)
+        plt.plot(model_bp_rp, model_g_absmag, color= 'g', linewidth = 4, alpha = 0.5)
+        plt.errorbar(model_bp_rp, corr_g_absmag, color= 'b', linewidth = 4, alpha = 0.5)
+        #plt.annotate( "log(g)="+ str(logg), xy= (pointypoint[0], pointypoint[1]), xycoords = 'data', xytext = (pointypoint[0] +2,pointypoint[1]-2), arrowprops=dict(facecolor='black', shrink=0.05))
+        plt.text(pointypoint[0], pointypoint[1], "log(g)="+ str(logg), ha= 'right', fontsize= 12)
+    except IndexError:
+        pass
+    return
 
-output_header = output_header + ', a_g_koester, a_g_e_b_v, a_g_stat'
-output_array = np.array(output_list)
-np.savetxt(output_filename, output_array, delimiter= ',', header= output_header)
-plt.errorbar(target_bp_rp, target_g_absmag, yerr = target_g_absmag_err, xerr = target_bp_rp_err, marker = '*', markersize = 12, color = 'b', capsize = 4, label = target_label, linestyle = 'none')
+for logg in loggs_wanted:
+    plot_logg_curve(logg)
+
+plt.errorbar(target_bp_rp, target_g_absmag, yerr = target_g_absmag_err, xerr = target_bp_rp_err, marker = '*', markersize = 16, color = 'b', capsize = 4, label = target_label, linestyle = 'none')
 
 
 
-
+plt.errorbar(sim_target_bp_rp, ptarget_g_absmag, yerr = ptarget_g_absmag_err, xerr = target_bp_rp_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = "Corrected", linestyle = 'none')
 
 
 
@@ -764,7 +611,7 @@ plt.xlabel(r'$G_{BP} - G_{RP}$')
 #plt.xlim([-1,5])
 plt.xlim(axes_x)
 plt.ylabel(r'$M_G$')
-#plt.legend()
+plt.legend()
 plt.subplots_adjust(wspace = 0, hspace = 0, top = 0.90, bottom = 0.10, left = 0.10, right = 0.90)
 plt.show()
 

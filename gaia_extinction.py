@@ -32,6 +32,11 @@ c_coeffs= {'g': [0, 0.9761, -0.1704, 0.0086, 0.0011, -0.0438, 0.0013, 0.0094],
            'bp': [0, 1.1517, -0.0871, -0.0333, 0.0173, -0.0230, 0.0006, 0.0043],
            'rp': [0, 0.6104, -0.0170, -0.0026, -0.0017, -0.0078, 0.00005,0.0006]}
 
+
+r_g_statistical= 2.02 #from 2.5' radius around PSRJ1431-4715; this is the median value
+#This should probably be updated in the future to query the area around a target to calculate these statistics themselves
+
+
 def get_reddening(obs_bp_rp, model_bp_rp):
     obs_b_v = convert_colours.find_B_V(obs_bp_rp)
     model_b_v= convert_colours.find_B_V(model_bp_rp)
@@ -56,4 +61,14 @@ def get_a_x(obs_bp_rp,  model_bp_rp,passband_string = 'g'):
     a_x = a_0*k_x
     return a_x[0]
 
+def get_koester_a_g(model_gabsmag, model_rpabsmag, obs_gabsmag, obs_rpabsmag):
+    obs_g_rp= obs_gabsmag- obs_rpabsmag
+    model_g_rp= model_gabsmag-model_rpabsmag
+    print("Obs G-RP:", obs_g_rp[0])
+    print("Model G-RP:", model_g_rp)
+    #return 3.1*((model_gabsmag-model_rpabsmag)-(obs_gabsmag- obs_rpabsmag))
+    return 3.1*(obs_g_rp- model_g_rp)
 
+
+def get_statistical_a_g(obs_bp_rp, model_bp_rp):
+    return r_g_statistical* (obs_bp_rp-model_bp_rp)
