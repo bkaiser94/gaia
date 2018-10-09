@@ -31,8 +31,8 @@ precision = 2
 #input_filename= 'model_values_1,25m.csv'
 #input_filename= 'model_values_1,4m.csv'
 
-input_filename= 'model_values_3,4m.csv'
-
+#input_filename= 'model_values_3,4m.csv'
+input_filename= 'model_values_1,4m_photo.csv'
 parallax_correction = 0.029 #from Lindgren et al 2018
 #parallax_correction = 0 #so nothing done
 #m_psr = 1.25*u.Msun #Accretion-induced collapse canonical mass
@@ -551,12 +551,14 @@ def plot_logg_curve(logg):
         pointypoint= [model_bp_rp[np.where(trimmed_model_vals['teff'] == teff_point)][0], model_g_absmag[np.where(trimmed_model_vals['teff'] == teff_point)][0]]
         print("pointypoint", pointypoint)
         plt.plot(model_bp_rp, model_g_absmag, color= 'g', linewidth = 4, alpha = 0.5)
-        plt.errorbar(model_bp_rp, corr_g_absmag, color= 'b', linewidth = 2, alpha = 0.5) #this is where the blue line gets plotted
+        #plt.errorbar(model_bp_rp, corr_g_absmag, color= 'b', linewidth = 2, alpha = 0.5) #this is where the blue line gets plotted
         raw_g_absmag= corr_g_absmag+trimmed_model_vals['A_g']
         stat_g_absmag = raw_g_absmag- trimmed_model_vals['a_g_stat']
         ebv_g_absmag= raw_g_absmag - trimmed_model_vals['a_g_e_b_v']
+        koester_g_absmag = raw_g_absmag - trimmed_model_vals['a_g_koester']
         plt.plot(model_bp_rp, stat_g_absmag, color = 'r', label = 'statistical extinction', alpha = 0.5, linewidth = 2)
         plt.plot(model_bp_rp, ebv_g_absmag, color = 'm', label = 'E(B-V) extinction', alpha = 0.5, linewidth = 2)
+        plt.plot(model_bp_rp, koester_g_absmag, color = 'b', label = 'Koester extinction', alpha = 0.5, linewidth = 2)
         #plt.annotate( "log(g)="+ str(logg), xy= (pointypoint[0], pointypoint[1]), xycoords = 'data', xytext = (pointypoint[0] +2,pointypoint[1]-2), arrowprops=dict(facecolor='black', shrink=0.05))
         plt.text(pointypoint[0], pointypoint[1], "log(g)="+ str(logg), ha= 'right', fontsize= 12)
     except IndexError:

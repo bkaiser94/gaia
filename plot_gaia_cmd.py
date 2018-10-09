@@ -29,30 +29,40 @@ plt.rc('lines', markersize = 5)
 precision = 2
 
 #output_filename= 'model_values.csv'
-output_filename= 'model_values_3,4m.csv'
+#output_filename= 'model_values_3,4m.csv'
 #output_filename= 'model_values_1,25m.csv'
 #output_filename= 'model_values_1,4m.csv'
+output_filename= 'model_values_1,4m_photo_koester.csv'
+
+#m_psr = 1.9* u.Msun
+#m_psr = 3.4*u.Msun
+#m_psr = 1.25*u.Msun
+m_psr= 1.4*u.Msun
+
+#ext_method = 'B-V'
+#ext_method = 'statistical'
+ext_method=  'MG-MRP'
 
 
 
 parallax_correction = 0.029 #from Lindgren et al 2018
 #parallax_correction = 0 #so nothing done
-#m_psr = 1.9* u.Msun
-m_psr = 3.4*u.Msun
-#m_psr = 1.25*u.Msun
-#m_psr= 1.4*u.Msun
+
 
 #good_teff_range = [6000, 10000]
 good_teff_range = [6000, 14750]
 
 
-axes_x= [-0.7, 5]
-#axes_x= [-0.7, 1]
+#axes_x= [-0.7, 5]
+axes_x= [-0.7, 2]
 #axes_x= [-2, 5]
 
 
-axes_y = [-2,16]
+#axes_y = [-2,16]
 #axes_y = [-4,18]
+#axes_y = [9,12]
+axes_y= [9,16]
+
 
 #axes_y = [4,8]
 
@@ -74,7 +84,10 @@ num_targs = 'all'
 distance = 100
 #distance = 25
 #grid_num = 220
-grid_num = 225
+#grid_num = 225
+#grid_num = 500
+grid_num =1000
+
 mc_number = 10000
 percent_off = 34 #1-sigma equivalent
 #percent_off =  #1-sigma equivalent
@@ -353,7 +366,7 @@ def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = Tr
     else:
         return abs_mag, abs_mag_error, abs_mag_dist
 
-def get_rad_mass(table, teff=teff, logg=logg, passband_string= 'g', plot_all = False, verbose= True, use_extinction= False, photometric= True, get_extinction = False):
+def get_rad_mass(table, teff=teff, logg=logg, passband_string= 'g', plot_all = False, verbose= True, use_extinction= False, photometric= True, get_extinction = False, ext_method = 'B-V'):
     """
     Get the radius and mass for a given model when provided with the given absolute magnitude
     for a given band. Return the radius and mass for that absolute magnitude (or distribution) for the
@@ -364,9 +377,9 @@ def get_rad_mass(table, teff=teff, logg=logg, passband_string= 'g', plot_all = F
     #abs_mag,abs_mag_err, abs_mag_dist = get_pass_abs_mag(table, plot_all = plot_all, passband_string=passband_string, verbose = verbose)
     if photometric:
         if get_extinction:
-            abs_mag,abs_mag_err, abs_mag_dist, a_x = get_pass_abs_mag(table, plot_all = plot_all, passband_string=passband_string, verbose = verbose, use_extinction= use_extinction, teff= teff, logg=logg, get_extinction= get_extinction)
+            abs_mag,abs_mag_err, abs_mag_dist, a_x = get_pass_abs_mag(table, plot_all = plot_all, passband_string=passband_string, verbose = verbose, use_extinction= use_extinction, teff= teff, logg=logg, get_extinction= get_extinction, ext_method= ext_method)
         else:
-            abs_mag,abs_mag_err, abs_mag_dist = get_pass_abs_mag(table, plot_all = plot_all, passband_string=passband_string, verbose = verbose, use_extinction= use_extinction, teff= teff, logg=logg, get_extinction= get_extinction)
+            abs_mag,abs_mag_err, abs_mag_dist = get_pass_abs_mag(table, plot_all = plot_all, passband_string=passband_string, verbose = verbose, use_extinction= use_extinction, teff= teff, logg=logg, get_extinction= get_extinction, ext_method= ext_method)
         radius = pmc.get_radius(abs_mag, teff= teff, logg= logg, passband_string= passband_string)
         mass = (pmc.get_mass(radius, logg)).to(u.Msun)
         radius_dist = pmc.get_radius(abs_mag_dist, teff = teff, logg=logg, passband_string = passband_string)
@@ -686,8 +699,9 @@ for logg,teff in zip( logg_array,teff_array):
     #target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all= False, verbose= False)
     #target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all= False, verbose= False, use_extinction= True)
     #target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all= False, verbose= False, use_extinction= True, photometric= False)
-    target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist, output_element, output_header = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all= False, verbose= False, use_extinction= True, photometric= False, get_extinction=True)
-
+    #target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist, output_element, output_header = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all= False, verbose= False, use_extinction= True, photometric= False, get_extinction=True)
+    #target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist, output_element, output_header = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all= False, verbose= False, use_extinction= True, photometric= True, get_extinction=True)
+    target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist, output_element, output_header = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all= False, verbose= False, use_extinction= True, photometric= True, get_extinction=True, ext_method = ext_method)
     #target_g_radius, target_g_mass,target_g_radius_dist, target_g_mass_dist = get_rad_mass(target_table, logg=logg, teff= teff, passband_string= 'g', plot_all= False, verbose= False, use_extinction= False)
 
     target_g_radius_err = get_errors(target_g_radius_dist)
