@@ -53,15 +53,15 @@ parallax_correction = 0.029 #from Lindgren et al 2018
 good_teff_range = [6000, 14750]
 
 
-#axes_x= [-0.7, 5]
-axes_x= [-0.7, 2]
+axes_x= [-0.7, 5]
+#axes_x= [-0.7, 2]
 #axes_x= [-2, 5]
 
 
-#axes_y = [-2,16]
+axes_y = [-2,16]
 #axes_y = [-4,18]
 #axes_y = [9,12]
-axes_y= [9,16]
+#axes_y= [9,16]
 
 
 #axes_y = [4,8]
@@ -84,9 +84,9 @@ num_targs = 'all'
 distance = 100
 #distance = 25
 #grid_num = 220
-#grid_num = 225
+grid_num = 225
 #grid_num = 500
-grid_num =1000
+#grid_num =1000
 
 mc_number = 10000
 percent_off = 34 #1-sigma equivalent
@@ -99,7 +99,8 @@ target_label = "PSRJ1435-4715"
 #other_target_label= "PSRJ1816+4510"
 #other_target_label= "PSRJ1023+0038"
 #other_target_label = "Crab Pulsar"
-other_target_label = "PSRJ1435-6100"
+#other_target_label = "PSRJ1435-6100"
+other_target_label= 'BLAP'
 
 
 target_input = 'target_gaia.csv'
@@ -107,7 +108,8 @@ target_input = 'target_gaia.csv'
 #other_target_input = "PSRJ1816p4510_gaia.csv"
 #other_target_input = "PSRJ1023p0038_gaia.csv"
 #other_target_input = "Crab_gaia.csv"
-other_target_input= "PSRJ1435m6100.csv"
+#other_target_input= "PSRJ1435m6100.csv"
+other_target_input= 'BLAPs_gaia.csv'
 #other_target_input= 'PSRJ1903p0327.csv'
 
 
@@ -155,6 +157,18 @@ target_table = Table.read(target_input)
 other_target_table = Table.read(other_target_input)
 
 
+print("other G")
+print(other_target_table['phot_g_mean_mag'])
+print('other BP')
+print(other_target_table['phot_bp_mean_mag'])
+print('other RP')
+print(other_target_table['phot_rp_mean_mag'])
+print("other G error ")
+print(other_target_table['phot_g_mean_flux_error'])
+print('other BP error')
+print(other_target_table['phot_bp_mean_flux_error'])
+print('other RP error')
+print(other_target_table['phot_rp_mean_flux_error'])
 def distance_modulus(g_mag, distance, extinction = 0.0):
     return g_mag - 5*np.log10(distance/10.)
     #return g_mag - 5*np.log10(distance/10.)- np.float_(extinction)
@@ -230,6 +244,8 @@ def get_bp_rp(table, plot_all = False, verbose =True):
     if verbose:
         print("bp_calc-bp_measured", bp_mag - table['phot_bp_mean_mag'])
         print("rp_calc - rp_measured", rp_mag - table['phot_rp_mean_mag'])
+    rp_dist= remove_negative(rp_dist)
+    bp_dist= remove_negative(bp_dist)
     bp_mag_dist = get_mag(bp_dist, 'bp')
     rp_mag_dist = get_mag(rp_dist, 'rp')
     bp_rp = bp_mag- rp_mag
@@ -307,7 +323,9 @@ def get_all_extinctions(table, logg= logg, teff=teff):
 def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = True, use_extinction= False, logg=logg, teff=teff, ext_method = 'B-V', get_extinction = False):
     mean_flux, flux_dist = get_filter_vals(table, passband_string)
     mag = get_mag(mean_flux, passband_string)
-    mag_dist = get_mag(mean_flux, passband_string )
+    #mag_dist = get_mag(mean_flux, passband_string )
+    flux_dist= remove_negative(flux_dist, verbose=verbose)
+    mag_dist= get_mag(flux_dist, passband_string)
     if use_extinction:
         if ext_method== 'B-V':
             obs_bp_rp = table['bp_rp']
@@ -349,6 +367,8 @@ def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = Tr
     #distance_err= get_errors(distance_dist)
     #print("Distance:", distance[0], "-/+", distance_err[0,0], distance_err[1,0])
     index_length = distance_dist.shape[0]
+    print("index_length",index_length)
+    print("mag_dist.shape", mag_dist.shape)
     mag_dist = mag_dist[:index_length]
     abs_mag = distance_modulus(mag, distance)
     abs_mag_dist = distance_modulus(mag_dist, distance_dist)
@@ -587,6 +607,7 @@ sim_target_rp_absmag_err = get_errors(sim_target_rp_absmag_dist)
 ###################
 
 
+
 #plt.hist(other_target_g_absmag_dist, bins=75, normed=1, label = 'MC Distribution', color = 'g')
 #plt.axvline(np.nanmedian(other_target_g_absmag_dist), color = 'k', linestyle = '--', label = 'Median of MC Dist')
 #plt.errorbar( other_target_g_absmag, 0.5, xerr = other_target_g_absmag_err, marker = '*', markersize = 8, color = 'b', label = 'Measured value', capsize = 4, linestyle = 'none')
@@ -619,6 +640,18 @@ def make_density_plot(g_abs, bp_rp):
 #the main point
 plt.errorbar(target_bp_rp, target_g_absmag, yerr = target_g_absmag_err, xerr = target_bp_rp_err, marker = '*', markersize = 8, color = 'b', capsize = 4, label = target_label, linestyle = 'none')
 
+for row in other_target_table:
+    #print(row)
+    other_target_g_absmag, other_target_g_absmag_err, other_target_g_absmag_dist= get_pass_abs_mag(row, plot_all = False)
+    other_target_bp_rp, other_target_bp_rp_err = get_bp_rp(row, plot_all = False)
+    print('other bp_rp',other_target_bp_rp)
+    print(other_target_bp_rp >"--")
+    print(other_target_bp_rp == np.nan)
+    if  other_target_bp_rp=='--':
+        print('it was')
+        other_target_bp_rp= 1.5
+        other_target_bp_rp_err= 1.5
+    plt.errorbar(other_target_bp_rp, other_target_g_absmag, yerr = other_target_g_absmag_err,  xerr = other_target_bp_rp_err, marker = '*', markersize = 8, color = 'purple', capsize = 4, label = other_target_label, linestyle ='none')
 #plt.errorbar(other_target_bp_rp, other_target_g_absmag, yerr = other_target_g_absmag_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
 ####This one \/ \/ \/
 ####plt.errorbar(other_target_bp_rp, other_target_g_absmag, yerr = other_target_g_absmag_err, xerr= other_target_bp_rp_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')

@@ -18,6 +18,12 @@ input_file= 'BLAPs_table1_Piet2017.csv'
 output_file= 'BLAPs_gaia.csv'
 
 
+credentials_file= 'Gaia_credentials.txt'
+print("Logging in.")
+Gaia.login(credentials_file= credentials_file)
+print("Log in succesful.")
+
+
 #allarray= np.genfromtxt(input_file, names=True, delimiter=',', dtype='U6')
 allarray= np.genfromtxt(input_file, delimiter= ',', dtype= str)
 #allarray= np.loadtxt(input_file, delimiter=',', dtype=bytes).astype(str)
