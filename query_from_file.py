@@ -11,7 +11,7 @@ import numpy as np
 from astroquery.gaia import Gaia
 import astropy.units as u
 import astropy.coordinates as coord
-from astropy.table import Table, vstack
+from astropy.table import Table, vstack, Column
  
  
 input_file= 'BLAPs_table1_Piet2017.csv'
@@ -36,6 +36,7 @@ allarray=allarray[1:]
 
 ra_array=allarray[:,1]
 dec_array= allarray[:,2] #I couldn't get the names and dtype to work so I'm just doing it the less efficient way I guess
+name_array=allarray[:,0]
 
 collected_results=[]
 print(ra_array)
@@ -51,14 +52,39 @@ def cone_search(ra, dec):
     r.pprint()
     return r
 
-
-for ra,dec in zip(ra_array, dec_array):
+for ra,dec,name in zip(ra_array, dec_array,name_array):
     results= cone_search(ra,dec)
+    #print(results.shape)
+    #new_col= Column(name, name='name')
     #print(results[0])
     #print(results[0])
+    #output_row= results[0]
+    name=str(name)
+    print(name)
+    print(type(name))
     try:
-        collected_results.append(results[0])
-    except IndexError:
+        table_length = len(results['dist'])
+        print(table_length)
+        #new_array = np.full(table_length, name, dtype=str)
+        #new_array= np.empty(table_length, dtype=str)
+        #new_array[:]=name
+        #print(new_array)
+        new_array=[]
+        for i in range(0,table_length):
+            new_array.append(name)
+        print(new_array)
+        name_col= Column(new_array, name='name',dtype=str) #yeah that's a confusing series of 'names'
+        #output_row.add_column(name_col)
+        results.add_column(name_col)
+        try:
+            #collected_results.append(results[0])
+            #collected_results.append(output_row)
+            collected_results.append(results)
+        except IndexError:
+            print("index error")
+            pass
+    except TypeError as error:
+        print(error)
         pass
     
 stacked_results= vstack(collected_results)

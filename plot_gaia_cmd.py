@@ -3,6 +3,8 @@ Created by Ben Kaiser (UNC-Chapel Hill) 2018-06-11
 
 Take tables output by retrieve_data.py and plot them as the color-magnitude diagram of the gaia data
 
+I have begun experimenting with 'filled' tables, meaning they aren't masked, but instead have values that can actually be detected. One can also set them to be certain values. It would make sense to make my values be on the edges of the CMD
+
 """
 from __future__ import print_function
 import numpy as np
@@ -62,6 +64,8 @@ axes_y = [-2,16]
 #axes_y = [-4,18]
 #axes_y = [9,12]
 #axes_y= [9,16]
+g_abs_mag_fill= axes_y[1]
+bp_rp_fill= axes_x[0]
 
 
 #axes_y = [4,8]
@@ -156,6 +160,8 @@ generic_table = Table.read(generic_input)
 target_table = Table.read(target_input)
 other_target_table = Table.read(other_target_input)
 
+other_target_table= other_target_table.filled()
+
 
 print("other G")
 print(other_target_table['phot_g_mean_mag'])
@@ -169,6 +175,12 @@ print('other BP error')
 print(other_target_table['phot_bp_mean_flux_error'])
 print('other RP error')
 print(other_target_table['phot_rp_mean_flux_error'])
+print('other parallax')
+print(other_target_table['parallax'])
+#print('other parallax filled')
+#print(other_target_table['parallax'].filled())
+print('other parallax error')
+print(other_target_table['parallax_error'])
 def distance_modulus(g_mag, distance, extinction = 0.0):
     return g_mag - 5*np.log10(distance/10.)
     #return g_mag - 5*np.log10(distance/10.)- np.float_(extinction)
@@ -244,10 +256,14 @@ def get_bp_rp(table, plot_all = False, verbose =True):
     if verbose:
         print("bp_calc-bp_measured", bp_mag - table['phot_bp_mean_mag'])
         print("rp_calc - rp_measured", rp_mag - table['phot_rp_mean_mag'])
-    rp_dist= remove_negative(rp_dist)
-    bp_dist= remove_negative(bp_dist)
+    #rp_dist= remove_negative(rp_dist)
+    #bp_dist= remove_negative(bp_dist)
     bp_mag_dist = get_mag(bp_dist, 'bp')
     rp_mag_dist = get_mag(rp_dist, 'rp')
+    #make them be the same size
+    smaller= np.min([bp_mag_dist.shape[0], rp_mag_dist.shape[0]])
+    bp_mag_dist= bp_mag_dist[:smaller]
+    rp_mag_dist= rp_mag_dist[:smaller]
     bp_rp = bp_mag- rp_mag
     bp_rp_dist= bp_mag_dist- rp_mag_dist
     bp_rp_error = get_errors(bp_rp_dist)
@@ -638,20 +654,34 @@ def make_density_plot(g_abs, bp_rp):
 
 
 #the main point
-plt.errorbar(target_bp_rp, target_g_absmag, yerr = target_g_absmag_err, xerr = target_bp_rp_err, marker = '*', markersize = 8, color = 'b', capsize = 4, label = target_label, linestyle = 'none')
+#uncomment this to actually plot the pulsar 2018-12-30
+#plt.errorbar(target_bp_rp, target_g_absmag, yerr = target_g_absmag_err, xerr = target_bp_rp_err, marker = '*', markersize = 8, color = 'b', capsize = 4, label = target_label, linestyle = 'none')
 
 for row in other_target_table:
+    print('===========')
     #print(row)
     other_target_g_absmag, other_target_g_absmag_err, other_target_g_absmag_dist= get_pass_abs_mag(row, plot_all = False)
     other_target_bp_rp, other_target_bp_rp_err = get_bp_rp(row, plot_all = False)
-    print('other bp_rp',other_target_bp_rp)
-    print(other_target_bp_rp >"--")
-    print(other_target_bp_rp == np.nan)
-    if  other_target_bp_rp=='--':
-        print('it was')
-        other_target_bp_rp= 1.5
-        other_target_bp_rp_err= 1.5
-    plt.errorbar(other_target_bp_rp, other_target_g_absmag, yerr = other_target_g_absmag_err,  xerr = other_target_bp_rp_err, marker = '*', markersize = 8, color = 'purple', capsize = 4, label = other_target_label, linestyle ='none')
+    #other_target_bp_rp.fill_value=bp_rp_fill
+    #other_target_g_absmag.fill_value= g_abs_mag_fill
+    #other_target_bp_rp.filled()
+    #other_target_g_absmag.filled()
+    #print('other bp_rp',other_target_bp_rp)
+    #print(other_target_bp_rp >"--")
+    #print(other_target_bp_rp == np.nan)
+    #if  other_target_bp_rp=='--':
+        #print('it was')
+        #other_target_bp_rp= 1.5
+        #other_target_bp_rp_err= 1.5
+    if row['phot_bp_mean_mag']>1e18:
+        other_target_bp_rp= bp_rp_fill
+    if row['parallax']>1e18:
+        other_target_g_absmag=g_abs_mag_fill
+    plt.errorbar(np.copy(other_target_bp_rp), np.copy(other_target_g_absmag), yerr = np.copy(other_target_g_absmag_err),  xerr = np.copy(other_target_bp_rp_err), marker = '*', markersize = 12, color = 'magenta', capsize = 4, label = other_target_label, linestyle ='none')
+    print(other_target_bp_rp, other_target_g_absmag)
+    print(row['dec'])
+    #plt.text(np.copy(other_target_bp_rp+0.1), np.copy(other_target_g_absmag-0.05), str(row['dec']), fontsize=8, color ='b')
+    #plt.annotate(str(row['dec']),xy=(np.copy(other_target_bp_rp), np.copy(other_target_g_absmag)), xycoords='data', xytext=(np.copy(other_target_bp_rp+0.1),np.copy(other_target_g_absmag-0.1)), textcoords= 'data',arrowprops=dict(arrowstyle="<->") , fontsize=8, color ='b')
 #plt.errorbar(other_target_bp_rp, other_target_g_absmag, yerr = other_target_g_absmag_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
 ####This one \/ \/ \/
 ####plt.errorbar(other_target_bp_rp, other_target_g_absmag, yerr = other_target_g_absmag_err, xerr= other_target_bp_rp_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
@@ -660,7 +690,8 @@ for row in other_target_table:
 
 ####plt.plot(model_bp_rp*np.ones(model_g_absmag.shape[0]), model_g_absmag, marker = '*', markersize= 8, color = 'green', label = "Model spectra at various radii " + str(np.round(test_radii.value, precision))+ " logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
 
-plt.errorbar(sim_target_bp_rp, sim_target_gabsmag, yerr = sim_target_gabsmag_err, xerr = target_bp_rp_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = "Corrected", linestyle = 'none')
+#uncomment this to plot the corrected version of the pulsar (companion) 2018-12-30
+#plt.errorbar(sim_target_bp_rp, sim_target_gabsmag, yerr = sim_target_gabsmag_err, xerr = target_bp_rp_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = "Corrected", linestyle = 'none')
 
 #plt.plot(sim_target_bp_rp, sim_target_gabsmag, marker = '*', markersize= 8, color = 'green', label = "R_G= "+str(np.round(target_g_radius, precision)[0]) + " M= "+ str(np.round(target_g_mass, precision)[0])+" logg: " + str(logg) + " Teff: " +str(teff), linestyle = 'none')
 
