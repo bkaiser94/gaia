@@ -14,8 +14,15 @@ import astropy.coordinates as coord
 from astropy.table import Table, vstack, Column
  
  
-input_file= 'BLAPs_table1_Piet2017.csv'
-output_file= 'BLAPs_gaia.csv'
+#input_file= 'BLAPs_table1_Piet2017.csv'
+#output_file= 'BLAPs_gaia.csv'
+#input_file= 'pulsar_companions.txt'
+#output_file= 'pulsar_companions_gaia.csv'
+#input_file= 'hot_wind_wds.txt'
+#output_file= 'hot_wind_wds_gaia.csv'
+
+input_file= 'hv_wds.txt'
+output_file= 'hv_wds_gaia.csv'
 
 
 credentials_file= 'Gaia_credentials.txt'
@@ -44,9 +51,15 @@ print(ra_array)
 def cone_search(ra, dec):
     #print(ra)
     #print(dec)
-    coordinate = coord.SkyCoord(ra = ra, dec =dec, unit = (u.hourangle, u.deg), frame = 'icrs')
+    print(ra)
+    if ((":" in ra) or ( " " in ra) or ( "\t" in ra)):
+        print("RA in hour angle")
+        coordinate = coord.SkyCoord(ra = ra, dec =dec, unit = (u.hourangle, u.deg), frame = 'icrs')
+    else:
+        coordinate = coord.SkyCoord(ra = ra, dec =dec, unit = (u.deg, u.deg), frame = 'icrs')
     #coordinate = coord.SkyCoord(ra = ra*u.hourangle, dec =dec*u.degree, frame = 'icrs')
-    radius = 1.5*u.arcsecond
+    #radius = 1.5*u.arcsecond
+    radius = 5*u.arcsecond
     j= Gaia.cone_search_async(coordinate, radius)
     r=j.get_results()
     r.pprint()
@@ -77,9 +90,9 @@ for ra,dec,name in zip(ra_array, dec_array,name_array):
         #output_row.add_column(name_col)
         results.add_column(name_col)
         try:
-            #collected_results.append(results[0])
+            collected_results.append(results[0])
             #collected_results.append(output_row)
-            collected_results.append(results)
+            #collected_results.append(results)
         except IndexError:
             print("index error")
             pass

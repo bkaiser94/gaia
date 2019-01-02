@@ -45,7 +45,7 @@ m_psr= 1.4*u.Msun
 #ext_method = 'statistical'
 ext_method=  'MG-MRP'
 
-
+list_color= 'b'
 
 parallax_correction = 0.029 #from Lindgren et al 2018
 #parallax_correction = 0 #so nothing done
@@ -107,13 +107,16 @@ target_label = "PSRJ1435-4715"
 other_target_label= 'BLAP'
 
 
-target_input = 'target_gaia.csv'
+#target_input = 'target_gaia.csv'
+target_input= 'weird_ogle.csv'
 #target_input= 'WD1145p017.csv'
 #other_target_input = "PSRJ1816p4510_gaia.csv"
 #other_target_input = "PSRJ1023p0038_gaia.csv"
 #other_target_input = "Crab_gaia.csv"
 #other_target_input= "PSRJ1435m6100.csv"
-other_target_input= 'BLAPs_gaia.csv'
+#other_target_input= 'BLAPs_gaia.csv'
+#other_target_input=  'pulsar_companions_gaia.csv'
+other_target_input='hot_wind_wds_gaia.csv'
 #other_target_input= 'PSRJ1903p0327.csv'
 
 
@@ -655,7 +658,7 @@ def make_density_plot(g_abs, bp_rp):
 
 #the main point
 #uncomment this to actually plot the pulsar 2018-12-30
-#plt.errorbar(target_bp_rp, target_g_absmag, yerr = target_g_absmag_err, xerr = target_bp_rp_err, marker = '*', markersize = 8, color = 'b', capsize = 4, label = target_label, linestyle = 'none')
+#plt.errorbar(target_bp_rp, target_g_absmag, yerr = target_g_absmag_err, xerr = target_bp_rp_err, marker = 'o', markersize = 12, color = 'g', capsize = 4, label = target_label, linestyle = 'none')
 
 for row in other_target_table:
     print('===========')
@@ -675,13 +678,15 @@ for row in other_target_table:
         #other_target_bp_rp_err= 1.5
     if row['phot_bp_mean_mag']>1e18:
         other_target_bp_rp= bp_rp_fill
+        other_target_bp_rp_err= 0
     if row['parallax']>1e18:
         other_target_g_absmag=g_abs_mag_fill
-    plt.errorbar(np.copy(other_target_bp_rp), np.copy(other_target_g_absmag), yerr = np.copy(other_target_g_absmag_err),  xerr = np.copy(other_target_bp_rp_err), marker = '*', markersize = 12, color = 'magenta', capsize = 4, label = other_target_label, linestyle ='none')
+    plt.errorbar(np.copy(other_target_bp_rp), np.copy(other_target_g_absmag), yerr = np.copy(other_target_g_absmag_err),  xerr = np.copy(other_target_bp_rp_err), marker = 'o', markersize = 12, color = list_color, capsize = 4, label = other_target_label, linestyle ='none')
     print(other_target_bp_rp, other_target_g_absmag)
-    print(row['dec'])
+    print(row['name'])
     #plt.text(np.copy(other_target_bp_rp+0.1), np.copy(other_target_g_absmag-0.05), str(row['dec']), fontsize=8, color ='b')
-    #plt.annotate(str(row['dec']),xy=(np.copy(other_target_bp_rp), np.copy(other_target_g_absmag)), xycoords='data', xytext=(np.copy(other_target_bp_rp+0.1),np.copy(other_target_g_absmag-0.1)), textcoords= 'data',arrowprops=dict(arrowstyle="<->") , fontsize=8, color ='b')
+    ##plt.annotate(str(row['dec']),xy=(np.copy(other_target_bp_rp), np.copy(other_target_g_absmag)), xycoords='data', xytext=(np.copy(other_target_bp_rp+0.1),np.copy(other_target_g_absmag-0.1)), textcoords= 'data',arrowprops=dict(arrowstyle="<->") , fontsize=8, color ='b')
+    plt.annotate(str(row['name']),xy=(np.copy(other_target_bp_rp), np.copy(other_target_g_absmag)), xycoords='data', xytext=(np.copy(other_target_bp_rp+0.1),np.copy(other_target_g_absmag-0.1)), textcoords= 'data' , fontsize=8, color =list_color)
 #plt.errorbar(other_target_bp_rp, other_target_g_absmag, yerr = other_target_g_absmag_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
 ####This one \/ \/ \/
 ####plt.errorbar(other_target_bp_rp, other_target_g_absmag, yerr = other_target_g_absmag_err, xerr= other_target_bp_rp_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
