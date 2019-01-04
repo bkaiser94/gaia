@@ -17,9 +17,11 @@ import scipy.stats as scistats
 #import seaborn as sns
 import astropy
 
+
 import passband_model_convolution as pmc
 import gaia_extinction
 import wdatmos
+import plotting_dicts as pod
 
 plt.rc('font', size =18)
 #plt.rc('lines', markersize=12)
@@ -46,6 +48,8 @@ m_psr= 1.4*u.Msun
 ext_method=  'MG-MRP'
 
 list_color= 'b'
+single_list=False #turns off the original for-loop method for plotting from a single list
+error_bar=False #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
 
 parallax_correction = 0.029 #from Lindgren et al 2018
 #parallax_correction = 0 #so nothing done
@@ -56,11 +60,14 @@ good_teff_range = [6000, 14750]
 
 
 axes_x= [-0.7, 5]
+#axes_x=[-2,5]
+#axes_x=[-0.4,0.9]
+
 #axes_x= [-0.7, 2]
 #axes_x= [-2, 5]
-
-
+#axes_y=[-1, 14.5]
 axes_y = [-2,16]
+#axes_y = [-5,16]
 #axes_y = [-4,18]
 #axes_y = [9,12]
 #axes_y= [9,16]
@@ -88,8 +95,8 @@ num_targs = 'all'
 distance = 100
 #distance = 25
 #grid_num = 220
-grid_num = 225
-#grid_num = 500
+#grid_num = 225
+grid_num = 500
 #grid_num =1000
 
 mc_number = 10000
@@ -116,7 +123,9 @@ target_input= 'weird_ogle.csv'
 #other_target_input= "PSRJ1435m6100.csv"
 #other_target_input= 'BLAPs_gaia.csv'
 #other_target_input=  'pulsar_companions_gaia.csv'
-other_target_input='hot_wind_wds_gaia.csv'
+#other_target_input='hot_wind_wds_gaia.csv'
+#other_target_input='hv_wds_gaia.csv'
+other_target_input='pre_elms_gaia.csv'
 #other_target_input= 'PSRJ1903p0327.csv'
 
 
@@ -514,7 +523,43 @@ def get_rad_mass(table, teff=teff, logg=logg, passband_string= 'g', plot_all = F
 
 
 
-
+def plot_target_lists(target_lists):
+    for target_list in target_lists:
+        print(target_list)
+        list_table = Table.read(target_list)
+        list_table= list_table.filled()
+        counter=0
+        for row in list_table:
+            print('===========')
+            #print(row)
+            other_target_g_absmag, other_target_g_absmag_err, other_target_g_absmag_dist= get_pass_abs_mag(row, plot_all = False)
+            other_target_bp_rp, other_target_bp_rp_err = get_bp_rp(row, plot_all = False)
+            #blue_ones= np.where(other_target_bp_rp<0)
+            #dim_ones= np.where(other_target_g_absmag>11)
+            #print(
+            if ((other_target_g_absmag > 11) and ( other_target_bp_rp<0)):
+                print("\n\n************* This one***********\n\n")
+            if row['phot_bp_mean_mag']>1e18:
+                other_target_bp_rp= bp_rp_fill
+                other_target_bp_rp_err= 0
+            if row['parallax']>1e18:
+                other_target_g_absmag=g_abs_mag_fill
+            else:
+                pass
+            if counter==0:
+                if error_bar:
+                    plt.errorbar(np.copy(other_target_bp_rp), np.copy(other_target_g_absmag), yerr = np.copy(other_target_g_absmag_err),  xerr = np.copy(other_target_bp_rp_err), marker = 'o', markersize = 6, color = pod.plot_dict[target_list]['color'], capsize = 4, label = pod.plot_dict[target_list]['label'], linestyle ='none')
+                else:
+                    plt.plot(np.copy(other_target_bp_rp), np.copy(other_target_g_absmag), marker = 'o', markersize = 8, color = pod.plot_dict[target_list]['color'], label = pod.plot_dict[target_list]['label'], linestyle ='none')
+            else:
+                if error_bar:
+                    plt.errorbar(np.copy(other_target_bp_rp), np.copy(other_target_g_absmag), yerr = np.copy(other_target_g_absmag_err),  xerr = np.copy(other_target_bp_rp_err), marker = 'o', markersize = 6, color = pod.plot_dict[target_list]['color'], capsize = 4, linestyle ='none')
+                else:
+                    plt.plot(np.copy(other_target_bp_rp), np.copy(other_target_g_absmag), marker = 'o', markersize = 8, color = pod.plot_dict[target_list]['color'], linestyle ='none')
+            print(other_target_bp_rp, other_target_g_absmag)
+            print(row['name'])
+            #plt.annotate(str(row['name']),xy=(np.copy(other_target_bp_rp), np.copy(other_target_g_absmag)), xycoords='data', xytext=(np.copy(other_target_bp_rp+0.05),np.copy(other_target_g_absmag-0.1)), textcoords= 'data' , fontsize=8, color =pod.plot_dict[target_list]['color'])
+            counter+=1
     
     
 try:
@@ -660,33 +705,37 @@ def make_density_plot(g_abs, bp_rp):
 #uncomment this to actually plot the pulsar 2018-12-30
 #plt.errorbar(target_bp_rp, target_g_absmag, yerr = target_g_absmag_err, xerr = target_bp_rp_err, marker = 'o', markersize = 12, color = 'g', capsize = 4, label = target_label, linestyle = 'none')
 
-for row in other_target_table:
-    print('===========')
-    #print(row)
-    other_target_g_absmag, other_target_g_absmag_err, other_target_g_absmag_dist= get_pass_abs_mag(row, plot_all = False)
-    other_target_bp_rp, other_target_bp_rp_err = get_bp_rp(row, plot_all = False)
-    #other_target_bp_rp.fill_value=bp_rp_fill
-    #other_target_g_absmag.fill_value= g_abs_mag_fill
-    #other_target_bp_rp.filled()
-    #other_target_g_absmag.filled()
-    #print('other bp_rp',other_target_bp_rp)
-    #print(other_target_bp_rp >"--")
-    #print(other_target_bp_rp == np.nan)
-    #if  other_target_bp_rp=='--':
-        #print('it was')
-        #other_target_bp_rp= 1.5
-        #other_target_bp_rp_err= 1.5
-    if row['phot_bp_mean_mag']>1e18:
-        other_target_bp_rp= bp_rp_fill
-        other_target_bp_rp_err= 0
-    if row['parallax']>1e18:
-        other_target_g_absmag=g_abs_mag_fill
-    plt.errorbar(np.copy(other_target_bp_rp), np.copy(other_target_g_absmag), yerr = np.copy(other_target_g_absmag_err),  xerr = np.copy(other_target_bp_rp_err), marker = 'o', markersize = 12, color = list_color, capsize = 4, label = other_target_label, linestyle ='none')
-    print(other_target_bp_rp, other_target_g_absmag)
-    print(row['name'])
-    #plt.text(np.copy(other_target_bp_rp+0.1), np.copy(other_target_g_absmag-0.05), str(row['dec']), fontsize=8, color ='b')
-    ##plt.annotate(str(row['dec']),xy=(np.copy(other_target_bp_rp), np.copy(other_target_g_absmag)), xycoords='data', xytext=(np.copy(other_target_bp_rp+0.1),np.copy(other_target_g_absmag-0.1)), textcoords= 'data',arrowprops=dict(arrowstyle="<->") , fontsize=8, color ='b')
-    plt.annotate(str(row['name']),xy=(np.copy(other_target_bp_rp), np.copy(other_target_g_absmag)), xycoords='data', xytext=(np.copy(other_target_bp_rp+0.1),np.copy(other_target_g_absmag-0.1)), textcoords= 'data' , fontsize=8, color =list_color)
+if single_list:
+    for row in other_target_table:
+        print('===========')
+        #print(row)
+        other_target_g_absmag, other_target_g_absmag_err, other_target_g_absmag_dist= get_pass_abs_mag(row, plot_all = False)
+        other_target_bp_rp, other_target_bp_rp_err = get_bp_rp(row, plot_all = False)
+        #other_target_bp_rp.fill_value=bp_rp_fill
+        #other_target_g_absmag.fill_value= g_abs_mag_fill
+        #other_target_bp_rp.filled()
+        #other_target_g_absmag.filled()
+        #print('other bp_rp',other_target_bp_rp)
+        #print(other_target_bp_rp >"--")
+        #print(other_target_bp_rp == np.nan)
+        #if  other_target_bp_rp=='--':
+            #print('it was')
+            #other_target_bp_rp= 1.5
+            #other_target_bp_rp_err= 1.5
+        if row['phot_bp_mean_mag']>1e18:
+            other_target_bp_rp= bp_rp_fill
+            other_target_bp_rp_err= 0
+        if row['parallax']>1e18:
+            other_target_g_absmag=g_abs_mag_fill
+        plt.errorbar(np.copy(other_target_bp_rp), np.copy(other_target_g_absmag), yerr = np.copy(other_target_g_absmag_err),  xerr = np.copy(other_target_bp_rp_err), marker = 'o', markersize = 8, color = list_color, capsize = 4, label = other_target_label, linestyle ='none')
+        print(other_target_bp_rp, other_target_g_absmag)
+        print(row['name'])
+        #plt.text(np.copy(other_target_bp_rp+0.1), np.copy(other_target_g_absmag-0.05), str(row['dec']), fontsize=8, color ='b')
+        ##plt.annotate(str(row['dec']),xy=(np.copy(other_target_bp_rp), np.copy(other_target_g_absmag)), xycoords='data', xytext=(np.copy(other_target_bp_rp+0.1),np.copy(other_target_g_absmag-0.1)), textcoords= 'data',arrowprops=dict(arrowstyle="<->") , fontsize=8, color ='b')
+        plt.annotate(str(row['name']),xy=(np.copy(other_target_bp_rp), np.copy(other_target_g_absmag)), xycoords='data', xytext=(np.copy(other_target_bp_rp+0.1),np.copy(other_target_g_absmag-0.1)), textcoords= 'data' , fontsize=8, color =list_color)
+else:
+    plot_target_lists(pod.target_lists)
+    plt.legend()
 #plt.errorbar(other_target_bp_rp, other_target_g_absmag, yerr = other_target_g_absmag_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
 ####This one \/ \/ \/
 ####plt.errorbar(other_target_bp_rp, other_target_g_absmag, yerr = other_target_g_absmag_err, xerr= other_target_bp_rp_err, marker = '*', markersize = 8, color = 'g', capsize = 4, label = other_target_label, linestyle ='none')
@@ -715,7 +764,7 @@ for row in other_target_table:
 
 #plt.show()
 
-polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(1000,1000), cmap = 'hot', mincnt = 1)
+#polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(1000,1000), cmap = 'hot', mincnt = 1)
 polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
 counts = polything.get_array()
 print(counts.shape)
@@ -829,7 +878,7 @@ plt.errorbar(target_bp_rp, target_g_absmag, yerr = target_g_absmag_err, xerr = t
 
 
 
-polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(1000,1000), cmap = 'hot', mincnt = 1)
+#polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(1000,1000), cmap = 'hot', mincnt = 1)
 polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
 counts = polything.get_array()
 print(counts.shape)

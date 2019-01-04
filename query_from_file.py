@@ -21,9 +21,20 @@ from astropy.table import Table, vstack, Column
 #input_file= 'hot_wind_wds.txt'
 #output_file= 'hot_wind_wds_gaia.csv'
 
-input_file= 'hv_wds.txt'
-output_file= 'hv_wds_gaia.csv'
+#input_file= 'hv_wds.txt'
+#output_file= 'hv_wds_gaia.csv'
 
+#input_file= 'pre_elms.txt'
+#output_file= 'pre_elms_gaia.csv'
+
+#input_file= 'elm_survey.txt'
+#input_file='apj522588t5_mrt.txt'
+#output_file= 'elm_survey_gaia.csv'
+
+input_file= '20190104_chris.csv'
+
+output_name_parts = input_file.split('.')
+output_file= output_name_parts[0]+ '_gaia.' + output_name_parts[1]
 
 credentials_file= 'Gaia_credentials.txt'
 print("Logging in.")
@@ -33,6 +44,7 @@ print("Log in succesful.")
 
 #allarray= np.genfromtxt(input_file, names=True, delimiter=',', dtype='U6')
 allarray= np.genfromtxt(input_file, delimiter= ',', dtype= str)
+#allarray= np.genfromtxt(input_file, delimiter=[11,13,13], dtype= str)
 #allarray= np.loadtxt(input_file, delimiter=',', dtype=bytes).astype(str)
 
 #print(allarray)
@@ -46,7 +58,9 @@ dec_array= allarray[:,2] #I couldn't get the names and dtype to work so I'm just
 name_array=allarray[:,0]
 
 collected_results=[]
+print(name_array)
 print(ra_array)
+print(dec_array)
 
 def cone_search(ra, dec):
     #print(ra)
@@ -58,8 +72,8 @@ def cone_search(ra, dec):
     else:
         coordinate = coord.SkyCoord(ra = ra, dec =dec, unit = (u.deg, u.deg), frame = 'icrs')
     #coordinate = coord.SkyCoord(ra = ra*u.hourangle, dec =dec*u.degree, frame = 'icrs')
-    #radius = 1.5*u.arcsecond
-    radius = 5*u.arcsecond
+    radius = 1.5*u.arcsecond
+    #radius = 5*u.arcsecond
     j= Gaia.cone_search_async(coordinate, radius)
     r=j.get_results()
     r.pprint()

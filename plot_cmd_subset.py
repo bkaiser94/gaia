@@ -24,6 +24,7 @@ import astropy
 
 input_filename= 'test_subset200.txt'
 output_name= 'subset_weirdos.txt'
+other_output_name='20190104_chris.csv'
 
 generic_table = Table.read(input_filename, format= 'ascii.tab')
 
@@ -163,6 +164,18 @@ def slice_and_dice(table, bounds1, bounds2):
     right_cut= np.where(left_table['yprime'] < bounds2[1])
     right_table= left_table[right_cut]
     return right_table
+
+
+def chop_chop(table, bounds1, bounds2):
+    lower_cut= np.where(table['bp_rp'] > bounds1[0])
+    low_table= table[lower_cut]
+    upper_cut = np.where(low_table['bp_rp'] < bounds1[1])
+    upper_table= low_table[upper_cut]
+    left_cut= np.where(upper_table['mg'] > bounds2[0])
+    left_table= upper_table[left_cut]
+    right_cut= np.where(left_table['mg'] < bounds2[1])
+    right_table= left_table[right_cut]
+    return right_table
    
 try:
     generic_parallax = generic_table ['parallax']+parallax_correction
@@ -191,7 +204,9 @@ print(acc_table)
 
 acc_table.write(output_name, format = 'ascii.tab', overwrite= True)
 
-def plot_context():
+
+
+def plot_context(acc_table= acc_table):
     polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
     counts = polything.get_array()
     #print(counts.shape)
@@ -220,6 +235,23 @@ def plot_context():
     #plt.legend()
     plt.subplots_adjust(wspace = 0, hspace = 0, top = 0.90, bottom = 0.10, left = 0.10, right = 0.90)
 
+
+################ The search region ###################
+middle_area= generic_table[np.where(generic_table['bp_rp']>2.25)]
+middler_area= middle_area[np.where(middle_area['bp_rp']<3.7)]
+only_one= middler_area[np.where(middler_area['mg']> 14.5)]
+print("hopefully low point")
+print(only_one)
+
+chris_table= chop_chop(generic_table, [2.25, 3.7],[14.5, 20])
+only_one.write(other_output_name, format='csv')
+for row in chris_table:
+    print(row)
+    plot_context(acc_table= chris_table)
+    plt.scatter(row['bp_rp'], row['mg'], color= 'r')
+    plt.show()
+############################################
+
 param_distance = acc_table['xprime']**2+acc_table['yprime']**2
 sort_order = np.argsort(param_distance)
 sorted_table= acc_table[sort_order]
@@ -234,7 +266,6 @@ for row in sorted_table:
     plot_context()
     plt.scatter(row['bp_rp'], row['mg'], color= 'r')
     plt.show()
-
 
 
 polything = plt.hexbin(generic_xprime, generic_yprime, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
