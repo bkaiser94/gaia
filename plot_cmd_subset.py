@@ -24,7 +24,7 @@ import astropy
 
 input_filename= 'test_subset200.txt'
 output_name= 'subset_weirdos.txt'
-other_output_name='20190104_chris.csv'
+other_output_name='20190107_chris.csv'
 
 generic_table = Table.read(input_filename, format= 'ascii.tab')
 
@@ -45,6 +45,9 @@ mc_number = 10000
 
 basis_coeff1= 0.968664
 basis_coeff2= 0.248375
+
+bp_rp_bounds = [1.54,2.40]
+gabsmag_bounds=[13.78,14.6]
 
 
 def distance_modulus(g_mag, distance, extinction = 0.0):
@@ -243,8 +246,11 @@ only_one= middler_area[np.where(middler_area['mg']> 14.5)]
 print("hopefully low point")
 print(only_one)
 
-chris_table= chop_chop(generic_table, [2.25, 3.7],[14.5, 20])
-only_one.write(other_output_name, format='csv')
+#chris_table= chop_chop(generic_table, [2.25, 3.7],[14.5, 20])
+chris_table= chop_chop(generic_table, bp_rp_bounds, gabsmag_bounds)
+chris_sort = np.argsort(chris_table['bp_rp'])
+chris_table= chris_table[chris_sort]
+chris_table.write(other_output_name, format='csv')
 for row in chris_table:
     print(row)
     plot_context(acc_table= chris_table)

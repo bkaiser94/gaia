@@ -31,7 +31,7 @@ from astropy.table import Table, vstack, Column
 #input_file='apj522588t5_mrt.txt'
 #output_file= 'elm_survey_gaia.csv'
 
-input_file= '20190104_chris.csv'
+input_file= '20190107_chris.csv'
 
 output_name_parts = input_file.split('.')
 output_file= output_name_parts[0]+ '_gaia.' + output_name_parts[1]

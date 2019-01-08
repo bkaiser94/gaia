@@ -21,7 +21,7 @@ parallax_correction = 0.029
 target_ra = "11:48:33.6297636428" #values on page 43 of General Clemens II
 target_dec =  "+01:28:59.421673739"
 num_targs = 1e6
-distance_limit = 50 #pc
+distance_limit = 100 #pc
 num_targs = int(num_targs)
 #output_name = 'top500_nearby_gaia.csv'
 #output_name = 'top5000_nearby_gaia.csv'
@@ -38,7 +38,7 @@ pulsar_list = np.genfromtxt('pulsar_names.txt', dtype = 'S32') #still presents a
 #target_output_name = "target_gaia.csv"
 #target_output_name= "Vela_gaia.csv"
 #target_output_name = 'PSRJ1903p0327.csv'
-target_output_name = 'WD1145p017.csv'
+#target_output_name = 'WD1145p017.csv'
 
 
 
@@ -64,8 +64,8 @@ phot_bp_mean_flux_over_error = 20
 #start_string = "SELECT TOP " + str( int(num_targs)) +" * FROM gaiadr2.gaia_source  WHERE CONTAINS(POINT('ICRS',gaiadr2.gaia_source.ra,gaiadr2.gaia_source.dec),BOX('ICRS',179.99997916666666,0,359.9999583333333,180))=1    AND  "
 #condition_string = "(parallax>=" +str(parallax_min) + " AND parallax_over_error>=" + str(parallax_over_error) + " AND phot_g_mean_flux_over_error>= "+ str(phot_g_mean_flux_over_error) + " AND phot_bp_mean_flux_over_error>=" + str(phot_bp_mean_flux_over_error)+ " AND phot_rp_mean_flux_over_error>= " +str(phot_rp_mean_flux_over_error) +")"
 
-start_string = "SELECT TOP " + str( int(num_targs)) +" * FROM gaiadr2.gaia_source  WHERE CONTAINS(POINT('ICRS',gaiadr2.gaia_source.ra,gaiadr2.gaia_source.dec),BOX('ICRS',179.99997916666666,0,359.9999583333333,180))=1    AND  "
-condition_string = "(parallax>=" +str(parallax_min) + " AND parallax_over_error>=" + str(parallax_over_error) + " AND phot_g_mean_flux_over_error>= "+ str(phot_g_mean_flux_over_error) + " AND phot_bp_mean_flux_over_error>=" + str(phot_bp_mean_flux_over_error)+ " AND phot_rp_mean_flux_over_error>= " +str(phot_rp_mean_flux_over_error) +")"
+#start_string = "SELECT TOP " + str( int(num_targs)) +" * FROM gaiadr2.gaia_source  WHERE CONTAINS(POINT('ICRS',gaiadr2.gaia_source.ra,gaiadr2.gaia_source.dec),BOX('ICRS',179.99997916666666,0,359.9999583333333,180))=1    AND  "
+#condition_string = "(parallax>=" +str(parallax_min) + " AND parallax_over_error>=" + str(parallax_over_error) + " AND phot_g_mean_flux_over_error>= "+ str(phot_g_mean_flux_over_error) + " AND phot_bp_mean_flux_over_error>=" + str(phot_bp_mean_flux_over_error)+ " AND phot_rp_mean_flux_over_error>= " +str(phot_rp_mean_flux_over_error) +")"
 #search_statement= start_string + condition_string
 
 #search_statement = "SELECT TOP " + str(num_targs)+ " phot_g_mean_mag+5*log10(parallax)-10 AS mg, bp_rp FROM gaiadr2.gaia_source WHERE parallax_over_error > 10 AND phot_g_mean_flux_over_error>50 AND phot_rp_mean_flux_over_error>20 AND phot_bp_mean_flux_over_error>20 AND phot_bp_rp_excess_factor < 1.3+0.06*power(phot_bp_mean_mag-phot_rp_mean_mag,2) AND phot_bp_rp_excess_factor > 1.0+0.015*power(phot_bp_mean_mag-phot_rp_mean_mag,2) AND visibility_periods_used>8 AND astrometric_chi2_al/(astrometric_n_good_obs_al-5)<1.44*greatest(1,exp(-0.4*(phot_g_mean_mag-19.5)))" #search statement from Gaia DR2HRD 2018
@@ -79,7 +79,7 @@ condition_string = "(parallax>=" +str(parallax_min) + " AND parallax_over_error>
 #search_statement= search_statement + " AND parallax > " + str(parallax_min)
 ########################
 
-search_statement = "SELECT phot_g_mean_mag+5*log10(parallax+(" + str(parallax_correction)+"))-10 AS mg, bp_rp FROM gaiadr2.gaia_source WHERE parallax_over_error > 10 AND phot_g_mean_flux_over_error>50 AND phot_rp_mean_flux_over_error>20 AND phot_bp_mean_flux_over_error>20 AND phot_bp_rp_excess_factor < 1.3+0.06*power(phot_bp_mean_mag-phot_rp_mean_mag,2) AND phot_bp_rp_excess_factor > 1.0+0.015*power(phot_bp_mean_mag-phot_rp_mean_mag,2) AND visibility_periods_used>8 AND astrometric_chi2_al/(astrometric_n_good_obs_al-5)<1.44*greatest(1,exp(-0.4*(phot_g_mean_mag-19.5)))" #modified to have number limit search statement from Gaia DR2HRD 2018
+search_statement = "SELECT phot_g_mean_mag+5*log10(parallax+(" + str(parallax_correction)+"))-10 AS mg, bp_rp, phot_g_mean_mag, phot_bp_mean_mag, phot_rp_mean_mag, parallax FROM gaiadr2.gaia_source WHERE parallax_over_error > 10 AND phot_g_mean_flux_over_error>50 AND phot_rp_mean_flux_over_error>20 AND phot_bp_mean_flux_over_error>20 AND phot_bp_rp_excess_factor < 1.3+0.06*power(phot_bp_mean_mag-phot_rp_mean_mag,2) AND phot_bp_rp_excess_factor > 1.0+0.015*power(phot_bp_mean_mag-phot_rp_mean_mag,2) AND visibility_periods_used>8 AND astrometric_chi2_al/(astrometric_n_good_obs_al-5)<1.44*greatest(1,exp(-0.4*(phot_g_mean_mag-19.5)))" #modified to have number limit search statement from Gaia DR2HRD 2018
 search_statement= search_statement + " AND parallax > " + str(parallax_min)
 
 #bailer_ex_search = "SELECT source_id, ra, dec, phot_g_mean_mag, r_est, r_lo, r_hi, teff_val FROM gaiadr2_complements.geometric_distance JOIN gaiadr2.gaia_source USING source_id WHERE r_est < 10 AND teff_val > 7000"
@@ -198,11 +198,11 @@ def asynchronous_query():
 #synchronous_query_uptab()
 
 
-#output_table = asynchronous_query()
-#output_table.write(output_name, format = 'ascii.csv', overwrite= True)
+output_table = asynchronous_query()
+output_table.write(output_name, format = 'ascii.csv', overwrite= True)
 
-target_output = cone_search(target_ra, target_dec)
-target_output.write(target_output_name, format = 'ascii.csv', overwrite= True)
+#target_output = cone_search(target_ra, target_dec)
+#target_output.write(target_output_name, format = 'ascii.csv', overwrite= True)
 
 #thing = Gaia.query_object('PSR J1431-4715', width = 0.5 *u.arcsecond, height = 0.5*u.arcsecond )
 #thing.pprint()

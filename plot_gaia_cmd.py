@@ -48,8 +48,8 @@ m_psr= 1.4*u.Msun
 ext_method=  'MG-MRP'
 
 list_color= 'b'
-single_list=False #turns off the original for-loop method for plotting from a single list
-error_bar=False #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
+single_list=True#turns off the original for-loop method for plotting from a single list
+error_bar=True #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
 
 parallax_correction = 0.029 #from Lindgren et al 2018
 #parallax_correction = 0 #so nothing done
@@ -62,13 +62,13 @@ good_teff_range = [6000, 14750]
 axes_x= [-0.7, 5]
 #axes_x=[-2,5]
 #axes_x=[-0.4,0.9]
+#axes_x=[-4, 8]
 
-#axes_x= [-0.7, 2]
-#axes_x= [-2, 5]
+
 #axes_y=[-1, 14.5]
 axes_y = [-2,16]
 #axes_y = [-5,16]
-#axes_y = [-4,18]
+#axes_y = [-8,20]
 #axes_y = [9,12]
 #axes_y= [9,16]
 g_abs_mag_fill= axes_y[1]
@@ -93,10 +93,11 @@ test_radii = np.array([0.01, 0.1, 1, 10]) * u.Rsun
 num_targs = 'all'
 #num_targs = '47Tuc'
 distance = 100
+#distance=500
 #distance = 25
 #grid_num = 220
-#grid_num = 225
-grid_num = 500
+grid_num = 225
+#grid_num = 500
 #grid_num =1000
 
 mc_number = 10000
@@ -126,6 +127,7 @@ target_input= 'weird_ogle.csv'
 #other_target_input='hot_wind_wds_gaia.csv'
 #other_target_input='hv_wds_gaia.csv'
 other_target_input='pre_elms_gaia.csv'
+other_target_input='20190107_chris_merge_gaia.csv'
 #other_target_input= 'PSRJ1903p0327.csv'
 
 
