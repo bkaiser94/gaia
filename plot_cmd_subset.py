@@ -24,9 +24,11 @@ import astropy
 
 input_filename= 'test_subset200.txt'
 output_name= 'subset_weirdos.txt'
-other_output_name='20190107_chris.csv'
+other_output_name='20190109_blue.csv'
+
 
 generic_table = Table.read(input_filename, format= 'ascii.tab')
+
 
 axes_x= [-0.7, 5]
 #axes_x= [-0.7, 2]
@@ -46,9 +48,12 @@ mc_number = 10000
 basis_coeff1= 0.968664
 basis_coeff2= 0.248375
 
-bp_rp_bounds = [1.54,2.40]
-gabsmag_bounds=[13.78,14.6]
-
+#bp_rp_bounds = [1.54,2.40]
+#gabsmag_bounds=[13.78,14.6]
+bp_rp_bounds = [-0.3,0]
+gabsmag_bounds=[16,17]
+xprime_bounds= [0.877,2.278]
+yprime_bounds=[4.627,9]
 
 def distance_modulus(g_mag, distance, extinction = 0.0):
     return g_mag - 5*np.log10(distance/10.)
@@ -170,6 +175,10 @@ def slice_and_dice(table, bounds1, bounds2):
 
 
 def chop_chop(table, bounds1, bounds2):
+    """
+    Essentially just slice_and_dice() with bp_rp and mg instead of the newly defined coordinate basis
+    
+    """
     lower_cut= np.where(table['bp_rp'] > bounds1[0])
     low_table= table[lower_cut]
     upper_cut = np.where(low_table['bp_rp'] < bounds1[1])
@@ -201,11 +210,11 @@ except KeyError as error:
     
 #print(generic_table[0])
 #in_bounds = np.where(generic_xprime> 0.877)
-acc_table = slice_and_dice(generic_table,[0.877,2.278], [4.627,9])
+acc_table = slice_and_dice(generic_table, xprime_bounds, yprime_bounds)
 print(acc_table)
 
 
-acc_table.write(output_name, format = 'ascii.tab', overwrite= True)
+acc_table.write(output_name, format = 'ascii.csv', overwrite= True)
 
 
 
@@ -240,11 +249,11 @@ def plot_context(acc_table= acc_table):
 
 
 ################ The search region ###################
-middle_area= generic_table[np.where(generic_table['bp_rp']>2.25)]
-middler_area= middle_area[np.where(middle_area['bp_rp']<3.7)]
-only_one= middler_area[np.where(middler_area['mg']> 14.5)]
-print("hopefully low point")
-print(only_one)
+#middle_area= generic_table[np.where(generic_table['bp_rp']>2.25)]
+#middler_area= middle_area[np.where(middle_area['bp_rp']<3.7)]
+#only_one= middler_area[np.where(middler_area['mg']> 14.5)]
+#print("hopefully low point")
+#print(only_one)
 
 #chris_table= chop_chop(generic_table, [2.25, 3.7],[14.5, 20])
 chris_table= chop_chop(generic_table, bp_rp_bounds, gabsmag_bounds)
@@ -261,11 +270,11 @@ for row in chris_table:
 param_distance = acc_table['xprime']**2+acc_table['yprime']**2
 sort_order = np.argsort(param_distance)
 sorted_table= acc_table[sort_order]
-#for row in acc_table:
-    #print(row)
-    #plot_context()
-    #plt.scatter(row['bp_rp'], row['mg'], color= 'r')
-    #plt.show()
+for row in acc_table:
+    print(row)
+    plot_context()
+    plt.scatter(row['bp_rp'], row['mg'], color= 'r')
+    plt.show()
 
 for row in sorted_table:
     print(row)

@@ -1,11 +1,9 @@
 """
-Created by Ben Kaiser (UNC-Chapel Hill) 2019-01-07
+Created by Ben Kaiser (UNC-Chapel Hill) 2019-01-09
 
-This script should plot lists of targets over the CMD for a given distance, and allow for the creation of different
-CMDs than M_G vs. BP-RP, i.e. M_G vs. G-RP
+This should combine star magnitudes in the Gaia CMD to simulate an unresolved binary's position in the diagram with an empirical method.
 
-It's going to borrow heavily from plot_gaia_cmd.py, but I'm going to try to keep it clean of all of the extra stuff
-I have in there to do calculations of a single target.
+
 
 """
 
@@ -22,11 +20,15 @@ import scipy.stats as scistats
 #import seaborn as sns
 import astropy
 
-
-#import passband_model_convolution as pmc
 import gaia_extinction
 #import wdatmos
 import plotting_dicts as pod
+
+merged_file=''
+
+star1_file=''
+
+#star 2 is the one that should be solved for using the file.
 
 
 absmag_band= 'g'
@@ -54,20 +56,19 @@ mc_number = 10000
 percent_off = 34 #1-sigma equivalent
 #############
 
-target_input='20190107_chris_merge_gaia.csv'
-target_input='l-0.3bp_g_gaia_corr_full.csv'
-target_input='elm_survey_gaia.csv'
-target_input='pre_elms_gaia.csv'
-target_input = '20190109_blue_gaia.csv'
-target_input='hot_wind_wds_gaia.csv'
-target_input='Eriks_disk_candidates'
-target_label= ''
-
 num_targs = 'all'
 #num_targs = '47Tuc'
 distance = 200
 grid_num = 225
 
+#############3
+
+#star1_input= '20190109_star1_ultracool.csv'
+#merged_star_input= '20190109_merged_star.csv'
+
+
+star1_input= '20190109_star1_Erik.csv'
+merged_star_input= '20190109_merged_star_Erik.csv'
 
 #################################################################3
 ########## End of things that should be edited for a given run######################
@@ -94,7 +95,12 @@ zeropoint_dict={"g": [25.6883657251, 0.0017850023],
 ################################
 #Reading in the tables for the background and target files
 generic_table = Table.read(generic_input)
-target_table = Table.read(target_input)
+#target_table = Table.read(target_input)
+star1_table= Table.read(star1_input)[0]
+merged_star_table= Table.read(merged_star_input)[0]
+
+print(star1_table)
+print(merged_star_table)
 
 ####################################
 def distance_modulus(g_mag, distance):
@@ -103,6 +109,10 @@ def distance_modulus(g_mag, distance):
 def get_mag(flux, filter_string):
     mag0 = zeropoint_dict[filter_string][0]
     return -2.5*np.log10(flux) +mag0
+
+def mag_to_flux(mag, filter_string):
+    mag0=zeropoint_dict[filter_string][0]
+    return 10.**((mag-mag0)/-2.5)
 
 def get_mc_distribution(value, error):
     error_distribution = np.random.normal(loc= value, scale = error, size = mc_number)
@@ -120,10 +130,11 @@ def match_sizes(change_array, match_array):
     """
     try:
         min_inds = np.nanmin([change_array.shape[0], match_array.shape[0]])
-        
+        print(change_array[:min_inds], match_array[:min_inds])
         return change_array[:min_inds], match_array[:min_inds]
     except AttributeError:
         #the inputs aren't actually arrays
+        print("inputs aren't actually arrays")
         return change_array, match_array
     
     
@@ -242,6 +253,86 @@ def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = Tr
         pass
     return abs_mag, abs_mag_error, abs_mag_dist
 
+def get_star_absmags(star_table, plot_all=False):
+    g_absmag, g_absmag_error, g_absmag_dist= get_pass_abs_mag(star_table, passband_string='g', plot_all= plot_all)
+    bp_absmag, bp_absmag_error, bp_absmag_dist= get_pass_abs_mag(star_table, passband_string='bp', plot_all=plot_all)
+    rp_absmag, rp_absmag_error, rp_absmag_dist= get_pass_abs_mag(star_table, passband_string='rp', plot_all=plot_all)
+    star_dict= {'g':{
+        'absmag':g_absmag,
+        'absmag_error':g_absmag_error,
+        'absmag_dist':g_absmag_dist},
+    'bp':{
+        'absmag':bp_absmag,
+        'absmag_error':bp_absmag_error,
+        'absmag_dist':bp_absmag_dist},
+    'rp':{
+        'absmag':rp_absmag,
+        'absmag_error':rp_absmag_error,
+        'absmag_dist':rp_absmag_dist}}
+    return star_dict
+
+def find_star2(star1_table, merged_star_table, bounded=False, bounds=[]):
+    """
+    Take the table for the first star, and the star that represents the position of the end product, and then
+    return the position of the second star that is required to end up in that spot.
+    
+    """
+    star1_absmag_dict =get_star_absmags(star1_table, plot_all=True)
+    merged_absmag_dict= get_star_absmags(merged_star_table, plot_all=True)
+    
+    def get_star2_absmag(bandpass='g'):
+        print(bandpass, 'mag:', merged_absmag_dict[bandpass]['absmag'])
+        star2_flux= mag_to_flux(merged_absmag_dict[bandpass]['absmag'],bandpass)-mag_to_flux(star1_absmag_dict[bandpass]['absmag'], bandpass)
+        print(bandpass, 'flux:', star2_flux)
+        star2_flux_dist= mag_to_flux(merged_absmag_dict[bandpass]['absmag_dist'],bandpass)-mag_to_flux(star1_absmag_dict[bandpass]['absmag_dist'], bandpass)
+        star2_absmag= get_mag(star2_flux,bandpass)
+        star2_absmag_dist= get_mag(star2_flux_dist,bandpass)
+        return star2_absmag, star2_absmag_dist
+    star2_g_absmag, star2_g_absmag_dist= get_star2_absmag(bandpass='g')
+    star2_bp_absmag, star2_bp_absmag_dist= get_star2_absmag(bandpass='bp')
+    star2_rp_absmag, star2_rp_absmag_dist= get_star2_absmag(bandpass='rp')
+    star2_bp_absmag_dist=remove_negative(star2_bp_absmag_dist)
+    star2_rp_absmag_dist= remove_negative(star2_rp_absmag_dist)
+    star2_rp_absmag_dist,star2_bp_absmag_dist= match_sizes(star2_rp_absmag_dist, star2_bp_absmag_dist)
+    
+    plt.title('')
+    plt.show()
+    
+    print(star2_rp_absmag_dist)
+    plt.title('rp')
+    plt.hist(star2_rp_absmag_dist)
+    plt.show()
+    
+    plt.title('g')
+    plt.hist(star2_g_absmag_dist)
+    plt.show()
+    
+    plt.title('bp')
+    plt.hist(star2_bp_absmag_dist)
+    plt.show()
+    
+    
+    star2_bp_rp= star2_bp_absmag-star2_rp_absmag
+    star2_bp_rp_dist= star2_bp_absmag_dist-star2_rp_absmag_dist
+    star2_bp_rp_error=get_errors(star2_bp_rp_dist)
+    star2_g_absmag_error= get_errors(star2_g_absmag_dist)
+   
+    #plt.title('bp_rp')
+    #plt.hist(star2_bp_rp_dist)
+    #plt.show()
+    
+    star1_bp_rp, star1_bp_rp_error = get_colour_dif(star1_table, colours=['bp','rp'])
+    merged_bp_rp, merged_bp_rp_error= get_colour_dif(merged_star_table, colours=['bp','rp'])
+    
+    print('=======')
+    print('star2 M_G:', star2_g_absmag, '+/-', star2_g_absmag_error)
+    print('star2 BP-RP:', star2_bp_rp, '+/-', star2_bp_rp_error)
+    plt.errorbar(star2_bp_rp, star2_g_absmag, yerr = star2_g_absmag_error,  xerr = star2_bp_rp_error, marker = 'o', markersize = 6, color = 'magenta', capsize = 4, label = 'star2', linestyle ='none')
+    plt.errorbar(star1_bp_rp, star1_absmag_dict['g']['absmag'], yerr = star1_absmag_dict['g']['absmag_error'],  xerr = star1_bp_rp_error, marker = 'o', markersize = 6, color = list_color, capsize = 4, label = 'star1', linestyle ='none')
+    plt.errorbar(merged_bp_rp, merged_absmag_dict['g']['absmag'], yerr = merged_absmag_dict['g']['absmag_error'],  xerr = merged_bp_rp_error, marker = 'o', markersize = 6, color = 'g', capsize = 4, label = 'merged_star', linestyle ='none')
+    
+    
+    return
 
 def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp']):
     for row in input_table:
@@ -304,22 +395,12 @@ def plot_bkg_cmd(generic_table= generic_table, absmag='g', colours=['bp','rp']):
     return
 
 
-def make_cmd(target_table=target_table, generic_table= generic_table, absmag='g', colours=['bp', 'rp']):
-    plot_bkg_cmd(generic_table=generic_table, absmag=absmag, colours=colours)
-    plot_target_table(target_table, absmag=absmag, colours=colours)
-    plt.show()
-    return
-
-#def make_cmd_from_list(target_list=[target_table], generic_table=generic_table, absmag='g', colours=['bp','rp']):
+#def make_cmd(target_table=target_table, generic_table= generic_table, absmag='g', colours=['bp', 'rp']):
     #plot_bkg_cmd(generic_table=generic_table, absmag=absmag, colours=colours)
-    #for target_table in target_list:
-        #plot_target_table(target_table, absmag=absmag, colours=colours)
-        
+    #plot_target_table(target_table, absmag=absmag, colours=colours)
+    #plt.show()
+    #return
 
-####################################
-
-
-
-make_cmd(target_table=target_table, generic_table= generic_table)
-make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= colours)
-make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= ['bp','g'])
+find_star2(star1_table, merged_star_table)
+plot_bkg_cmd()
+plt.show()

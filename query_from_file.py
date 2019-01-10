@@ -32,10 +32,13 @@ from astropy.table import Table, vstack, Column
 #output_file= 'elm_survey_gaia.csv'
 
 input_file= '20190107_chris.csv'
+input_file='20190109_blue.csv'
+input_file='Eriks_disk_candidates.csv'
+#input_file='all_l-0.3bp_g_gaia_corr.csv'
 
 output_name_parts = input_file.split('.')
 output_file= output_name_parts[0]+ '_gaia.' + output_name_parts[1]
-
+#output_file='l-0.3bp_g_gaia_corr_full.csv'
 credentials_file= 'Gaia_credentials.txt'
 print("Logging in.")
 Gaia.login(credentials_file= credentials_file)

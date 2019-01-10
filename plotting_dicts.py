@@ -28,3 +28,9 @@ plot_dict={'BLAPs_gaia.csv':{
     'elm_survey_gaia.csv':{
         'color':'#9966ff',
         'label':'ELM Survey'}}
+
+
+#absmag:{ colours[0]:
+cmd_border={'g':{
+    'bp':{'x':[-0.7, 5], 'y':[-3,16]},
+    'g':{'x':[-0.5,2], 'y':[-3,16]}}}

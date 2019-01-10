@@ -59,15 +59,15 @@ parallax_correction = 0.029 #from Lindgren et al 2018
 good_teff_range = [6000, 14750]
 
 
-axes_x= [-0.7, 5]
-#axes_x=[-2,5]
+#axes_x= [-0.7, 5]
+axes_x=[-2,7]
 #axes_x=[-0.4,0.9]
 #axes_x=[-4, 8]
 
 
 #axes_y=[-1, 14.5]
-axes_y = [-2,16]
-#axes_y = [-5,16]
+#axes_y = [-2,16]
+axes_y = [-5,18]
 #axes_y = [-8,20]
 #axes_y = [9,12]
 #axes_y= [9,16]
@@ -92,7 +92,7 @@ test_radii = np.array([0.01, 0.1, 1, 10]) * u.Rsun
 
 num_targs = 'all'
 #num_targs = '47Tuc'
-distance = 100
+distance = 500
 #distance=500
 #distance = 25
 #grid_num = 220
