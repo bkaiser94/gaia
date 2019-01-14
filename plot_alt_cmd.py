@@ -29,6 +29,11 @@ import gaia_extinction
 import plotting_dicts as pod
 
 
+plt.rc('font', size =18)
+#plt.rc('lines', markersize=12)
+#plt.rc('font', size = 11)
+plt.rc('lines', markersize = 5)
+
 absmag_band= 'g'
 colours= ['g','rp']
 
@@ -60,13 +65,16 @@ target_input='elm_survey_gaia.csv'
 target_input='pre_elms_gaia.csv'
 target_input = '20190109_blue_gaia.csv'
 target_input='hot_wind_wds_gaia.csv'
-target_input='Eriks_disk_candidates'
+target_input='Eriks_disk_candidates_gaia.csv'
+target_input='dC_sample_roulston2018_gaia.csv'
+target_input='20190111_red_things_gaia.csv'
+target_input='alt_red_things_g_rp_greater_17_gaia.csv'
 target_label= ''
 
 num_targs = 'all'
 #num_targs = '47Tuc'
-distance = 200
-grid_num = 225
+distance = 500
+grid_num = 2000
 
 
 #################################################################3
@@ -291,6 +299,7 @@ def plot_bkg_cmd(generic_table= generic_table, absmag='g', colours=['bp','rp']):
     counts = polything.get_array()
     print(counts.shape)
     counts= np.sqrt(counts)
+    #counts=np.log(counts)
     polything.set_array(counts)
     polything.autoscale()
     plt.ylim(axes_y)
@@ -301,7 +310,50 @@ def plot_bkg_cmd(generic_table= generic_table, absmag='g', colours=['bp','rp']):
     #plt.ylabel(r'$M_G$')
     plt.ylabel('M_'+absmag)
     plt.subplots_adjust(wspace = 0, hspace = 0, top = 0.90, bottom = 0.10, left = 0.10, right = 0.90)
+    
+    
     return
+
+def fig_bkg_cmd(longax, generic_table= generic_table, absmag='g', colours=['bp','rp']):
+    """
+    Generates the hexbin histogram of whatever Gaia sample, such as the 100pc sample, or 47 Tucanae
+    """
+        
+    try:
+        generic_parallax = generic_table ['parallax']+parallax_correction
+        generic_parallax = generic_parallax *1e-3 #parallax in arcseconds now
+        generic_distance = 1./generic_parallax #parsec distance
+        generic_mag = generic_table['phot_'+absmag+'_mean_mag']
+        generic_colour0 = generic_table['phot_'+colours[0]+'_mean_mag']
+        generic_colour1= generic_table['phot_'+colours[1]+'_mean_mag']
+        generic_colour_dif= generic_colour0- generic_colour1
+        generic_absmag = distance_modulus(generic_mag, generic_distance)
+
+    except KeyError as error:
+        print(error)
+        print("assuming it's the simplified file.")
+        if ((colours!=['bp','rp']) or (absmag != 'g')):
+                print("Can't use the simplified file with alternative colours or absolute magnitudes; it only works with M_G and BP-RP")
+        generic_absmag= generic_table['mg']
+        generic_colour_dif= generic_table['bp_rp']
+    polything = longax.hexbin(generic_colour_dif, generic_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
+    counts = polything.get_array()
+    print(counts.shape)
+    #counts= np.sqrt(counts)
+    counts=np.log(counts)
+    polything.set_array(counts)
+    polything.autoscale()
+    longax.set_ylim(axes_y)
+    plt.gca().invert_yaxis()
+    #plt.xlabel(r'$G_{BP} - G_{RP}$')
+    longax.set_xlabel(colours[0]+"-"+colours[1])
+    longax.set_xlim(axes_x)
+    #plt.ylabel(r'$M_G$')
+    longax.set_ylabel('M_'+absmag)
+    #plt.subplots_adjust(wspace = 0, hspace = 0, top = 0.90, bottom = 0.10, left = 0.10, right = 0.90)
+    
+    
+    return longax
 
 
 def make_cmd(target_table=target_table, generic_table= generic_table, absmag='g', colours=['bp', 'rp']):
@@ -317,6 +369,20 @@ def make_cmd(target_table=target_table, generic_table= generic_table, absmag='g'
         
 
 ####################################
+
+longfig= plt.figure(figsize= (36, 36))
+longax= longfig.add_subplot(1,1,1)
+longax= fig_bkg_cmd(longax)
+longfig.tight_layout()
+longfig.savefig(str(distance)+'pc_big_cmd.png')
+longfig.closefig()
+    #longax.plot(plot_waves, flux_normed, color= 'k')
+    #plot_element_lines(plot_waves, longax)
+    #plt.grid()
+    ##longax.set_ylabel('Flux (normed)')
+    #longax.set_ylabel('Flux (cgs units)')
+    #longax.set_xlabel('Wavelength $(\AA)$')
+    #longfig.savefig(dest_dir+target_dir+'long_spectrum_'+ str(wave_limits[0])+','+str(wave_limits[1]) + '.pdf')
 
 
 

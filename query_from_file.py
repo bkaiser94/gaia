@@ -31,9 +31,12 @@ from astropy.table import Table, vstack, Column
 #input_file='apj522588t5_mrt.txt'
 #output_file= 'elm_survey_gaia.csv'
 
-input_file= '20190107_chris.csv'
-input_file='20190109_blue.csv'
-input_file='Eriks_disk_candidates.csv'
+#input_file= '20190107_chris.csv'
+#input_file= 'dC_sample_roulston2018.csv'
+#input_file='20190111_red_things.csv'
+input_file= 'alt_red_things_g_rp_greater_17.csv'
+#input_file='20190109_blue.csv'
+#input_file='Eriks_disk_candidates.csv'
 #input_file='all_l-0.3bp_g_gaia_corr.csv'
 
 output_name_parts = input_file.split('.')
@@ -45,6 +48,7 @@ Gaia.login(credentials_file= credentials_file)
 print("Log in succesful.")
 
 
+coord_list= []
 #allarray= np.genfromtxt(input_file, names=True, delimiter=',', dtype='U6')
 allarray= np.genfromtxt(input_file, delimiter= ',', dtype= str)
 #allarray= np.genfromtxt(input_file, delimiter=[11,13,13], dtype= str)
@@ -76,6 +80,8 @@ def cone_search(ra, dec):
         coordinate = coord.SkyCoord(ra = ra, dec =dec, unit = (u.deg, u.deg), frame = 'icrs')
     #coordinate = coord.SkyCoord(ra = ra*u.hourangle, dec =dec*u.degree, frame = 'icrs')
     radius = 1.5*u.arcsecond
+    #coord_list.append(coordinate)
+    #print(coordinate.ra.to(u.hourangle), coordinate.dec)
     #radius = 5*u.arcsecond
     j= Gaia.cone_search_async(coordinate, radius)
     r=j.get_results()
@@ -121,3 +127,6 @@ stacked_results= vstack(collected_results)
 stacked_results.pprint()
 
 stacked_results.write(output_file, format='ascii.csv', overwrite=True)
+
+#for thing in coord_list:
+    #print(thing.ra.to(u.hourangle), thing.dec)

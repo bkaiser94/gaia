@@ -24,7 +24,9 @@ import astropy
 
 input_filename= 'test_subset200.txt'
 output_name= 'subset_weirdos.txt'
-other_output_name='20190109_blue.csv'
+#other_output_name='20190109_blue.csv'
+#other_output_name='20190107_chris.csv'
+other_output_name='20190111_red_things.csv'
 
 
 generic_table = Table.read(input_filename, format= 'ascii.tab')
@@ -50,8 +52,10 @@ basis_coeff2= 0.248375
 
 #bp_rp_bounds = [1.54,2.40]
 #gabsmag_bounds=[13.78,14.6]
-bp_rp_bounds = [-0.3,0]
-gabsmag_bounds=[16,17]
+bp_rp_bounds = [4.4,5]
+gabsmag_bounds=[10,12]
+#bp_rp_bounds = [-0.3,0]
+#gabsmag_bounds=[16,17]
 xprime_bounds= [0.877,2.278]
 yprime_bounds=[4.627,9]
 
