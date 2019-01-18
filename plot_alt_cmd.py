@@ -41,8 +41,12 @@ colours= ['g','rp']
 
 
 
-axes_x= [-1.5, 6]
-axes_y = [-4,18]
+#axes_x= [-1.5, 6]
+#axes_y = [-4,18]
+
+
+axes_x= [-3, 6]
+axes_y = [-5,25]
 
 y_fill= axes_y[1]
 x_fill= axes_x[0]
@@ -50,7 +54,7 @@ x_fill= axes_x[0]
 list_color = '#1ca1f2'
 single_list=True#turns off the original for-loop method for plotting from a single list
 error_bar=True #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
-annotate= True #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
+annotate= False #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
 parallax_correction = 0.029 #from Lindgren et al 2018
 
 
@@ -69,12 +73,16 @@ target_input='Eriks_disk_candidates_gaia.csv'
 target_input='dC_sample_roulston2018_gaia.csv'
 target_input='20190111_red_things_gaia.csv'
 target_input='alt_red_things_g_rp_greater_17_gaia.csv'
+target_input='WD_cooling_tip_gaia.csv'
+target_input='weird_CPM_binary_gaia.csv'
 target_label= ''
 
 num_targs = 'all'
 #num_targs = '47Tuc'
-distance = 500
-grid_num = 2000
+num_targs= 'Lindegren'
+selection_letter= 'B'
+distance = 200
+grid_num = 500
 
 
 #################################################################3
@@ -87,6 +95,9 @@ if num_targs == 'all':
     title_suffix = ' in the ' + str(distance)+ 'pc Gaia DR2 CMD'
 elif num_targs== '47Tuc':
     generic_input= "47Tuc_10arcmin.csv"
+elif num_targs== 'Lindegren':
+    generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
+    generic_input= 'Lindegren_appC_selB_antiC_nobulgedisk.csv'
 else:
     num_targs = int(num_targs)
     generic_input = 'top'+str(num_targs) + '_nearby_gaia.csv'
@@ -370,12 +381,12 @@ def make_cmd(target_table=target_table, generic_table= generic_table, absmag='g'
 
 ####################################
 
-longfig= plt.figure(figsize= (36, 36))
-longax= longfig.add_subplot(1,1,1)
-longax= fig_bkg_cmd(longax)
-longfig.tight_layout()
-longfig.savefig(str(distance)+'pc_big_cmd.png')
-longfig.closefig()
+#longfig= plt.figure(figsize= (36, 36))
+#longax= longfig.add_subplot(1,1,1)
+#longax= fig_bkg_cmd(longax)
+#longfig.tight_layout()
+#longfig.savefig(str(distance)+'pc_big_cmd.png')
+#longfig.closefig()
     #longax.plot(plot_waves, flux_normed, color= 'k')
     #plot_element_lines(plot_waves, longax)
     #plt.grid()
@@ -384,8 +395,25 @@ longfig.closefig()
     #longax.set_xlabel('Wavelength $(\AA)$')
     #longfig.savefig(dest_dir+target_dir+'long_spectrum_'+ str(wave_limits[0])+','+str(wave_limits[1]) + '.pdf')
 
+plot_bkg_cmd()
+plt.title(generic_input)
+plt.show()
+plot_bkg_cmd(absmag= absmag_band, colours= colours)
+plt.title(generic_input)
+plt.show()
+plot_bkg_cmd(generic_table= generic_table, absmag= absmag_band, colours= ['bp','g'])
+plt.title(generic_input)
+plt.show()
+
+plot_bkg_cmd(absmag= 'bp', colours= ['bp','g'])
+plt.title(generic_input)
+plt.show()
 
 
-make_cmd(target_table=target_table, generic_table= generic_table)
-make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= colours)
-make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= ['bp','g'])
+plot_bkg_cmd(absmag= 'rp', colours= ['g','rp'])
+plt.title(generic_input)
+plt.show()
+
+#make_cmd(target_table=target_table, generic_table= generic_table)
+#make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= colours)
+#make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= ['bp','g'])
