@@ -14,6 +14,10 @@ import astropy.coordinates as coord
 from astropy.table import Table, vstack, Column
  
  
+filter_confused_sources= False
+search_radius = 1.5 #in arcseconds
+ 
+ 
 #input_file= 'BLAPs_table1_Piet2017.csv'
 #output_file= 'BLAPs_gaia.csv'
 #input_file= 'pulsar_companions.txt'
@@ -37,13 +41,19 @@ from astropy.table import Table, vstack, Column
 #input_file= 'alt_red_things_g_rp_greater_17.csv'
 #input_file='WD_cooling_tip.csv'
 #input_file= 'weird_CPM_binary.csv'
-input_file='Lindegren_appC_selB_antiC_nobulgedisk.csv'
+#input_file='Lindegren_appC_selB_antiC_nobulgedisk.csv'
+#input_file='Lindegren_appC_selB_antiC_cut2.csv'
 #input_file='20190109_blue.csv'
+input_file='20190121_excess_interesting.csv'
 #input_file='Eriks_disk_candidates.csv'
 #input_file='all_l-0.3bp_g_gaia_corr.csv'
 
-output_name_parts = input_file.split('.')
-output_file= output_name_parts[0]+ '_gaia.' + output_name_parts[1]
+if filter_confused_sources:
+    output_name_parts = input_file.split('.')
+    output_file= output_name_parts[0]+ '_gaia_sc.' + output_name_parts[1]
+else:
+    output_name_parts = input_file.split('.')
+    output_file= output_name_parts[0]+ '_gaia.' + output_name_parts[1]
 #output_file='l-0.3bp_g_gaia_corr_full.csv'
 credentials_file= 'Gaia_credentials.txt'
 print("Logging in.")
@@ -82,7 +92,8 @@ def cone_search(ra, dec):
     else:
         coordinate = coord.SkyCoord(ra = ra, dec =dec, unit = (u.deg, u.deg), frame = 'icrs')
     #coordinate = coord.SkyCoord(ra = ra*u.hourangle, dec =dec*u.degree, frame = 'icrs')
-    radius = 1.5*u.arcsecond
+    #radius = 1.5*u.arcsecond
+    radius= search_radius*u.arcsecond
     #coord_list.append(coordinate)
     #print(coordinate.ra.to(u.hourangle), coordinate.dec)
     #radius = 5*u.arcsecond
@@ -104,24 +115,27 @@ for ra,dec,name in zip(ra_array, dec_array,name_array):
     try:
         table_length = len(results['dist'])
         print(table_length)
-        #new_array = np.full(table_length, name, dtype=str)
-        #new_array= np.empty(table_length, dtype=str)
-        #new_array[:]=name
-        #print(new_array)
-        new_array=[]
-        for i in range(0,table_length):
-            new_array.append(name)
-        print(new_array)
-        name_col= Column(new_array, name='name',dtype=str) #yeah that's a confusing series of 'names'
-        #output_row.add_column(name_col)
-        results.add_column(name_col)
-        try:
-            collected_results.append(results[0])
-            #collected_results.append(output_row)
-            #collected_results.append(results)
-        except IndexError:
-            print("index error")
-            pass
+        if (filter_confused_sources and table_length>1):
+            print("Too many sources in aperture")
+        else:
+            #new_array = np.full(table_length, name, dtype=str)
+            #new_array= np.empty(table_length, dtype=str)
+            #new_array[:]=name
+            #print(new_array)
+            new_array=[]
+            for i in range(0,table_length):
+                new_array.append(name)
+            print(new_array)
+            name_col= Column(new_array, name='name',dtype=str) #yeah that's a confusing series of 'names'
+            #output_row.add_column(name_col)
+            results.add_column(name_col)
+            try:
+                collected_results.append(results[0])
+                #collected_results.append(output_row)
+                #collected_results.append(results)
+            except IndexError:
+                print("index error")
+                pass
     except TypeError as error:
         print(error)
         pass

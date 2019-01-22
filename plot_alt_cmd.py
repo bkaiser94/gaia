@@ -54,7 +54,7 @@ x_fill= axes_x[0]
 list_color = '#1ca1f2'
 single_list=True#turns off the original for-loop method for plotting from a single list
 error_bar=True #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
-annotate= False #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
+annotate= True #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
 parallax_correction = 0.029 #from Lindgren et al 2018
 
 
@@ -75,14 +75,15 @@ target_input='20190111_red_things_gaia.csv'
 target_input='alt_red_things_g_rp_greater_17_gaia.csv'
 target_input='WD_cooling_tip_gaia.csv'
 target_input='weird_CPM_binary_gaia.csv'
+target_input='20190121_excess_interesting_gaia.csv'
 target_label= ''
 
-num_targs = 'all'
+#num_targs = 'all'
 #num_targs = '47Tuc'
 num_targs= 'Lindegren'
-selection_letter= 'B'
+selection_letter= 'C'
 distance = 200
-grid_num = 500
+grid_num = 225
 
 
 #################################################################3
@@ -97,7 +98,7 @@ elif num_targs== '47Tuc':
     generic_input= "47Tuc_10arcmin.csv"
 elif num_targs== 'Lindegren':
     generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
-    generic_input= 'Lindegren_appC_selB_antiC_nobulgedisk.csv'
+    #generic_input= 'Lindegren_appC_selB_antiC_cut2.csv'
 else:
     num_targs = int(num_targs)
     generic_input = 'top'+str(num_targs) + '_nearby_gaia.csv'
@@ -284,20 +285,32 @@ def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp']):
 
 
 
-def plot_bkg_cmd(generic_table= generic_table, absmag='g', colours=['bp','rp']):
+def plot_bkg_cmd(generic_table= generic_table, absmag='g', colours=['bp','rp'], pseudo_colour= False):
     """
     Generates the hexbin histogram of whatever Gaia sample, such as the 100pc sample, or 47 Tucanae
     """
-        
+    
     try:
-        generic_parallax = generic_table ['parallax']+parallax_correction
-        generic_parallax = generic_parallax *1e-3 #parallax in arcseconds now
-        generic_distance = 1./generic_parallax #parsec distance
-        generic_mag = generic_table['phot_'+absmag+'_mean_mag']
-        generic_colour0 = generic_table['phot_'+colours[0]+'_mean_mag']
-        generic_colour1= generic_table['phot_'+colours[1]+'_mean_mag']
-        generic_colour_dif= generic_colour0- generic_colour1
-        generic_absmag = distance_modulus(generic_mag, generic_distance)
+        if pseudo_colour:
+            generic_parallax = generic_table ['parallax']+parallax_correction
+            generic_parallax = generic_parallax *1e-3 #parallax in arcseconds now
+            generic_distance = 1./generic_parallax #parsec distance
+            generic_mag = generic_table['phot_'+absmag+'_mean_mag']
+            generic_absmag = distance_modulus(generic_mag, generic_distance)
+            generic_colour_dif = 1./generic_table['astrometric_pseudo_colour']*1e4
+            plt.xlabel('1./astrometric_pseudo_colour (angstroms)')
+        else:
+            generic_parallax = generic_table ['parallax']+parallax_correction
+            generic_parallax = generic_parallax *1e-3 #parallax in arcseconds now
+            generic_distance = 1./generic_parallax #parsec distance
+            generic_mag = generic_table['phot_'+absmag+'_mean_mag']
+            generic_colour0 = generic_table['phot_'+colours[0]+'_mean_mag']
+            generic_colour1= generic_table['phot_'+colours[1]+'_mean_mag']
+            generic_colour_dif= generic_colour0- generic_colour1
+            generic_absmag = distance_modulus(generic_mag, generic_distance)
+            plt.xlabel(colours[0]+"-"+colours[1])
+            plt.xlim(axes_x)
+
 
     except KeyError as error:
         print(error)
@@ -316,8 +329,6 @@ def plot_bkg_cmd(generic_table= generic_table, absmag='g', colours=['bp','rp']):
     plt.ylim(axes_y)
     plt.gca().invert_yaxis()
     #plt.xlabel(r'$G_{BP} - G_{RP}$')
-    plt.xlabel(colours[0]+"-"+colours[1])
-    plt.xlim(axes_x)
     #plt.ylabel(r'$M_G$')
     plt.ylabel('M_'+absmag)
     plt.subplots_adjust(wspace = 0, hspace = 0, top = 0.90, bottom = 0.10, left = 0.10, right = 0.90)
@@ -395,22 +406,26 @@ def make_cmd(target_table=target_table, generic_table= generic_table, absmag='g'
     #longax.set_xlabel('Wavelength $(\AA)$')
     #longfig.savefig(dest_dir+target_dir+'long_spectrum_'+ str(wave_limits[0])+','+str(wave_limits[1]) + '.pdf')
 
-plot_bkg_cmd()
-plt.title(generic_input)
-plt.show()
-plot_bkg_cmd(absmag= absmag_band, colours= colours)
-plt.title(generic_input)
-plt.show()
-plot_bkg_cmd(generic_table= generic_table, absmag= absmag_band, colours= ['bp','g'])
-plt.title(generic_input)
-plt.show()
+#plot_bkg_cmd()
+#plt.title(generic_input)
+#plt.show()
+#plot_bkg_cmd(absmag= absmag_band, colours= colours)
+#plt.title(generic_input)
+#plt.show()
+#plot_bkg_cmd(generic_table= generic_table, absmag= absmag_band, colours= ['bp','g'])
+#plt.title(generic_input)
+#plt.show()
 
-plot_bkg_cmd(absmag= 'bp', colours= ['bp','g'])
-plt.title(generic_input)
-plt.show()
+#plot_bkg_cmd(absmag= 'bp', colours= ['bp','g'])
+#plt.title(generic_input)
+#plt.show()
 
 
-plot_bkg_cmd(absmag= 'rp', colours= ['g','rp'])
+#plot_bkg_cmd(absmag= 'rp', colours= ['g','rp'])
+#plt.title(generic_input)
+#plt.show()
+
+plot_bkg_cmd(absmag='g', pseudo_colour=True)
 plt.title(generic_input)
 plt.show()
 
