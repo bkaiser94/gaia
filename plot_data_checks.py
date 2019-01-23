@@ -79,7 +79,7 @@ target_label= ''
 num_targs = 'all'
 #num_targs = '47Tuc'
 num_targs= 'Lindegren'
-selection_letter= 'C'
+selection_letter= 'B'
 distance = 200
 grid_num = 225
 
@@ -107,6 +107,7 @@ elif num_targs== 'Lindegren':
     #generic_input='Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
     #generic_input='20190121_excess_interesting_gaia.csv'
     #generic_input= 'Lindegren_appC_selA_hv_region.csv'
+    #generic_input='Lindegren_appC_altC_noBDLMC.csv'
     #generic_input= 'ar_sco_gaia.csv'
 else:
     num_targs = int(num_targs)
@@ -128,6 +129,7 @@ target_table = Table.read(target_input)
 col_pairs=[
     ['bp_rp','mg'],
     ['astrometric_pseudo_colour','mg'],
+    ['bp_rp', 'phot_bp_rp_excess_factor'],
     ['ra','dec'],
     ['l','b'],
     ['parallax','phot_g_mean_mag'],
@@ -139,7 +141,6 @@ col_pairs=[
     ['astrometric_excess_noise','phot_bp_mean_mag'],
     ['astrometric_excess_noise','phot_rp_mean_mag'],
     ['astrometric_excess_noise','phot_bp_rp_excess_factor'],
-    ['bp_rp', 'phot_bp_rp_excess_factor'],
     ['phot_g_mean_mag', 'phot_bp_rp_excess_factor'],
     ['phot_bp_mean_mag', 'phot_bp_rp_excess_factor'],
     ['phot_rp_mean_mag', 'phot_bp_rp_excess_factor'],
@@ -191,7 +192,8 @@ def scatter_plot(string_pair):
     #plt.plot([5.33,22.3342],[5.49,19.126])
     plt.xlabel(string_pair[0])
     plt.ylabel(string_pair[1])
-    plt.title(string_pair[1] + ' vs. ' + string_pair[0])
+    #plt.title(string_pair[1] + ' vs. ' + string_pair[0])
+    plt.title(generic_input)
     plt.show()
     return
 
@@ -227,7 +229,8 @@ def hexbin_plot(string_pair):
     polything.autoscale()
     plt.xlabel(string_pair[0])
     plt.ylabel(string_pair[1])
-    plt.title(string_pair[1] + ' vs. ' + string_pair[0])
+    #plt.title(string_pair[1] + ' vs. ' + string_pair[0])
+    plt.title(generic_input)
     #plt.plot([5.33,22.3342],[5.49,19.126])
     plt.show()
     return
@@ -236,7 +239,19 @@ def bp_rp_cut_line(string_pair):
     if ((string_pair[0]== 'bp_rp') and (string_pair[1]=='phot_bp_rp_excess_factor')):
         xvals= np.linspace(-2,6.,1000)
         yvals= 1.3+0.06*(xvals)**2.
+        yvals2=1.0+0.015*xvals**2.
         plt.plot(xvals,yvals, linestyle='--', color='magenta')
+        plt.plot(xvals,yvals2,linestyle='--',color='magenta')
+    else:
+        pass
+    return
+
+
+def test_bp_rp_cut_line(string_pair):
+    if ((string_pair[0]== 'bp_rp') and (string_pair[1]=='phot_bp_rp_excess_factor')):
+        xvals= np.linspace(-2,6.,1000)
+        yvals= 1.65-0.03*(xvals-2.2)**2. +0.1*xvals
+        plt.plot(xvals,yvals, linestyle='--', color='g')
     else:
         pass
     return
@@ -287,6 +302,7 @@ for string_pair in col_pairs:
         pass
     try:
         bp_rp_cut_line(string_pair)
+        test_bp_rp_cut_line(string_pair)
         pseudo_colour_bp_rp_line(string_pair)
         #scatter_plot(string_pair)
         hexbin_plot(string_pair)

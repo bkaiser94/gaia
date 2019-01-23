@@ -22,14 +22,19 @@ import astropy
 #import passband_model_convolution as pmc
 
 
-input_filename= 'test_subset200.txt'
-output_name= 'subset_weirdos.txt'
+#input_filename= 'test_subset200.txt'
+#output_name= 'subset_weirdos.txt'
 #other_output_name='20190109_blue.csv'
 #other_output_name='20190107_chris.csv'
-other_output_name='20190111_red_things.csv'
+#other_output_name='20190111_red_things.csv'
 
 
-generic_table = Table.read(input_filename, format= 'ascii.tab')
+#generic_table = Table.read(input_filename, format= 'ascii.tab')
+
+input_filename='Lindegren_appC_altC_noBDLMC.csv'
+output_name= 'dummy_output.txt.'
+other_output_name='20190123_new_red_things.csv'
+generic_table = Table.read(input_filename, format= 'ascii.csv')
 
 
 axes_x= [-0.7, 5]
@@ -52,10 +57,11 @@ basis_coeff2= 0.248375
 
 #bp_rp_bounds = [1.54,2.40]
 #gabsmag_bounds=[13.78,14.6]
-bp_rp_bounds = [4.4,5]
-gabsmag_bounds=[10,12]
+#bp_rp_bounds = [4.4,5]
+#gabsmag_bounds=[10,12]
 #bp_rp_bounds = [-0.3,0]
-#gabsmag_bounds=[16,17]
+bp_rp_bounds=[1.7,3.2]
+gabsmag_bounds=[14.5,20]
 xprime_bounds= [0.877,2.278]
 yprime_bounds=[4.627,9]
 
@@ -194,15 +200,16 @@ def chop_chop(table, bounds1, bounds2):
     return right_table
    
 try:
-    generic_parallax = generic_table ['parallax']+parallax_correction
+    #generic_parallax = generic_table ['parallax']+parallax_correction
+    generic_parallax=generic_table['parallax']
     generic_parallax = generic_parallax *1e-3 #parallax in arcseconds now
     generic_distance = 1./generic_parallax #parsec distance
 
-    generic_extinction = generic_table['a_g_val']
+    #generic_extinction = generic_table['a_g_val']
 
     generic_g_mag = generic_table['phot_g_mean_mag']
     generic_bp_rp = generic_table['bp_rp']
-    generic_g_absmag = distance_modulus(generic_g_mag, generic_distance, extinction = generic_extinction)
+    generic_g_absmag = distance_modulus(generic_g_mag, generic_distance)
 
 except KeyError as error:
     print(error)
@@ -214,15 +221,19 @@ except KeyError as error:
     
 #print(generic_table[0])
 #in_bounds = np.where(generic_xprime> 0.877)
-acc_table = slice_and_dice(generic_table, xprime_bounds, yprime_bounds)
-print(acc_table)
+
+try:
+    acc_table = slice_and_dice(generic_table, xprime_bounds, yprime_bounds)
+    print(acc_table)
 
 
-acc_table.write(output_name, format = 'ascii.csv', overwrite= True)
+    acc_table.write(output_name, format = 'ascii.csv', overwrite= True)
+except KeyError as error:
+    print(error)
 
 
 
-def plot_context(acc_table= acc_table):
+def plot_context(acc_table=[]):
     polything = plt.hexbin(generic_bp_rp, generic_g_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
     counts = polything.get_array()
     #print(counts.shape)

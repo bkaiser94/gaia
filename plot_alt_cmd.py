@@ -79,12 +79,12 @@ target_input='20190121_excess_interesting_gaia.csv'
 target_input= 'ar_sco_gaia.csv'
 target_label= ''
 
-num_targs = 'all'
+#num_targs = 'all'
 #num_targs = '47Tuc'
-#num_targs= 'Lindegren'
+num_targs= 'Lindegren'
 selection_letter= 'C'
 distance = 200
-grid_num = 225
+grid_num = 500
 
 
 #################################################################3
@@ -99,6 +99,7 @@ elif num_targs== '47Tuc':
     generic_input= "47Tuc_10arcmin.csv"
 elif num_targs== 'Lindegren':
     generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
+    generic_input='Lindegren_appC_altC_noBDLMC.csv'
     #generic_input= 'Lindegren_appC_selB_antiC_cut2.csv'
 else:
     num_targs = int(num_targs)
