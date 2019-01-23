@@ -45,6 +45,7 @@ search_radius = 1.5 #in arcseconds
 #input_file='Lindegren_appC_selB_antiC_cut2.csv'
 #input_file='20190109_blue.csv'
 input_file='20190121_excess_interesting.csv'
+input_file='ar_sco.txt'
 #input_file='Eriks_disk_candidates.csv'
 #input_file='all_l-0.3bp_g_gaia_corr.csv'
 
@@ -53,6 +54,10 @@ if filter_confused_sources:
     output_file= output_name_parts[0]+ '_gaia_sc.' + output_name_parts[1]
 else:
     output_name_parts = input_file.split('.')
+    if output_name_parts[1]=='txt':
+        output_name_parts[1]= 'csv'
+    else:
+        pass
     output_file= output_name_parts[0]+ '_gaia.' + output_name_parts[1]
 #output_file='l-0.3bp_g_gaia_corr_full.csv'
 credentials_file= 'Gaia_credentials.txt'

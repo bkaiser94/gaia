@@ -41,12 +41,12 @@ colours= ['g','rp']
 
 
 
-#axes_x= [-1.5, 6]
-#axes_y = [-4,18]
+axes_x= [-1.5, 6]
+axes_y = [-4,18]
 
 
-axes_x= [-3, 6]
-axes_y = [-5,25]
+#axes_x= [-3, 6]
+#axes_y = [-5,25]
 
 y_fill= axes_y[1]
 x_fill= axes_x[0]
@@ -76,11 +76,12 @@ target_input='alt_red_things_g_rp_greater_17_gaia.csv'
 target_input='WD_cooling_tip_gaia.csv'
 target_input='weird_CPM_binary_gaia.csv'
 target_input='20190121_excess_interesting_gaia.csv'
+target_input= 'ar_sco_gaia.csv'
 target_label= ''
 
-#num_targs = 'all'
+num_targs = 'all'
 #num_targs = '47Tuc'
-num_targs= 'Lindegren'
+#num_targs= 'Lindegren'
 selection_letter= 'C'
 distance = 200
 grid_num = 225
@@ -425,10 +426,10 @@ def make_cmd(target_table=target_table, generic_table= generic_table, absmag='g'
 #plt.title(generic_input)
 #plt.show()
 
-plot_bkg_cmd(absmag='g', pseudo_colour=True)
-plt.title(generic_input)
-plt.show()
+#plot_bkg_cmd(absmag='g', pseudo_colour=True)
+#plt.title(generic_input)
+#plt.show()
 
-#make_cmd(target_table=target_table, generic_table= generic_table)
-#make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= colours)
-#make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= ['bp','g'])
+make_cmd(target_table=target_table, generic_table= generic_table)
+make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= colours)
+make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= ['bp','g'])

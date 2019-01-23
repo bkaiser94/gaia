@@ -107,6 +107,7 @@ elif num_targs== 'Lindegren':
     #generic_input='Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
     #generic_input='20190121_excess_interesting_gaia.csv'
     #generic_input= 'Lindegren_appC_selA_hv_region.csv'
+    #generic_input= 'ar_sco_gaia.csv'
 else:
     num_targs = int(num_targs)
     generic_input = 'top'+str(num_targs) + '_nearby_gaia.csv'
@@ -166,10 +167,14 @@ def scatter_plot(string_pair):
         y_array=1000./generic_table['parallax']
         string_pair[1]= '1000/parallax'
         x_array = generic_table[string_pair[0]]
-    if string_pair[0]=='astrometric_pseudo_colour':
-        x_array=1./generic_table['astrometric_pseudo_colour']
-        string_pair[0]= '1/astrometric_pseudo_colour'
+    elif string_pair[0]=='astrometric_pseudo_colour':
+        x_array=1./generic_table['astrometric_pseudo_colour'] * 1e4
+        string_pair[0]= '1/astrometric_pseudo_colour (angstroms)'
         y_array = generic_table[string_pair[1]]
+    elif string_pair[1]=='astrometric_pseudo_colour':
+        y_array=1./generic_table['astrometric_pseudo_colour'] * 1e4
+        string_pair[1]= '1/astrometric_pseudo_colour (angstroms)'
+        x_array = generic_table[string_pair[0]]
     else:
         x_array = generic_table[string_pair[0]]
         y_array = generic_table[string_pair[1]]
@@ -199,6 +204,18 @@ def hexbin_plot(string_pair):
         y_array=1000./generic_table['parallax']
         string_pair[1]= '1000/parallax'
         x_array = generic_table[string_pair[0]]
+    elif string_pair[0]=='astrometric_pseudo_colour':
+        x_array=1./generic_table['astrometric_pseudo_colour'] * 1e4
+        mask= np.where(np.abs(x_array)>20000)
+        x_array[mask]=0
+        string_pair[0]= '1/astrometric_pseudo_colour (angstroms)'
+        y_array = generic_table[string_pair[1]]
+    elif string_pair[1]=='astrometric_pseudo_colour':
+        y_array=1./generic_table['astrometric_pseudo_colour'] * 1e4
+        mask= np.where(np.abs(y_array)>20000)
+        y_array[mask]=0
+        string_pair[1]= '1/astrometric_pseudo_colour (angstroms)'
+        x_array = generic_table[string_pair[0]]
     else:
         x_array = generic_table[string_pair[0]]
         y_array = generic_table[string_pair[1]]
@@ -224,25 +241,37 @@ def bp_rp_cut_line(string_pair):
         pass
     return
 
+def pseudo_colour_bp_rp_line(string_pair):
+    if ((string_pair[0] == 'bp_rp') and (string_pair[1] == 'astrometric_pseudo_colour')):
+        xvals= np.linspace(-2,6.,1000)
+        yvals = 2.0-1.8/np.pi * np.arctan(0.331+0.572*xvals-0.014*xvals**2+0.045*xvals**3)
+        yvals= 1/yvals * 1e4
+        plt.plot(xvals,yvals,color='magenta')
+    else:
+        pass
+    return
 
-plt.scatter(cprime_x, cprime_y, alpha=0.5)
-#polything = plt.hexbin(cprime_x,cprime_y, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1)
-#counts = polything.get_array()
+
+
+
+#plt.scatter(cprime_x, cprime_y, alpha=0.5)
+polything = plt.hexbin(cprime_x,cprime_y, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1)
+counts = polything.get_array()
 #counts= np.sqrt(counts)
-##counts=np.log(counts)
-#polything.set_array(counts)
-#polything.autoscale()
+counts=np.log(counts)
+polything.set_array(counts)
+polything.autoscale()
 plt.xlabel('cprime_x')
 plt.ylabel('cprime_y')
 plt.show()
 
-plt.scatter(cprime_x, generic_table['phot_bp_rp_excess_factor'], alpha=0.5)
-#polything = plt.hexbin(cprime_x,cprime_y, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1)
-#counts = polything.get_array()
+#plt.scatter(cprime_x, generic_table['phot_bp_rp_excess_factor'], alpha=0.5)
+polything = plt.hexbin(cprime_x,generic_table['phot_bp_rp_excess_factor'], gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1)
+counts = polything.get_array()
 #counts= np.sqrt(counts)
-##counts=np.log(counts)
-#polything.set_array(counts)
-#polything.autoscale()
+counts=np.log(counts)
+polything.set_array(counts)
+polything.autoscale()
 plt.xlabel('cprime_x')
 plt.ylabel('phot_bp_rp_excess_factor')
 plt.show()
@@ -258,8 +287,9 @@ for string_pair in col_pairs:
         pass
     try:
         bp_rp_cut_line(string_pair)
-        scatter_plot(string_pair)
-        #hexbin_plot(string_pair)
+        pseudo_colour_bp_rp_line(string_pair)
+        #scatter_plot(string_pair)
+        hexbin_plot(string_pair)
     except KeyError as error:
         print('No column named', error, '\nSkipping', string_pair[1] + ' vs. ' + string_pair[0])
        
