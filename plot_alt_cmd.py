@@ -52,9 +52,9 @@ y_fill= axes_y[1]
 x_fill= axes_x[0]
 
 list_color = '#1ca1f2'
-single_list=True#turns off the original for-loop method for plotting from a single list
+single_list=False#turns off the original for-loop method for plotting from a single list
 error_bar=True #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
-annotate= True #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
+annotate= False #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
 parallax_correction = 0.029 #from Lindgren et al 2018
 
 
@@ -64,19 +64,22 @@ percent_off = 34 #1-sigma equivalent
 #############
 
 target_input='20190107_chris_merge_gaia.csv'
-target_input='l-0.3bp_g_gaia_corr_full.csv'
-target_input='elm_survey_gaia.csv'
-target_input='pre_elms_gaia.csv'
-target_input = '20190109_blue_gaia.csv'
-target_input='hot_wind_wds_gaia.csv'
-target_input='Eriks_disk_candidates_gaia.csv'
-target_input='dC_sample_roulston2018_gaia.csv'
-target_input='20190111_red_things_gaia.csv'
-target_input='alt_red_things_g_rp_greater_17_gaia.csv'
-target_input='WD_cooling_tip_gaia.csv'
-target_input='weird_CPM_binary_gaia.csv'
-target_input='20190121_excess_interesting_gaia.csv'
-target_input= 'ar_sco_gaia.csv'
+target_input=  'Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
+#target_input='l-0.3bp_g_gaia_corr_full.csv'
+#target_input='elm_survey_gaia.csv'
+#target_input='pre_elms_gaia.csv'
+#target_input = '20190109_blue_gaia.csv'
+#target_input='hot_wind_wds_gaia.csv'
+#target_input='Eriks_disk_candidates_gaia.csv'
+#target_input='dC_sample_roulston2018_gaia.csv'
+#target_input='20190111_red_things_gaia.csv'
+#target_input='alt_red_things_g_rp_greater_17_gaia.csv'
+#target_input='WD_cooling_tip_gaia.csv'
+#target_input='weird_CPM_binary_gaia.csv'
+#target_input='20190121_excess_interesting_gaia.csv'
+#target_input= 'ar_sco_gaia.csv'
+#target_input='20190123_new_red_things_gaia_sc.csv'
+#target_input= 'DQpec_gaia.csv'
 target_label= ''
 
 #num_targs = 'all'
@@ -84,7 +87,7 @@ target_label= ''
 num_targs= 'Lindegren'
 selection_letter= 'C'
 distance = 200
-grid_num = 500
+grid_num = 225
 
 
 #################################################################3
@@ -99,8 +102,9 @@ elif num_targs== '47Tuc':
     generic_input= "47Tuc_10arcmin.csv"
 elif num_targs== 'Lindegren':
     generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
-    generic_input='Lindegren_appC_altC_noBDLMC.csv'
+    #generic_input='Lindegren_appC_altC_noBDLMC.csv'
     #generic_input= 'Lindegren_appC_selB_antiC_cut2.csv'
+    #generic_input= 'Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
 else:
     num_targs = int(num_targs)
     generic_input = 'top'+str(num_targs) + '_nearby_gaia.csv'

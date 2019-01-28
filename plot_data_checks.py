@@ -55,6 +55,10 @@ single_list=True#turns off the original for-loop method for plotting from a sing
 error_bar=True #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
 annotate= False #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
 parallax_correction = 0.029 #from Lindgren et al 2018
+#########3
+ncolor= 'cyan' #Nicola's line color
+bcolor= 'g' #Bens' line color
+lcolor= 'magenta' #Lindegren's line color
 
 
 #######3error distribution variables
@@ -62,21 +66,8 @@ mc_number = 10000
 percent_off = 34 #1-sigma equivalent
 #############
 
-target_input='20190107_chris_merge_gaia.csv'
-target_input='l-0.3bp_g_gaia_corr_full.csv'
-target_input='elm_survey_gaia.csv'
-target_input='pre_elms_gaia.csv'
-target_input = '20190109_blue_gaia.csv'
-target_input='hot_wind_wds_gaia.csv'
-target_input='Eriks_disk_candidates_gaia.csv'
-target_input='dC_sample_roulston2018_gaia.csv'
-target_input='20190111_red_things_gaia.csv'
-target_input='alt_red_things_g_rp_greater_17_gaia.csv'
-target_input='WD_cooling_tip_gaia.csv'
-target_input='weird_CPM_binary_gaia.csv'
-target_label= ''
 
-num_targs = 'all'
+#num_targs = 'all'
 #num_targs = '47Tuc'
 num_targs= 'Lindegren'
 selection_letter= 'B'
@@ -99,6 +90,7 @@ elif num_targs== '47Tuc':
     generic_input= "47Tuc_10arcmin.csv"
 elif num_targs== 'Lindegren':
     generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
+    generic_input='20190128_blue_line_gaia.csv'
     #generic_input= 'Lindegren_appC_selA_obsnum.csv'
     #generic_input = 'Lindegren_washy_cloud_bigger.csv'
     #generic_input='Lindegren_appC_selB_washy_cloud_bigger.csv'
@@ -108,7 +100,9 @@ elif num_targs== 'Lindegren':
     #generic_input='20190121_excess_interesting_gaia.csv'
     #generic_input= 'Lindegren_appC_selA_hv_region.csv'
     #generic_input='Lindegren_appC_altC_noBDLMC.csv'
+    #generic_input= '20190107_chris_merge_gaia.csv'
     #generic_input= 'ar_sco_gaia.csv'
+    #generic_input= '20190123_new_red_things_gaia_sc.csv'
 else:
     num_targs = int(num_targs)
     generic_input = 'top'+str(num_targs) + '_nearby_gaia.csv'
@@ -124,7 +118,6 @@ zeropoint_dict={"g": [25.6883657251, 0.0017850023],
 ################################
 #Reading in the tables for the background and target files
 generic_table = Table.read(generic_input)
-target_table = Table.read(target_input)
 #########################################
 col_pairs=[
     ['bp_rp','mg'],
@@ -221,6 +214,7 @@ def hexbin_plot(string_pair):
     else:
         x_array = generic_table[string_pair[0]]
         y_array = generic_table[string_pair[1]]
+        #y_array =np.log10(y_array)
     polything = plt.hexbin(x_array,y_array, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1)
     counts = polything.get_array()
     #counts= np.sqrt(counts)
@@ -235,23 +229,45 @@ def hexbin_plot(string_pair):
     plt.show()
     return
 
-def bp_rp_cut_line(string_pair):
-    if ((string_pair[0]== 'bp_rp') and (string_pair[1]=='phot_bp_rp_excess_factor')):
-        xvals= np.linspace(-2,6.,1000)
-        yvals= 1.3+0.06*(xvals)**2.
-        yvals2=1.0+0.015*xvals**2.
-        plt.plot(xvals,yvals, linestyle='--', color='magenta')
-        plt.plot(xvals,yvals2,linestyle='--',color='magenta')
-    else:
-        pass
-    return
+#def bp_rp_cut_line(string_pair):
+    #if ((string_pair[0]== 'bp_rp') and (string_pair[1]=='phot_bp_rp_excess_factor')):
+        #xvals= np.linspace(-2,6.,1000)
+        #yvals= 1.3+0.06*(xvals)**2.
+        #yvals2=1.0+0.015*xvals**2.
+        #plt.plot(xvals,yvals, linestyle='--', color='magenta', label = "Lindegren's cut")
+        #plt.plot(xvals,yvals2,linestyle='--',color='magenta')
+    #else:
+        #pass
+    #return
 
 
-def test_bp_rp_cut_line(string_pair):
+def plot_cut_lines(string_pair):
+    #colour excess cuts
     if ((string_pair[0]== 'bp_rp') and (string_pair[1]=='phot_bp_rp_excess_factor')):
         xvals= np.linspace(-2,6.,1000)
         yvals= 1.65-0.03*(xvals-2.2)**2. +0.1*xvals
-        plt.plot(xvals,yvals, linestyle='--', color='g')
+        y2vals= 1.7+0.06*xvals**2.
+        yvalsL= 1.3+0.06*(xvals)**2.
+        yvalsL2=1.0+0.015*xvals**2.
+        plt.plot(xvals,yvalsL, linestyle='--', color='magenta', label = "Lindegren's cut")
+        plt.plot(xvals,yvalsL2,linestyle='--',color='magenta')
+        plt.plot(xvals,yvals, linestyle='--', color='g', label= "Ben's cut")
+        plt.plot(xvals, y2vals, linestyle = '--', color='cyan', label = "Nicola's cut")
+        plt.legend()
+    if ((string_pair[0]== 'bp_rp') and (string_pair[1]=='mg')):
+        x1vals= np.linspace(-1,-0.184268, 300)
+        y1vals= np.ones(x1vals.shape)*5
+        x2vals= np.linspace(np.max(x1vals),0.297505,300)
+        y2vals= 5.93+5.047*x2vals
+        x3vals= np.linspace(np.max(x2vals), 1.7, 300)
+        y3vals = 6*x3vals**3.-21.77*x3vals**2.+27.91*x3vals+0.897
+        y4vals= np.linspace(14.9067,16,300)
+        x4vals= np.ones(y4vals.shape)*1.7
+        plt.plot(x1vals,y1vals, color= ncolor, label="Nicola's cut")
+        plt.plot(x2vals, y2vals, color= ncolor)
+        plt.plot(x3vals, y3vals, color= ncolor)
+        plt.plot(x4vals, y4vals, color= ncolor)
+        plt.legend()
     else:
         pass
     return
@@ -301,11 +317,11 @@ for string_pair in col_pairs:
     else:
         pass
     try:
-        bp_rp_cut_line(string_pair)
-        test_bp_rp_cut_line(string_pair)
+        #bp_rp_cut_line(string_pair)
+        plot_cut_lines(string_pair)
         pseudo_colour_bp_rp_line(string_pair)
-        #scatter_plot(string_pair)
-        hexbin_plot(string_pair)
+        scatter_plot(string_pair)
+        #hexbin_plot(string_pair)
     except KeyError as error:
         print('No column named', error, '\nSkipping', string_pair[1] + ' vs. ' + string_pair[0])
        

@@ -31,9 +31,9 @@ import astropy
 
 #generic_table = Table.read(input_filename, format= 'ascii.tab')
 
-input_filename='Lindegren_appC_altC_noBDLMC.csv'
+input_filename='Lindegren_appC_selB.csv'
 output_name= 'dummy_output.txt.'
-other_output_name='20190123_new_red_things.csv'
+other_output_name='20190128_blue_line.csv'
 generic_table = Table.read(input_filename, format= 'ascii.csv')
 
 
@@ -60,8 +60,8 @@ basis_coeff2= 0.248375
 #bp_rp_bounds = [4.4,5]
 #gabsmag_bounds=[10,12]
 #bp_rp_bounds = [-0.3,0]
-bp_rp_bounds=[1.7,3.2]
-gabsmag_bounds=[14.5,20]
+bp_rp_bounds=[-0.2,0.6]
+gabsmag_bounds=[15.57,16.54]
 xprime_bounds= [0.877,2.278]
 yprime_bounds=[4.627,9]
 

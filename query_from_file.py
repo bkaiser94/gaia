@@ -15,7 +15,8 @@ from astropy.table import Table, vstack, Column
  
  
 filter_confused_sources= False
-search_radius = 1.5 #in arcseconds
+#search_radius = 4.08 #in arcseconds
+search_radius = 1.5
  
  
 #input_file= 'BLAPs_table1_Piet2017.csv'
@@ -46,6 +47,9 @@ search_radius = 1.5 #in arcseconds
 #input_file='20190109_blue.csv'
 input_file='20190121_excess_interesting.csv'
 input_file='ar_sco.txt'
+input_file='20190123_new_red_things.csv'
+input_file= 'DQpec.csv'
+input_file= '20190128_blue_line.csv'
 #input_file='Eriks_disk_candidates.csv'
 #input_file='all_l-0.3bp_g_gaia_corr.csv'
 

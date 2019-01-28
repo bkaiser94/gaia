@@ -48,7 +48,7 @@ m_psr= 1.4*u.Msun
 ext_method=  'MG-MRP'
 
 list_color= 'b'
-single_list=True#turns off the original for-loop method for plotting from a single list
+single_list=False#turns off the original for-loop method for plotting from a single list
 error_bar=True #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
 
 parallax_correction = 0.029 #from Lindgren et al 2018
@@ -92,7 +92,7 @@ test_radii = np.array([0.01, 0.1, 1, 10]) * u.Rsun
 
 num_targs = 'all'
 #num_targs = '47Tuc'
-distance = 500
+distance = 100
 #distance=500
 #distance = 25
 #grid_num = 220
