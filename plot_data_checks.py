@@ -72,7 +72,7 @@ percent_off = 34 #1-sigma equivalent
 num_targs= 'Lindegren'
 selection_letter= 'B'
 distance = 200
-grid_num = 225
+grid_num = 100
 
 #basis vector components for orthnormal bp vs. rp plot
 v1bp=-0.78013779
@@ -90,7 +90,11 @@ elif num_targs== '47Tuc':
     generic_input= "47Tuc_10arcmin.csv"
 elif num_targs== 'Lindegren':
     generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
-    generic_input='20190128_blue_line_gaia.csv'
+    generic_input='Lindegren_appB_bulge_only.csv'
+    #generic_input= 'esdM_cand_box_200pc.csv'
+    #generic_input= '20190128_wdMS_gaia.csv'
+    #generic_input= 'RNe_gaia.csv'
+    #generic_input= 'coolDZ_Na_gaia.csv'
     #generic_input= 'Lindegren_appC_selA_obsnum.csv'
     #generic_input = 'Lindegren_washy_cloud_bigger.csv'
     #generic_input='Lindegren_appC_selB_washy_cloud_bigger.csv'
@@ -121,6 +125,7 @@ generic_table = Table.read(generic_input)
 #########################################
 col_pairs=[
     ['bp_rp','mg'],
+    ['g_rp','mg'],
     ['astrometric_pseudo_colour','mg'],
     ['bp_rp', 'phot_bp_rp_excess_factor'],
     ['ra','dec'],
@@ -284,7 +289,6 @@ def pseudo_colour_bp_rp_line(string_pair):
 
 
 
-
 #plt.scatter(cprime_x, cprime_y, alpha=0.5)
 polything = plt.hexbin(cprime_x,cprime_y, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1)
 counts = polything.get_array()
@@ -307,6 +311,24 @@ plt.xlabel('cprime_x')
 plt.ylabel('phot_bp_rp_excess_factor')
 plt.show()
 
+
+try:
+    calc_pseudo = 2.0-1.8/np.pi * np.arctan(0.331+0.572*generic_table['bp_rp']-0.014*generic_table['bp_rp']**2+0.045*generic_table['bp_rp']**3)
+    calc_pseudo= 1/calc_pseudo * 1e4
+    #polything = plt.hexbin(calc_pseudo-1/generic_table['astrometric_pseudo_colour']*1e4,generic_table['mg'], gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1)
+    #counts = polything.get_array()
+    polything = plt.scatter(calc_pseudo-1/generic_table['astrometric_pseudo_colour']*1e4,generic_table['mg'], s=4, alpha=0.1, edgecolor='none')
+    #counts= np.sqrt(counts)
+    #counts=np.log(counts)
+    #polything.set_array(counts)
+    #polything.autoscale()
+    plt.xlabel(r'$\lambda_{eff, bp-rp} - \lambda_{eff, pseudo}$')
+    plt.gca().invert_yaxis()
+    plt.ylabel('mg')
+    plt.show()
+except KeyError:
+    pass
+
 #scatter_plot(['phot_bp_mean_mag','phot_rp_mean_mag'])
 #hexbin_plot(['phot_bp_mean_mag','phot_rp_mean_mag'])
 
@@ -320,9 +342,10 @@ for string_pair in col_pairs:
         #bp_rp_cut_line(string_pair)
         plot_cut_lines(string_pair)
         pseudo_colour_bp_rp_line(string_pair)
-        scatter_plot(string_pair)
-        #hexbin_plot(string_pair)
+        #scatter_plot(string_pair)
+        hexbin_plot(string_pair)
     except KeyError as error:
+        plt.clf()
         print('No column named', error, '\nSkipping', string_pair[1] + ' vs. ' + string_pair[0])
        
 

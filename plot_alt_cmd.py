@@ -54,7 +54,7 @@ x_fill= axes_x[0]
 list_color = '#1ca1f2'
 single_list=False#turns off the original for-loop method for plotting from a single list
 error_bar=True #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
-annotate= False #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
+annotate= True #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
 parallax_correction = 0.029 #from Lindgren et al 2018
 
 
@@ -65,6 +65,22 @@ percent_off = 34 #1-sigma equivalent
 
 target_input='20190107_chris_merge_gaia.csv'
 target_input=  'Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
+target_input= '20190128_blue_line_gaia.csv'
+#target_input= 'two_low_reds_gaia.csv'
+#target_input= '20190128_wdMS_gaia.csv'
+#target_input= 'siriusB_gaia.csv'
+#target_input= 'RNe_gaia.csv'
+#target_input= 'Josh_object.csv'
+#target_input= 'WISEA0238p3617.csv'
+target_input= 'NaD_objects.csv'
+target_input= 'mansergas_2010_pceb_gaia.csv'
+target_input= 'esdM_cand_subset_gaia.csv'
+target_input='wd0343p247_gaia.csv'
+#target_input= 'mystery_red_object.csv'
+target_input= "FA_ultracool_WD_attempts_gaia.csv"
+#target_input= 'coolDZ_Na_gaia.csv'
+#target_input='IGRJ19308p0530_gaia.csv'
+
 #target_input='l-0.3bp_g_gaia_corr_full.csv'
 #target_input='elm_survey_gaia.csv'
 #target_input='pre_elms_gaia.csv'
@@ -82,11 +98,11 @@ target_input=  'Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
 #target_input= 'DQpec_gaia.csv'
 target_label= ''
 
-#num_targs = 'all'
+num_targs = 'all'
 #num_targs = '47Tuc'
-num_targs= 'Lindegren'
-selection_letter= 'C'
-distance = 200
+#num_targs= 'Lindegren'
+selection_letter= 'B'
+distance = 100
 grid_num = 225
 
 
@@ -102,6 +118,7 @@ elif num_targs== '47Tuc':
     generic_input= "47Tuc_10arcmin.csv"
 elif num_targs== 'Lindegren':
     generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
+    #generic_input='Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
     #generic_input='Lindegren_appC_altC_noBDLMC.csv'
     #generic_input= 'Lindegren_appC_selB_antiC_cut2.csv'
     #generic_input= 'Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'

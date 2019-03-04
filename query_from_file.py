@@ -15,8 +15,8 @@ from astropy.table import Table, vstack, Column
  
  
 filter_confused_sources= False
-#search_radius = 4.08 #in arcseconds
-search_radius = 1.5
+search_radius = 4.08 #in arcseconds
+#search_radius =  10.
  
  
 #input_file= 'BLAPs_table1_Piet2017.csv'
@@ -50,6 +50,15 @@ input_file='ar_sco.txt'
 input_file='20190123_new_red_things.csv'
 input_file= 'DQpec.csv'
 input_file= '20190128_blue_line.csv'
+input_file='20190128_wdMS.csv'
+input_file= 'SLBs.csv'
+input_file = 'RNe.csv'
+input_file= "FA_ultracool_WD_attempts.csv"
+input_file= 'coolDZ_Na.csv'
+input_file='two_low_reds.csv'
+input_file= 'mansergas_2010_pceb.csv'
+input_file= 'esdM_cand_subset.csv'
+#input_file= 'Gianinas2016_coolWDs.txt'
 #input_file='Eriks_disk_candidates.csv'
 #input_file='all_l-0.3bp_g_gaia_corr.csv'
 
@@ -71,10 +80,11 @@ print("Log in succesful.")
 
 
 coord_list= []
-#allarray= np.genfromtxt(input_file, names=True, delimiter=',', dtype='U6')
+####allarray= np.genfromtxt(input_file, names=True, delimiter=',', dtype='U6')
 allarray= np.genfromtxt(input_file, delimiter= ',', dtype= str)
-#allarray= np.genfromtxt(input_file, delimiter=[11,13,13], dtype= str)
-#allarray= np.loadtxt(input_file, delimiter=',', dtype=bytes).astype(str)
+#allarray=np.genfromtxt(input_file, dtype =str, delimiter= ' \t',skip_header=2)
+#####allarray= np.genfromtxt(input_file, delimiter=[11,13,13], dtype= str)
+####allarray= np.loadtxt(input_file, delimiter=',', dtype=bytes).astype(str)
 
 #print(allarray)
 #ra_array = allarray['Ra']
@@ -119,6 +129,7 @@ for ra,dec,name in zip(ra_array, dec_array,name_array):
     #print(results[0])
     #output_row= results[0]
     name=str(name)
+    #name='SDSS'+name
     print(name)
     print(type(name))
     try:

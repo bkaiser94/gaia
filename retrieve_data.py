@@ -18,8 +18,8 @@ SELECT TOP 500 source_id,ra,ra_error,dec,dec_error,parallax,parallax_error,phot_
 """
 
 parallax_correction = 0.029
-target_ra = "11:48:33.6297636428" #values on page 43 of General Clemens II
-target_dec =  "+01:28:59.421673739"
+target_ra = "03:46:47.11" #values on page 43 of General Clemens II
+target_dec =  "24:55:44.73 "
 num_targs = 1e6
 #distance_limit = 200 #pc
 num_targs = int(num_targs)
@@ -48,8 +48,9 @@ pulsar_list = np.genfromtxt('pulsar_names.txt', dtype = 'S32') #still presents a
 #target_output_name= "Vela_gaia.csv"
 #target_output_name = 'PSRJ1903p0327.csv'
 #target_output_name = 'WD1145p017.csv'
-
-
+#target_output_name= 'Josh_object.csv'
+#target_output_name= 'mystery_red_object.csv'
+target_output_name='wd0343p247_gaia.csv'
 
 
 #output_name = 'all_nearby_gaia.csv'
@@ -125,8 +126,9 @@ def coordinate_search():
     
 def cone_search(ra, dec):
     coordinate = coord.SkyCoord(ra = ra, dec =dec, unit = (u.hourangle, u.deg), frame = 'icrs')
+    #coordinate = coord.SkyCoord(ra = ra, dec =dec, unit = (u.deg, u.deg), frame = 'icrs')
     #coordinate = coord.SkyCoord(ra = ra*u.hourangle, dec =dec*u.degree, frame = 'icrs')
-    radius = 3*u.arcsecond
+    radius = 5.*u.arcsecond
     j= Gaia.cone_search_async(coordinate, radius)
     r=j.get_results()
     r.pprint()
@@ -214,11 +216,11 @@ def asynchronous_query():
 #synchronous_query_uptab()
 
 
-output_table = asynchronous_query()
-output_table.write(output_name, format = 'ascii.csv', overwrite= True)
+#output_table = asynchronous_query()
+#output_table.write(output_name, format = 'ascii.csv', overwrite= True)
 
-#target_output = cone_search(target_ra, target_dec)
-#target_output.write(target_output_name, format = 'ascii.csv', overwrite= True)
+target_output = cone_search(target_ra, target_dec)
+target_output.write(target_output_name, format = 'ascii.csv', overwrite= True)
 
 #thing = Gaia.query_object('PSR J1431-4715', width = 0.5 *u.arcsecond, height = 0.5*u.arcsecond )
 #thing.pprint()
