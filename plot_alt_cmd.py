@@ -64,20 +64,25 @@ percent_off = 34 #1-sigma equivalent
 #############
 
 target_input='20190107_chris_merge_gaia.csv'
-target_input=  'Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
-target_input= '20190128_blue_line_gaia.csv'
+#target_input= 'exc1_8_2_2_purple_search_gmaglimit_gaia_sc.csv'
+target_input= 'expanded_purple_search_gmaglimit_gaia_sc.csv'
+#target_input=  'Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
+#target_input= '20190128_blue_line_gaia.csv'
 #target_input= 'two_low_reds_gaia.csv'
 #target_input= '20190128_wdMS_gaia.csv'
 #target_input= 'siriusB_gaia.csv'
 #target_input= 'RNe_gaia.csv'
 #target_input= 'Josh_object.csv'
 #target_input= 'WISEA0238p3617.csv'
-target_input= 'NaD_objects.csv'
-target_input= 'mansergas_2010_pceb_gaia.csv'
-target_input= 'esdM_cand_subset_gaia.csv'
-target_input='wd0343p247_gaia.csv'
+#target_input= 'NaD_objects.csv'
+#target_input= 'usdMs_gaia.csv'
+#target_input= 'mansergas_2010_pceb_gaia.csv'
+#target_input= 'esdM_cand_subset_gaia.csv'
+#target_input='wd0343p247_gaia.csv'
 #target_input= 'mystery_red_object.csv'
-target_input= "FA_ultracool_WD_attempts_gaia.csv"
+#target_input= "FA_ultracool_WD_attempts_gaia.csv"
+#target_input='Lindegren_odd_survivors_gaia_sc.csv'
+#target_input='20190306_rando.csv'
 #target_input= 'coolDZ_Na_gaia.csv'
 #target_input='IGRJ19308p0530_gaia.csv'
 
@@ -102,7 +107,7 @@ num_targs = 'all'
 #num_targs = '47Tuc'
 #num_targs= 'Lindegren'
 selection_letter= 'B'
-distance = 100
+distance = 200
 grid_num = 225
 
 
@@ -455,3 +460,4 @@ def make_cmd(target_table=target_table, generic_table= generic_table, absmag='g'
 make_cmd(target_table=target_table, generic_table= generic_table)
 make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= colours)
 make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= ['bp','g'])
+#make_cmd(target_table=target_table, generic_table= generic_table, absmag= 'bp', colours= ['bp','rp'])

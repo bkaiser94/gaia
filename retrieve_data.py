@@ -18,8 +18,8 @@ SELECT TOP 500 source_id,ra,ra_error,dec,dec_error,parallax,parallax_error,phot_
 """
 
 parallax_correction = 0.029
-target_ra = "03:46:47.11" #values on page 43 of General Clemens II
-target_dec =  "24:55:44.73 "
+target_ra = "12:46:36.00" #values on page 43 of General Clemens II
+target_dec =  " -01:50:04.9"
 num_targs = 1e6
 #distance_limit = 200 #pc
 num_targs = int(num_targs)
@@ -50,7 +50,7 @@ pulsar_list = np.genfromtxt('pulsar_names.txt', dtype = 'S32') #still presents a
 #target_output_name = 'WD1145p017.csv'
 #target_output_name= 'Josh_object.csv'
 #target_output_name= 'mystery_red_object.csv'
-target_output_name='wd0343p247_gaia.csv'
+target_output_name='20190306_rando.csv'
 
 
 #output_name = 'all_nearby_gaia.csv'
@@ -97,6 +97,7 @@ phot_bp_mean_flux_over_error = 20
 ##############color-limited search statement below 2019-01-08
 search_statement = "SELECT ra, dec, phot_g_mean_mag+5*log10(parallax+(" + str(parallax_correction)+"))-10 AS mg, bp_rp, phot_g_mean_mag, phot_bp_mean_mag, phot_rp_mean_mag, parallax FROM gaiadr2.gaia_source WHERE parallax_over_error > 10 AND phot_g_mean_flux_over_error>50 AND phot_rp_mean_flux_over_error>20 AND phot_bp_mean_flux_over_error>20 AND phot_bp_rp_excess_factor < 1.3+0.06*power(phot_bp_mean_mag-phot_rp_mean_mag,2) AND phot_bp_rp_excess_factor > 1.0+0.015*power(phot_bp_mean_mag-phot_rp_mean_mag,2) AND visibility_periods_used>8 AND astrometric_chi2_al/(astrometric_n_good_obs_al-5)<1.44*greatest(1,exp(-0.4*(phot_g_mean_mag-19.5)))" #modified to have number limit search statement from Gaia DR2HRD 2018
 search_statement= search_statement + " AND bp_g < " + str(bp_g_max)
+
 
 ################################
 #bailer_ex_search = "SELECT source_id, ra, dec, phot_g_mean_mag, r_est, r_lo, r_hi, teff_val FROM gaiadr2_complements.geometric_distance JOIN gaiadr2.gaia_source USING source_id WHERE r_est < 10 AND teff_val > 7000"
@@ -216,11 +217,11 @@ def asynchronous_query():
 #synchronous_query_uptab()
 
 
-#output_table = asynchronous_query()
-#output_table.write(output_name, format = 'ascii.csv', overwrite= True)
+output_table = asynchronous_query()
+output_table.write(output_name, format = 'ascii.csv', overwrite= True)
 
-target_output = cone_search(target_ra, target_dec)
-target_output.write(target_output_name, format = 'ascii.csv', overwrite= True)
+#target_output = cone_search(target_ra, target_dec)
+#target_output.write(target_output_name, format = 'ascii.csv', overwrite= True)
 
 #thing = Gaia.query_object('PSR J1431-4715', width = 0.5 *u.arcsecond, height = 0.5*u.arcsecond )
 #thing.pprint()

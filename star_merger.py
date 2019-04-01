@@ -24,9 +24,9 @@ import gaia_extinction
 #import wdatmos
 import plotting_dicts as pod
 
-merged_file=''
+#merged_file='WISEA0615m1247.csv'
 
-star1_file=''
+#star1_file='WDJ2356m209.csv'
 
 #star 2 is the one that should be solved for using the file.
 
@@ -56,10 +56,11 @@ mc_number = 10000
 percent_off = 34 #1-sigma equivalent
 #############
 
-num_targs = 'all'
+num_targs = 'Lindegren'
 #num_targs = '47Tuc'
 distance = 200
 grid_num = 225
+selection_letter= 'C'
 
 num_stars = 20 #number of stars in the track to use for merging
 
@@ -83,6 +84,12 @@ star1_input='two_low_reds_gaia.csv'
 star2_input= '20190218_test_ultcool.csv'
 merged_star_input= 'WISEA0615m1247.csv'
 
+merged_star_input='WISEA0615m1247.csv'
+#merged_star_input='WISEA0238p3617.csv'
+
+star1_input='WDJ2356m209.csv'
+
+
 target_label = ''
 
 
@@ -96,6 +103,13 @@ if num_targs == 'all':
     title_suffix = ' in the ' + str(distance)+ 'pc Gaia DR2 CMD'
 elif num_targs== '47Tuc':
     generic_input= "47Tuc_10arcmin.csv"
+elif num_targs== 'Lindegren':
+    generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
+    generic_input='Lindegren_appC_selC_noBLMC.csv'
+    #generic_input='Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
+    #generic_input='Lindegren_appC_altC_noBDLMC.csv'
+    #generic_input= 'Lindegren_appC_selB_antiC_cut2.csv'
+    #generic_input= 'Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
 else:
     num_targs = int(num_targs)
     generic_input = 'top'+str(num_targs) + '_nearby_gaia.csv'

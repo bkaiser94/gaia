@@ -90,8 +90,12 @@ elif num_targs== '47Tuc':
     generic_input= "47Tuc_10arcmin.csv"
 elif num_targs== 'Lindegren':
     generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
-    generic_input='Lindegren_appB_bulge_only.csv'
-    #generic_input= 'esdM_cand_box_200pc.csv'
+    generic_input   ='usdMs_gaia.csv'
+    generic_input= 'Lindegren_odd_survivors_gaia_sc.csv'
+    #generic_input='NaD_objects.csv'
+    #generic_input='exc1_8_2_2_purple_search_gmaglimit_gaia_sc.csv'
+    #generic_input='Lindegren_appB_bulge_only.csv'
+    #generic_input='20190107_chris_merge_gaia.csv'
     #generic_input= '20190128_wdMS_gaia.csv'
     #generic_input= 'RNe_gaia.csv'
     #generic_input= 'coolDZ_Na_gaia.csv'
@@ -128,6 +132,9 @@ col_pairs=[
     ['g_rp','mg'],
     ['astrometric_pseudo_colour','mg'],
     ['bp_rp', 'phot_bp_rp_excess_factor'],
+    ['mg','mean_varpi_factor_al'],
+    ['phot_bp_rp_excess_factor','mean_varpi_factor_al'],
+    ['astrometric_excess_noise','mean_varpi_factor_al'],
     ['ra','dec'],
     ['l','b'],
     ['parallax','phot_g_mean_mag'],
@@ -148,6 +155,14 @@ col_pairs=[
     ['ra','pmdec'],
     ['pmra','pmdec']]
 
+col_singles=[
+    'ra',
+    'dec',
+    'phot_bp_rp_excess_factor',
+    'phot_proc_mode',
+    'astrometric_excess_noise',
+    'parallax']
+    
 
 ############################################
 try:
@@ -234,6 +249,10 @@ def hexbin_plot(string_pair):
     plt.show()
     return
 
+def hist_plot(string_single):
+    plt.hist(generic_table[string_single])
+    plt.title(string_single)
+    plt.show()
 #def bp_rp_cut_line(string_pair):
     #if ((string_pair[0]== 'bp_rp') and (string_pair[1]=='phot_bp_rp_excess_factor')):
         #xvals= np.linspace(-2,6.,1000)
@@ -272,6 +291,12 @@ def plot_cut_lines(string_pair):
         plt.plot(x2vals, y2vals, color= ncolor)
         plt.plot(x3vals, y3vals, color= ncolor)
         plt.plot(x4vals, y4vals, color= ncolor)
+        plt.legend()
+    if  (string_pair[1]=='mean_varpi_factor_al'):
+        plt.axhline(y=-0.23, color='magenta', label='acceptable range', linestyle='--')
+        plt.axhline(y=0.32,color='magenta', linestyle='--')
+        plt.axhline(y=-0.73, color='k', label='"constrained range"')
+        plt.axhline(y=0.73, color='k')
         plt.legend()
     else:
         pass
@@ -342,14 +367,20 @@ for string_pair in col_pairs:
         #bp_rp_cut_line(string_pair)
         plot_cut_lines(string_pair)
         pseudo_colour_bp_rp_line(string_pair)
-        #scatter_plot(string_pair)
-        hexbin_plot(string_pair)
+        scatter_plot(string_pair)
+        #hexbin_plot(string_pair)
     except KeyError as error:
         plt.clf()
         print('No column named', error, '\nSkipping', string_pair[1] + ' vs. ' + string_pair[0])
        
 
-
+for single_string in col_singles:
+    try:
+        #bp_rp_cut_line(string_pair)
+        hist_plot(single_string)
+    except KeyError as error:
+        plt.clf()
+        print('No column named', error, '\nSkipping', col_singles, ' histogram')
 
 
 plt.hist(generic_table['phot_proc_mode'])
@@ -359,4 +390,24 @@ plt.show()
 plt.hist(generic_table['astrometric_excess_noise'], bins= 100)
 plt.title('astrometric_excess_noise')
 plt.show()
+
+try:
+    plt.hist(generic_table['mean_varpi_factor_al'], bins= 100)
+    plt.title('mean_varpi_factor_al')
+    plt.axvline(x=-0.23, color='magenta', label='acceptable range', linestyle='--')
+    plt.axvline(x=0.32,color='magenta', linestyle='--')
+    plt.axvline(x=-0.73, color='k', label='"constrained range"')
+    plt.axvline(x=0.73, color='k')
+    mean_val= np.nanmean(generic_table['mean_varpi_factor_al'])
+    med_val=np.nanmedian(generic_table['mean_varpi_factor_al'])
+    per1= np.percentile(generic_table['mean_varpi_factor_al'], 1)
+    print('1st percentile: ', per1)
+    per99= np.percentile(generic_table['mean_varpi_factor_al'], 99)
+    print('99th percentile: ', per99)
+    plt.axvline(x=mean_val, label='mean: ' + str(mean_val)[:5], linestyle='--', color='cyan')
+    plt.axvline(x=med_val, label='med: '+ str(med_val)[:5], linestyle='--', color='red')
+    plt.legend()
+    plt.show()
+except KeyError:
+    pass
 

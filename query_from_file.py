@@ -14,7 +14,7 @@ import astropy.coordinates as coord
 from astropy.table import Table, vstack, Column
  
  
-filter_confused_sources= False
+filter_confused_sources= True
 search_radius = 4.08 #in arcseconds
 #search_radius =  10.
  
@@ -36,7 +36,10 @@ search_radius = 4.08 #in arcseconds
 #input_file='apj522588t5_mrt.txt'
 #output_file= 'elm_survey_gaia.csv'
 
-#input_file= '20190107_chris.csv'
+#input_file= '20190104_chris.csv'
+input_file= 'exc1_8_2_2_purple_search_gmaglimit.csv'
+input_file= 'usdMs.csv'
+input_file='Lindegren_odd_survivors.csv'
 #input_file= 'dC_sample_roulston2018.csv'
 #input_file='20190111_red_things.csv'
 #input_file= 'alt_red_things_g_rp_greater_17.csv'
@@ -45,19 +48,19 @@ search_radius = 4.08 #in arcseconds
 #input_file='Lindegren_appC_selB_antiC_nobulgedisk.csv'
 #input_file='Lindegren_appC_selB_antiC_cut2.csv'
 #input_file='20190109_blue.csv'
-input_file='20190121_excess_interesting.csv'
-input_file='ar_sco.txt'
-input_file='20190123_new_red_things.csv'
-input_file= 'DQpec.csv'
-input_file= '20190128_blue_line.csv'
-input_file='20190128_wdMS.csv'
-input_file= 'SLBs.csv'
-input_file = 'RNe.csv'
-input_file= "FA_ultracool_WD_attempts.csv"
-input_file= 'coolDZ_Na.csv'
-input_file='two_low_reds.csv'
-input_file= 'mansergas_2010_pceb.csv'
-input_file= 'esdM_cand_subset.csv'
+#input_file='20190121_excess_interesting.csv'
+#input_file='ar_sco.txt'
+#input_file='20190123_new_red_things.csv'
+#input_file= 'DQpec.csv'
+#input_file= '20190128_blue_line.csv'
+#input_file='20190128_wdMS.csv'
+#input_file= 'SLBs.csv'
+#input_file = 'RNe.csv'
+#input_file= "FA_ultracool_WD_attempts.csv"
+#input_file= 'coolDZ_Na.csv'
+#input_file='two_low_reds.csv'
+#input_file= 'mansergas_2010_pceb.csv'
+#input_file= 'esdM_cand_subset.csv'
 #input_file= 'Gianinas2016_coolWDs.txt'
 #input_file='Eriks_disk_candidates.csv'
 #input_file='all_l-0.3bp_g_gaia_corr.csv'

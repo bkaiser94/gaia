@@ -13,7 +13,8 @@ import astropy.units as u
 import astropy.coordinates as coord
 from astropy.table import Table, vstack, Column
 
-input_file= '20190107_chris_merge_gaia.csv'
+#input_file= '20190107_chris_merge_gaia.csv'
+input_file='Lindegren_odd_survivors_gaia_sc.csv'
 #output_file= '20190107_chris_merge_targlist.txt'
 
 output_file= input_file.split('.')[0]+'_targlist.txt'
@@ -28,6 +29,7 @@ except KeyError as error:
     print(error)
     print('No names column, so just making all Gaia names')
     name_array=np.full(input_table['ra'].shape, '.')
+
 coords= coord.SkyCoord(input_table['ra'], input_table['dec'], unit=(u.deg, u.deg))
 string_coords= coords.to_string(style='hmsdms')
 replace_chars= ['d','h','m']
@@ -45,11 +47,17 @@ for thing, name, mag  in zip(string_coords, name_array, input_table[full_mag_str
         thing= thing.replace(char, ':')
     thing=thing.replace('s', '')
     split_string=thing.split(' ')
-    ra= split_string[0]
-    dec= split_string[1]
+    ra= split_string[0][:11] #limiting precision of the decimal
+    dec= split_string[1][:12] #limiting precision of the decimal, need the additional index for sign
     small_ra= ra.replace(':', '')[:4]
     small_dec=dec.replace(':','')[:5] #need additional index for + or -
     if name=='.':
+        name='GaiaJ'+small_ra+small_dec
+        print('new name:', name)
+    elif name=='none':
+        name='GaiaJ'+small_ra+small_dec
+        print('new name:', name)
+    elif name == '0':
         name='GaiaJ'+small_ra+small_dec
         print('new name:', name)
     print(thing)
