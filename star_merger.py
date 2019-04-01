@@ -87,7 +87,8 @@ merged_star_input= 'WISEA0615m1247.csv'
 merged_star_input='WISEA0615m1247.csv'
 #merged_star_input='WISEA0238p3617.csv'
 
-star1_input='WDJ2356m209.csv'
+star1_input='sdssj1246p3608_gaia.csv'
+star1_input='sdssj1408p2021_gaia.csv'
 
 
 target_label = ''
