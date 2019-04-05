@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
+from astropy import convolution as conv
 
 percentile= 80
 
@@ -140,8 +141,34 @@ def rescale_spectrum(input_spec, reference_spec, scale_range):
     return input_spec
     
     
+def convolve_spec(spec_array, kernel_type='box', width=3):
+    if kernel_type== 'box':
+        kernel= conv.Box1DKernel(width = width, mode = 'oversample')
+        kernel.normalize()
+    else:
+        pass
+    def convolve_thing(input_string):
+        spec_array[input_string]=conv.convolve(spec_array[input_string],kernel)
+        return spec_array
+    spec_array= convolve_thing('flux')
+    spec_array= convolve_thing('sky')
+    #conv_flux= conv.convolve(spec_array['flux'],kernel)
+    #spec_array['flux']=conv_flux
+    return spec_array
     
     
+def interpolate_spec(spec_array1, spec_array2):
+    """
+    interpolate the values of spec_array2 to the values of spec_array1
+    
+    should be inputting the convolved versions for the record...
+    
+    """
+    interp_flux = np.interp(spec_array1['loglam'], spec_array2['loglam'], spec_array2['flux'])
+    spec_array2= np.copy(spec_array1)
+    spec_array2['flux']=interp_flux
+    #spec_array2['loglam']=spec_array1['loglam']
+    return spec_array2
     
     
     

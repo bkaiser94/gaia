@@ -24,6 +24,7 @@ import astropy
 import gaia_extinction
 #import wdatmos
 import plotting_dicts as pod
+import spec_plot_tools as spt
 ########################################
 ########################################
 ########################################
@@ -34,15 +35,25 @@ parallax_correction = 0.029 #from Lindgren et al 2018
 
 
 
-mdwarf_spec_file= 'sdssj1246p3608_sdss_spec.fits'
-mdwarf_gaia_file='sdssj1246p3608_gaia.csv'
+#mdwarf_spec_file= 'sdssj1246p3608_sdss_spec.fits'
+#mdwarf_gaia_file='sdssj1246p3608_gaia.csv'
 
-mdwarf_spec_file='sdssj1408p2021_sdss_spec.fits'
-mdwarf_gaia_file='sdssj1408p2021_gaia.csv'
+#mdwarf_spec_file='sdssj1408p2021_sdss_spec.fits'
+#mdwarf_gaia_file='sdssj1408p2021_gaia.csv'
+
+
+#mdwarf_spec_file='2MASSJ1055p0808_sdss_spec.fits'
+#mdwarf_gaia_file='2MASSJ1055p0808_gaia.csv'
+
+
+mdwarf_spec_file='2MASSJ1458p2839_sdss_spec.fits'
+mdwarf_gaia_file='2MASSJ1458p2839_gaia.csv'
 
 wdwarf_spec_file='WD1401p457_sdss_spec.fits'
 wdwarf_gaia_file='20190218_test_ultcool.csv'
 
+wd_name= wdwarf_spec_file.split('_')[0]
+mdwarf_name= mdwarf_spec_file.split('_')[0]
 
 wdwarf_gaia_table= Table.read(wdwarf_gaia_file)[0]
 mdwarf_gaia_table= Table.read(mdwarf_gaia_file)[0]
@@ -136,16 +147,48 @@ def get_abs_flux(table, spec_hdu,  plot_all = False,  verbose = True):
 
 
 
-plot_raw_spec(wdwarf_spec_array, name='WD')
-plot_raw_spec(mdwarf_spec_array, name='dM')
+plot_raw_spec(wdwarf_spec_array, name=wd_name)
+plot_raw_spec(mdwarf_spec_array, name=mdwarf_name)
+
+### convolve the spectra to dampen noise
+mdwarf_spec_array= spt.convolve_spec(mdwarf_spec_array, kernel_type= 'box', width = 2)
+wdwarf_spec_array= spt.convolve_spec(wdwarf_spec_array, kernel_type= 'box', width = 2)
+
+
+plot_raw_spec(wdwarf_spec_array, name=wd_name)
+plot_raw_spec(mdwarf_spec_array, name=mdwarf_name)
+
+wdwarf_spec_array= spt.interpolate_spec(mdwarf_spec_array, wdwarf_spec_array)
+
+
+plot_raw_spec(wdwarf_spec_array, name=wd_name)
+plot_raw_spec(mdwarf_spec_array, name=mdwarf_name)
 
 
 wdwarf_abs_flux= get_abs_flux(wdwarf_gaia_table, wdwarf_spec_array)
 
 mdwarf_abs_flux= get_abs_flux(mdwarf_gaia_table, mdwarf_spec_array)
 
-plt.plot(10**wdwarf_spec_array['loglam'], wdwarf_abs_flux, label='WD')
-plt.plot(10**mdwarf_spec_array['loglam'], mdwarf_abs_flux, label='dM')
+plt.plot(10**wdwarf_spec_array['loglam'], wdwarf_abs_flux, label=wd_name)
+plt.plot(10**mdwarf_spec_array['loglam'], mdwarf_abs_flux, label=mdwarf_name)
+plt.legend()
+plt.show()
+
+
+#plt.plot(10**wdwarf_spec_array['loglam'], wdwarf_abs_flux, label='WD')
+#plt.plot(10**mdwarf_spec_array['loglam'], mdwarf_abs_flux, label='dM')
+#plt.legend()
+#plt.show()
+
+merged_flux= wdwarf_abs_flux+mdwarf_abs_flux
+
+
+plt.plot(10**wdwarf_spec_array['loglam'], wdwarf_abs_flux, label=wd_name)
+plt.plot(10**mdwarf_spec_array['loglam'], mdwarf_abs_flux, label=mdwarf_name)
+plt.plot(10**wdwarf_spec_array['loglam'], merged_flux, label='merged')
+plt.xlabel(r'Wavelength ($\AA$)')
+plt.ylabel(r'Flux $[10^{-17}erg/cm^2/s/\AA]$')
+plt.xlim(np.nanmin(10**wdwarf_spec_array['loglam']), np.nanmax(10**wdwarf_spec_array['loglam']))
 plt.legend()
 plt.show()
 

@@ -55,12 +55,12 @@ parallax_correction = 0.029 #from Lindgren et al 2018
 mc_number = 10000
 percent_off = 34 #1-sigma equivalent
 #############
-
-num_targs = 'Lindegren'
+num_targs='all'
+#num_targs = 'Lindegren'
 #num_targs = '47Tuc'
 distance = 200
 grid_num = 225
-selection_letter= 'C'
+selection_letter= 'B'
 
 num_stars = 20 #number of stars in the track to use for merging
 
@@ -80,15 +80,16 @@ star1_input= 'weird_CPM_binary_gaia.csv'
 
 star1_input= 'test_WD.csv'
 star1_input= 'mystery_red_object.csv'
-star1_input='two_low_reds_gaia.csv'
+#star1_input='two_low_reds_gaia.csv'
 star2_input= '20190218_test_ultcool.csv'
 merged_star_input= 'WISEA0615m1247.csv'
 
 merged_star_input='WISEA0615m1247.csv'
+#merged_star_input= 'WD1133p358_gaia.csv'
 #merged_star_input='WISEA0238p3617.csv'
 
-star1_input='sdssj1246p3608_gaia.csv'
-star1_input='sdssj1408p2021_gaia.csv'
+#star1_input='sdssj1246p3608_gaia.csv'
+#star1_input='sdssj1408p2021_gaia.csv'
 
 
 target_label = ''
@@ -106,7 +107,7 @@ elif num_targs== '47Tuc':
     generic_input= "47Tuc_10arcmin.csv"
 elif num_targs== 'Lindegren':
     generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
-    generic_input='Lindegren_appC_selC_noBLMC.csv'
+    #generic_input='Lindegren_appC_selC_noBLMC.csv'
     #generic_input='Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
     #generic_input='Lindegren_appC_altC_noBDLMC.csv'
     #generic_input= 'Lindegren_appC_selB_antiC_cut2.csv'
@@ -456,6 +457,7 @@ def merge_stars(star1_table=[], star2_table=[], real_stars=False, bounded=False,
         merged_rp_absmag_dist,merged_g_absmag_dist= match_sizes(merged_rp_absmag_dist, merged_g_absmag_dist)
         
         plt.title('')
+        plt.legend()
         plt.show()
         
         print(merged_rp_absmag_dist)

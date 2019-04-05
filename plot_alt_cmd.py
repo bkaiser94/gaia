@@ -64,8 +64,11 @@ percent_off = 34 #1-sigma equivalent
 #############
 
 target_input='20190107_chris_merge_gaia.csv'
+#target_input= 'mdwarf_spTs_gaia_sc.csv'
+#target_input= 'Lindegren_appC_selC_noBLMC_wd1401_bincomp_gaia_sc.csv'
+target_input= 'Lindegren_appC_selC_noBLMCbperr_wd1401_bincomp_gaia_sc.csv'
 #target_input= 'exc1_8_2_2_purple_search_gmaglimit_gaia_sc.csv'
-target_input= 'expanded_purple_search_gmaglimit_gaia_sc.csv'
+#target_input= 'expanded_purple_search_gmaglimit_gaia_sc.csv'
 #target_input=  'Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
 #target_input= '20190128_blue_line_gaia.csv'
 #target_input= 'two_low_reds_gaia.csv'
@@ -106,7 +109,7 @@ target_label= ''
 num_targs = 'all'
 #num_targs = '47Tuc'
 #num_targs= 'Lindegren'
-selection_letter= 'B'
+selection_letter= 'C'
 distance = 200
 grid_num = 225
 
@@ -412,6 +415,49 @@ def make_cmd(target_table=target_table, generic_table= generic_table, absmag='g'
     plt.show()
     return
 
+
+def plot_abs_v_abs(generic_table= generic_table, colours=['g','rp']):
+    """
+    generates the hexbin of two absolute magnitude plots
+    """
+    
+    try:
+        generic_parallax = generic_table ['parallax']+parallax_correction
+        generic_parallax = generic_parallax *1e-3 #parallax in arcseconds now
+        generic_distance = 1./generic_parallax #parsec distance
+        mag0 = generic_table['phot_'+colours[0]+'_mean_mag']
+        mag1=generic_table['phot_'+colours[1]+'_mean_mag']
+        #generic_colour0 = generic_table['phot_'+colours[0]+'_mean_mag']
+        #generic_colour1= generic_table['phot_'+colours[1]+'_mean_mag']
+        #generic_colour_dif= generic_colour0- generic_colour1
+        absmag0 = distance_modulus(mag0, generic_distance)
+        absmag1=distance_modulus(mag1,generic_distance)
+        plt.xlabel('M_'+colours[0])
+        polything = plt.hexbin(absmag0, absmag1, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
+        counts = polything.get_array()
+        print(counts.shape)
+        counts= np.sqrt(counts)
+        #counts=np.log(counts)
+        polything.set_array(counts)
+        polything.autoscale()
+        plt.ylim(axes_y)
+        plt.gca().invert_yaxis()
+        plt.xlim(axes_y)
+        plt.gca().invert_xaxis()
+        #plt.xlabel(r'$G_{BP} - G_{RP}$')
+        #plt.ylabel(r'$M_G$')
+        plt.ylabel('M_'+colours[1])
+        plt.subplots_adjust(wspace = 0, hspace = 0, top = 0.90, bottom = 0.10, left = 0.10, right = 0.90)
+
+
+    except KeyError as error:
+        print(error)
+        print("absolute mags generation failed")
+    
+    plt.show()
+    
+    return
+
 #def make_cmd_from_list(target_list=[target_table], generic_table=generic_table, absmag='g', colours=['bp','rp']):
     #plot_bkg_cmd(generic_table=generic_table, absmag=absmag, colours=colours)
     #for target_table in target_list:
@@ -456,8 +502,10 @@ def make_cmd(target_table=target_table, generic_table= generic_table, absmag='g'
 #plot_bkg_cmd(absmag='g', pseudo_colour=True)
 #plt.title(generic_input)
 #plt.show()
-
+#plot_abs_v_abs()
 make_cmd(target_table=target_table, generic_table= generic_table)
 make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= colours)
 make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= ['bp','g'])
+make_cmd(target_table=target_table, generic_table= generic_table, absmag= 'bp', colours= ['bp','rp'])
+
 #make_cmd(target_table=target_table, generic_table= generic_table, absmag= 'bp', colours= ['bp','rp'])
