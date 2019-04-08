@@ -90,11 +90,13 @@ elif num_targs== '47Tuc':
     generic_input= "47Tuc_10arcmin.csv"
 elif num_targs== 'Lindegren':
     generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
-    generic_input   ='usdMs_gaia.csv'
-    generic_input= 'Lindegren_odd_survivors_gaia_sc.csv'
+    #generic_input   ='usdMs_gaia.csv'
+    #generic_input= 'Lindegren_odd_survivors_gaia_sc.csv'
     #generic_input= 'massive_zzceti_gaia.csv'
 
-    generic_input='NaD_objects.csv'
+    #generic_input='NaD_objects.csv'
+    generic_input='WD_cooling_tip_gaia.csv'
+
     #generic_input='exc1_8_2_2_purple_search_gmaglimit_gaia_sc.csv'
     #generic_input='Lindegren_appB_bulge_only.csv'
     #generic_input='20190107_chris_merge_gaia.csv'

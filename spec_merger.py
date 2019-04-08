@@ -49,8 +49,18 @@ parallax_correction = 0.029 #from Lindgren et al 2018
 mdwarf_spec_file='2MASSJ1458p2839_sdss_spec.fits'
 mdwarf_gaia_file='2MASSJ1458p2839_gaia.csv'
 
+mdwarf_spec_file='2MASSIJ0821p4532m7,5_sdss_spec.fits'
+mdwarf_gaia_file= '2MASSIJ0821p4532_gaia.csv'
+
 wdwarf_spec_file='WD1401p457_sdss_spec.fits'
 wdwarf_gaia_file='20190218_test_ultcool.csv'
+
+#wdwarf_spec_file='SDSSJ0744p4649coolDZ_sdss_spec.fits'
+#wdwarf_gaia_file='SDSSJ0744p4649_gaia.csv'
+
+#wdwarf_spec_file='SDSSJ1636p1619coolDZ1_sdss_spec.fits'
+wdwarf_spec_file='SDSSJ1636p1619coolDZ2_sdss_spec.fits'
+wdwarf_gaia_file='SDSSJ1636p1619_gaia.csv'
 
 wd_name= wdwarf_spec_file.split('_')[0]
 mdwarf_name= mdwarf_spec_file.split('_')[0]

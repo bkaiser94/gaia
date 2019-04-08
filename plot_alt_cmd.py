@@ -64,9 +64,12 @@ percent_off = 34 #1-sigma equivalent
 #############
 
 target_input='20190107_chris_merge_gaia.csv'
+#target_input= '20190405_purple_search_gaia_sc.csv'
 #target_input= 'mdwarf_spTs_gaia_sc.csv'
 #target_input= 'Lindegren_appC_selC_noBLMC_wd1401_bincomp_gaia_sc.csv'
 target_input= 'Lindegren_appC_selC_noBLMCbperr_wd1401_bincomp_gaia_sc.csv'
+target_input='SDSSJ0744p4649_gaia.csv'
+target_input= 'WDJ0205m053ultracool_gaia.csv'
 #target_input= 'exc1_8_2_2_purple_search_gmaglimit_gaia_sc.csv'
 #target_input= 'expanded_purple_search_gmaglimit_gaia_sc.csv'
 #target_input=  'Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
@@ -98,7 +101,7 @@ target_input= 'Lindegren_appC_selC_noBLMCbperr_wd1401_bincomp_gaia_sc.csv'
 #target_input='dC_sample_roulston2018_gaia.csv'
 #target_input='20190111_red_things_gaia.csv'
 #target_input='alt_red_things_g_rp_greater_17_gaia.csv'
-#target_input='WD_cooling_tip_gaia.csv'
+target_input='WD_cooling_tip_gaia.csv'
 #target_input='weird_CPM_binary_gaia.csv'
 #target_input='20190121_excess_interesting_gaia.csv'
 #target_input= 'ar_sco_gaia.csv'
@@ -146,6 +149,7 @@ zeropoint_dict={"g": [25.6883657251, 0.0017850023],
 #Reading in the tables for the background and target files
 generic_table = Table.read(generic_input)
 target_table = Table.read(target_input)
+#target_table=target_table[np.where(target_table['repeat'] == 'False')]
 
 ####################################
 def distance_modulus(g_mag, distance):
@@ -506,6 +510,6 @@ def plot_abs_v_abs(generic_table= generic_table, colours=['g','rp']):
 make_cmd(target_table=target_table, generic_table= generic_table)
 make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= colours)
 make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= ['bp','g'])
-make_cmd(target_table=target_table, generic_table= generic_table, absmag= 'bp', colours= ['bp','rp'])
+#make_cmd(target_table=target_table, generic_table= generic_table, absmag= 'bp', colours= ['bp','rp'])
 
 #make_cmd(target_table=target_table, generic_table= generic_table, absmag= 'bp', colours= ['bp','rp'])

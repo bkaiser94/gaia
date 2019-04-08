@@ -80,8 +80,14 @@ star1_input= 'weird_CPM_binary_gaia.csv'
 
 star1_input= 'test_WD.csv'
 star1_input= 'mystery_red_object.csv'
+star1_input='2MASSJ1458p2839_gaia.csv'
+star1_input='2MASSJ1055p0808_gaia.csv'
+star1_input= '2MASSIJ0821p4532_gaia.csv'
+#star1_input='sdssj1408p2021_gaia.csv'
+
 #star1_input='two_low_reds_gaia.csv'
 star2_input= '20190218_test_ultcool.csv'
+star2_input= 'CE40_gaia.csv'
 merged_star_input= 'WISEA0615m1247.csv'
 
 merged_star_input='WISEA0615m1247.csv'
