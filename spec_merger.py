@@ -33,6 +33,7 @@ import spec_plot_tools as spt
 
 parallax_correction = 0.029 #from Lindgren et al 2018
 
+use_gaia=False
 
 
 #mdwarf_spec_file= 'sdssj1246p3608_sdss_spec.fits'
@@ -49,18 +50,22 @@ parallax_correction = 0.029 #from Lindgren et al 2018
 mdwarf_spec_file='2MASSJ1458p2839_sdss_spec.fits'
 mdwarf_gaia_file='2MASSJ1458p2839_gaia.csv'
 
-mdwarf_spec_file='2MASSIJ0821p4532m7,5_sdss_spec.fits'
-mdwarf_gaia_file= '2MASSIJ0821p4532_gaia.csv'
+#mdwarf_spec_file='2MASSIJ0821p4532m7,5_sdss_spec.fits'
+#mdwarf_gaia_file= '2MASSIJ0821p4532_gaia.csv'
 
-wdwarf_spec_file='WD1401p457_sdss_spec.fits'
-wdwarf_gaia_file='20190218_test_ultcool.csv'
+#wdwarf_spec_file='WD1401p457_sdss_spec.fits'
+#wdwarf_gaia_file='20190218_test_ultcool.csv'
+
 
 #wdwarf_spec_file='SDSSJ0744p4649coolDZ_sdss_spec.fits'
 #wdwarf_gaia_file='SDSSJ0744p4649_gaia.csv'
 
 #wdwarf_spec_file='SDSSJ1636p1619coolDZ1_sdss_spec.fits'
-wdwarf_spec_file='SDSSJ1636p1619coolDZ2_sdss_spec.fits'
-wdwarf_gaia_file='SDSSJ1636p1619_gaia.csv'
+#wdwarf_spec_file='SDSSJ1636p1619coolDZ2_sdss_spec.fits'
+#wdwarf_gaia_file='SDSSJ1636p1619_gaia.csv'
+
+wdwarf_spec_file='SDSSJ1330p6435coolDZNa_spec.fits'
+wdwarf_gaia_file='sdssj1330p6435_gaia.csv'
 
 wd_name= wdwarf_spec_file.split('_')[0]
 mdwarf_name= mdwarf_spec_file.split('_')[0]
@@ -87,7 +92,10 @@ mdwarf_spec_array = mdwarf_spec_hdu[1].data
 
 
 def plot_raw_spec(spec_hdu, name=''):
-    plt.plot(spec_hdu['loglam'], spec_hdu['flux'])
+    try:
+        plt.plot(spec_hdu['loglam'], spec_hdu['flux'])
+    except KeyError:
+        plt.plot(spec_hdu[0], spec_hdu[1])
     plt.title(name)
     plt.show()
     return
@@ -107,7 +115,10 @@ def mag_to_flux(mag):
 
 def get_abs_flux(table, spec_hdu,  plot_all = False,  verbose = True):
     #mean_flux, flux_dist = get_filter_vals(table, passband_string)
-    mag = get_mag(spec_hdu['flux'])
+    try:
+        mag = get_mag(spec_hdu['flux']) #SDSS spectrum key
+    except KeyError:
+        mag = get_mag(spec_hdu[1]) #Goodman spectra flux index
     #flux_dist= remove_negative(flux_dist, verbose=verbose)
     #mag_dist= get_mag(flux_dist, passband_string)
     parallax = table['parallax']+parallax_correction
@@ -149,6 +160,16 @@ def get_abs_flux(table, spec_hdu,  plot_all = False,  verbose = True):
     abs_flux= mag_to_flux(abs_mag)
     return abs_flux
 
+
+def merge_specs():
+    
+    return
+
+
+def subtract_specs():
+    
+    return
+
 #################################
 #################################
 #################################
@@ -161,18 +182,21 @@ plot_raw_spec(wdwarf_spec_array, name=wd_name)
 plot_raw_spec(mdwarf_spec_array, name=mdwarf_name)
 
 ### convolve the spectra to dampen noise
-mdwarf_spec_array= spt.convolve_spec(mdwarf_spec_array, kernel_type= 'box', width = 2)
-wdwarf_spec_array= spt.convolve_spec(wdwarf_spec_array, kernel_type= 'box', width = 2)
+#mdwarf_spec_array= spt.convolve_spec(mdwarf_spec_array, kernel_type= 'box', width = 2)
+#wdwarf_spec_array= spt.convolve_spec(wdwarf_spec_array, kernel_type= 'box', width = 2)
+mdwarf_spec_array= spt.convolve_spec(mdwarf_spec_array, kernel_type= 'gaussian', width = 2)
+wdwarf_spec_array= spt.convolve_spec(wdwarf_spec_array, kernel_type= 'gaussian', width = 2)
+#mdwarf_spec_array= spt.convolve_spec(mdwarf_spec_array, kernel_type= 'box', width = 5)
+#wdwarf_spec_array= spt.convolve_spec(wdwarf_spec_array, kernel_type= 'box', width = 5)
 
-
-plot_raw_spec(wdwarf_spec_array, name=wd_name)
-plot_raw_spec(mdwarf_spec_array, name=mdwarf_name)
+#plot_raw_spec(wdwarf_spec_array, name=wd_name)
+#plot_raw_spec(mdwarf_spec_array, name=mdwarf_name)
 
 wdwarf_spec_array= spt.interpolate_spec(mdwarf_spec_array, wdwarf_spec_array)
 
 
-plot_raw_spec(wdwarf_spec_array, name=wd_name)
-plot_raw_spec(mdwarf_spec_array, name=mdwarf_name)
+#plot_raw_spec(wdwarf_spec_array, name=wd_name)
+#plot_raw_spec(mdwarf_spec_array, name=mdwarf_name)
 
 
 wdwarf_abs_flux= get_abs_flux(wdwarf_gaia_table, wdwarf_spec_array)

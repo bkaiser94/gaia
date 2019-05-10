@@ -13,9 +13,14 @@ import astropy.units as u
 import astropy.coordinates as coord
 from astropy.table import Table, vstack, Column
 
-#input_file= '20190107_chris_merge_gaia.csv'
-input_file='Lindegren_odd_survivors_gaia_sc.csv'
+input_file= '20190107_chris_merge_gaia.csv'
+input_file='20190405_purple_search_gaia_unique.csv'
+input_file='exc1_8_2_2_purple_search_gmaglimit_gaia_sc.csv'
+#input_file='Lindegren_odd_survivors_gaia_sc.csv'
+#input_file='sdssj1330_similar_subset_gaia_sc.csv'
 #output_file= '20190107_chris_merge_targlist.txt'
+#input_file='expanded_purple_search_gmaglimit_gaia_sc.csv'
+comment_string='coolWDdMcand'
 
 output_file= input_file.split('.')[0]+'_targlist.txt'
 input_table= Table.read(input_file, format= 'ascii.csv')
@@ -65,7 +70,8 @@ for thing, name, mag  in zip(string_coords, name_array, input_table[full_mag_str
     ra_list.append(ra)
     dec_list.append(dec)
     epoch_list.append('2000.0')
-    mag_list.append(mag_string.upper()+'='+str(mag)[:4])
+    #mag_list.append(mag_string.upper()+'='+str(mag)[:4])
+    mag_list.append(mag_string.upper()+'='+str(mag)[:4]+','+comment_string)
     #for other in thing:
         #print(other.replace(['d','h','m','s'], ':'))
 print(name_array)

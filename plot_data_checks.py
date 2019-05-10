@@ -38,7 +38,7 @@ colours= ['g','rp']
 #cmap='viridis'
 
 
-
+percentile=68
 
 #axes_x= [-1.5, 6]
 #axes_y = [-4,18]
@@ -71,7 +71,7 @@ percent_off = 34 #1-sigma equivalent
 #num_targs = '47Tuc'
 num_targs= 'Lindegren'
 selection_letter= 'B'
-distance = 200
+distance = 100
 grid_num = 100
 
 #basis vector components for orthnormal bp vs. rp plot
@@ -90,13 +90,17 @@ elif num_targs== '47Tuc':
     generic_input= "47Tuc_10arcmin.csv"
 elif num_targs== 'Lindegren':
     generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
+    #generic_input='sdssj1330p6435_gaia.csv'
+    #generic_input= 'sdssj1330_similar_gaia_sc.csv'
     #generic_input   ='usdMs_gaia.csv'
     #generic_input= 'Lindegren_odd_survivors_gaia_sc.csv'
     #generic_input= 'massive_zzceti_gaia.csv'
 
     #generic_input='NaD_objects.csv'
-    generic_input='WD_cooling_tip_gaia.csv'
-
+    #generic_input='WD_cooling_tip_gaia.csv'
+    #generic_input='target_gaia.csv'
+    #generic_input='observed_purple_400m2.csv'
+    #generic_input='expanded_purple_search_gmaglimit_gaia_sc.csv'
     #generic_input='exc1_8_2_2_purple_search_gmaglimit_gaia_sc.csv'
     #generic_input='Lindegren_appB_bulge_only.csv'
     #generic_input='20190107_chris_merge_gaia.csv'
@@ -112,7 +116,7 @@ elif num_targs== 'Lindegren':
     #generic_input='20190121_excess_interesting_gaia.csv'
     #generic_input= 'Lindegren_appC_selA_hv_region.csv'
     #generic_input='Lindegren_appC_altC_noBDLMC.csv'
-    #generic_input= '20190107_chris_merge_gaia.csv'
+    generic_input= '20190107_chris_merge_gaia.csv'
     #generic_input= 'ar_sco_gaia.csv'
     #generic_input= '20190123_new_red_things_gaia_sc.csv'
 else:
@@ -135,6 +139,9 @@ col_pairs=[
     ['bp_rp','mg'],
     ['g_rp','mg'],
     ['astrometric_pseudo_colour','mg'],
+    ['astrometric_excess_noise', 'astrometric_excess_noise_sig'],
+    ['astrometric_excess_noise', 'astrometric_gof_al'],
+    ['phot_g_mean_mag', 'astrometric_gof_al'],
     ['bp_rp', 'phot_bp_rp_excess_factor'],
     ['mg','mean_varpi_factor_al'],
     ['phot_bp_rp_excess_factor','mean_varpi_factor_al'],
@@ -165,7 +172,9 @@ col_singles=[
     'phot_bp_rp_excess_factor',
     'phot_proc_mode',
     'astrometric_excess_noise',
-    'parallax']
+    'astrometric_excess_noise_sig',
+    'parallax',
+    'astrometric_gof_al']
     
 
 ############################################
@@ -198,11 +207,13 @@ def scatter_plot(string_pair):
         y_array = generic_table[string_pair[1]]
     try:
         #plt.scatter(x_array, y_array, c= generic_table['phot_proc_mode'], alpha=0.5)
-        sorted_order= np.argsort(generic_table['phot_bp_rp_excess_factor'])
+        #sorted_order= np.argsort(generic_table['phot_bp_rp_excess_factor'])
+        sorted_order= np.argsort(generic_table['astrometric_excess_noise_sig'])
         sorted_x_array=x_array[sorted_order]
         sorted_y_array= y_array[sorted_order]
         #plt.scatter(x_array, y_array, c= generic_table['phot_bp_rp_excess_factor'], alpha=0.5, markersize=4)
-        plt.scatter(sorted_x_array, sorted_y_array, c= generic_table['phot_bp_rp_excess_factor'][sorted_order], alpha=1, s=8, edgecolor='none')
+        #plt.scatter(sorted_x_array, sorted_y_array, c= generic_table['phot_bp_rp_excess_factor'][sorted_order], alpha=1, s=8, edgecolor='none')
+        plt.scatter(sorted_x_array, sorted_y_array, c= np.sqrt(generic_table['astrometric_excess_noise_sig'][sorted_order]), alpha=1, s=10, edgecolor='none')
     except KeyError as error:
         print('No ', error,'\nTherefore using uniform color for scatter plot.')
         plt.scatter(x_array, y_array, alpha=0.5)
@@ -254,9 +265,22 @@ def hexbin_plot(string_pair):
     return
 
 def hist_plot(string_single):
-    plt.hist(generic_table[string_single])
+    plt.hist(generic_table[string_single], bins=200)
+    mean_val= np.nanmean(generic_table[string_single])
+    plt.axvline(mean_val, color='k', linestyle='--', label='Mean: ' +str(mean_val))
+    std_dev= np.std(generic_table[single_string])
+    med_val=np.nanmedian(generic_table[single_string])
+    low_percent= np.nanpercentile(generic_table[single_string], 50-percentile/2)
+    high_percent= np.nanpercentile(generic_table[single_string], 50+percentile/2)
+    plt.axvline(mean_val-std_dev, color='grey', linestyle='--', label="1-sigma:"+str(std_dev))
+    plt.axvline(mean_val+std_dev, color='grey', linestyle='--')
+    plt.axvline(med_val, color='r', linestyle='--', label='Median: ' +str(med_val))
+    plt.axvline(low_percent, color='pink', linestyle='--', label=str(50-percentile/2) + '%:' +str(low_percent))
+    plt.axvline(high_percent, color='pink', linestyle='--', label=str(50+percentile/2) + '%:' +str(high_percent))
+    plt.legend()
     plt.title(string_single)
     plt.show()
+    return
 #def bp_rp_cut_line(string_pair):
     #if ((string_pair[0]== 'bp_rp') and (string_pair[1]=='phot_bp_rp_excess_factor')):
         #xvals= np.linspace(-2,6.,1000)
@@ -371,8 +395,8 @@ for string_pair in col_pairs:
         #bp_rp_cut_line(string_pair)
         plot_cut_lines(string_pair)
         pseudo_colour_bp_rp_line(string_pair)
-        scatter_plot(string_pair)
-        #hexbin_plot(string_pair)
+        #scatter_plot(string_pair)
+        hexbin_plot(string_pair)
     except KeyError as error:
         plt.clf()
         print('No column named', error, '\nSkipping', string_pair[1] + ' vs. ' + string_pair[0])

@@ -145,6 +145,9 @@ def convolve_spec(spec_array, kernel_type='box', width=3):
     if kernel_type== 'box':
         kernel= conv.Box1DKernel(width = width, mode = 'oversample')
         kernel.normalize()
+    elif kernel_type=='gaussian':
+        kernel=conv.Gaussian1DKernel(width, mode='oversample')
+        kernel.normalize()
     else:
         pass
     def convolve_thing(input_string):

@@ -67,11 +67,17 @@ target_input='20190107_chris_merge_gaia.csv'
 #target_input= '20190405_purple_search_gaia_sc.csv'
 #target_input= 'mdwarf_spTs_gaia_sc.csv'
 #target_input= 'Lindegren_appC_selC_noBLMC_wd1401_bincomp_gaia_sc.csv'
-target_input= 'Lindegren_appC_selC_noBLMCbperr_wd1401_bincomp_gaia_sc.csv'
-target_input='SDSSJ0744p4649_gaia.csv'
-target_input= 'WDJ0205m053ultracool_gaia.csv'
+#target_input= 'Lindegren_appC_selC_noBLMCbperr_wd1401_bincomp_gaia_sc.csv'
+#target_input='SDSSJ0744p4649_gaia.csv'
+#target_input= 'WDJ0205m053ultracool_gaia.csv'
+#target_input= 'observed_purple_400m2.csv'
 #target_input= 'exc1_8_2_2_purple_search_gmaglimit_gaia_sc.csv'
 #target_input= 'expanded_purple_search_gmaglimit_gaia_sc.csv'
+#target_input='20190422_obs_objects_gaia.csv'
+#target_input= 'sdssj1330p6435_gaia.csv'
+#target_input= 'sdssj1330_similar_gaia_sc.csv'
+#target_input= 'sdssj1330_similar_subset_gaia_sc.csv'
+#target_input= 'sdssj1330_similar_subset_observed.csv'
 #target_input=  'Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
 #target_input= '20190128_blue_line_gaia.csv'
 #target_input= 'two_low_reds_gaia.csv'
@@ -101,19 +107,24 @@ target_input= 'WDJ0205m053ultracool_gaia.csv'
 #target_input='dC_sample_roulston2018_gaia.csv'
 #target_input='20190111_red_things_gaia.csv'
 #target_input='alt_red_things_g_rp_greater_17_gaia.csv'
-target_input='WD_cooling_tip_gaia.csv'
+#target_input='WD_cooling_tip_gaia.csv'
 #target_input='weird_CPM_binary_gaia.csv'
 #target_input='20190121_excess_interesting_gaia.csv'
 #target_input= 'ar_sco_gaia.csv'
 #target_input='20190123_new_red_things_gaia_sc.csv'
 #target_input= 'DQpec_gaia.csv'
+
+
+
+other_target_input= 'mdwarf_spTs_gaia_sc.csv'
+
 target_label= ''
 
 num_targs = 'all'
 #num_targs = '47Tuc'
 #num_targs= 'Lindegren'
 selection_letter= 'C'
-distance = 200
+distance = 100
 grid_num = 225
 
 
@@ -149,6 +160,7 @@ zeropoint_dict={"g": [25.6883657251, 0.0017850023],
 #Reading in the tables for the background and target files
 generic_table = Table.read(generic_input)
 target_table = Table.read(target_input)
+other_target_table=Table.read(other_target_input)
 #target_table=target_table[np.where(target_table['repeat'] == 'False')]
 
 ####################################
@@ -298,7 +310,7 @@ def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = Tr
     return abs_mag, abs_mag_error, abs_mag_dist
 
 
-def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp']):
+def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color=list_color):
     for row in input_table:
         print('===========')
         #print(row)
@@ -507,6 +519,12 @@ def plot_abs_v_abs(generic_table= generic_table, colours=['g','rp']):
 #plt.title(generic_input)
 #plt.show()
 #plot_abs_v_abs()
+plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+plot_target_table(target_table, colours=['g','rp'])
+plot_target_table(other_target_table, colours=['g','rp'], list_color='r')
+plt.show()
+
+
 make_cmd(target_table=target_table, generic_table= generic_table)
 make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= colours)
 make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= ['bp','g'])
