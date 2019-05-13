@@ -64,6 +64,7 @@ percent_off = 34 #1-sigma equivalent
 #############
 
 target_input='20190107_chris_merge_gaia.csv'
+#target_input='20190511_observed_objects_gaia.csv'
 #target_input= '20190405_purple_search_gaia_sc.csv'
 #target_input= 'mdwarf_spTs_gaia_sc.csv'
 #target_input= 'Lindegren_appC_selC_noBLMC_wd1401_bincomp_gaia_sc.csv'
@@ -310,24 +311,40 @@ def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = Tr
     return abs_mag, abs_mag_error, abs_mag_dist
 
 
-def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color=list_color):
+def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color=list_color, pseudo_colour=False):
     for row in input_table:
-        print('===========')
-        #print(row)
-        target_absmag, target_absmag_err, target_absmag_dist= get_pass_abs_mag(row, plot_all = False, passband_string= absmag)
-        target_colour_dif, target_colour_dif_err = get_colour_dif(row, plot_all = False, colours=colours)
-        if row['phot_'+colours[0]+ '_mean_mag']>1e18:
-            target_colour_dif= x_fill
-            target_colour_dif_err= 0
-        if row['parallax']>1e18:
-            target_absmag=y_fill
-        plt.errorbar(np.copy(target_colour_dif), np.copy(target_absmag), yerr = np.copy(target_absmag_err),  xerr = np.copy(target_colour_dif_err), marker = 'o', markersize = 6, color = list_color, capsize = 4, label = target_label, linestyle ='none')
-        print(target_colour_dif, target_absmag)
-        print(row['name'])
-        if annotate:
-            plt.annotate(str(row['name']),xy=(np.copy(target_colour_dif), np.copy(target_absmag)), xycoords='data', xytext=(np.copy(target_colour_dif+0.01),np.copy(target_absmag-0.1)), textcoords= 'data' , fontsize=8, color =list_color)
+        if pseudo_colour:
+            target_absmag, target_absmag_err, target_absmag_dist= get_pass_abs_mag(row, plot_all = False, passband_string= absmag)
+            target_pseudo_colour=row['astrometric_pseudo_colour']
+            target_pseudo_dist= get_mc_distribution(target_pseudo_colour, row['astrometric_pseudo_colour_error'])
+            target_pseudo_wave_dist=1./target_pseudo_dist*1e4
+            target_colour_dif_err= get_errors(target_pseudo_wave_dist)
+            target_colour_dif = 1./target_pseudo_colour*1e4
+            plt.xlabel('1./astrometric_pseudo_colour (angstroms)')
+            plt.errorbar(np.copy(target_colour_dif), np.copy(target_absmag), yerr = np.copy(target_absmag_err),  xerr = np.copy(target_colour_dif_err), marker = 'o', markersize = 6, color = list_color, capsize = 4, label = target_label, linestyle ='none')
+            print(target_colour_dif, target_absmag)
+            print(row['name'])
+            if annotate:
+                plt.annotate(str(row['name']),xy=(np.copy(target_colour_dif), np.copy(target_absmag)), xycoords='data', xytext=(np.copy(target_colour_dif+0.01),np.copy(target_absmag-0.1)), textcoords= 'data' , fontsize=8, color =list_color)
+            else:
+                pass
         else:
-            pass
+            print('===========')
+            #print(row)
+            target_absmag, target_absmag_err, target_absmag_dist= get_pass_abs_mag(row, plot_all = False, passband_string= absmag)
+            target_colour_dif, target_colour_dif_err = get_colour_dif(row, plot_all = False, colours=colours)
+            if row['phot_'+colours[0]+ '_mean_mag']>1e18:
+                target_colour_dif= x_fill
+                target_colour_dif_err= 0
+            if row['parallax']>1e18:
+                target_absmag=y_fill
+            plt.errorbar(np.copy(target_colour_dif), np.copy(target_absmag), yerr = np.copy(target_absmag_err),  xerr = np.copy(target_colour_dif_err), marker = 'o', markersize = 6, color = list_color, capsize = 4, label = target_label, linestyle ='none')
+            print(target_colour_dif, target_absmag)
+            print(row['name'])
+            if annotate:
+                plt.annotate(str(row['name']),xy=(np.copy(target_colour_dif), np.copy(target_absmag)), xycoords='data', xytext=(np.copy(target_colour_dif+0.01),np.copy(target_absmag-0.1)), textcoords= 'data' , fontsize=8, color =list_color)
+            else:
+                pass
     return
 
 
@@ -431,6 +448,14 @@ def make_cmd(target_table=target_table, generic_table= generic_table, absmag='g'
     plt.show()
     return
 
+def get_vT(target_table):
+    
+    return
+
+def plot_vT(target_table=target_table):
+    
+    return
+
 
 def plot_abs_v_abs(generic_table= generic_table, colours=['g','rp']):
     """
@@ -515,10 +540,13 @@ def plot_abs_v_abs(generic_table= generic_table, colours=['g','rp']):
 #plt.title(generic_input)
 #plt.show()
 
-#plot_bkg_cmd(absmag='g', pseudo_colour=True)
-#plt.title(generic_input)
-#plt.show()
+plot_target_table(target_table, pseudo_colour=True)
+plot_bkg_cmd(absmag='g', pseudo_colour=True)
+plt.title(generic_input)
+plt.show()
 #plot_abs_v_abs()
+#make_cmd(target_table=other_target_table, generic_table= generic_table)
+
 plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
 plot_target_table(target_table, colours=['g','rp'])
 plot_target_table(other_target_table, colours=['g','rp'], list_color='r')

@@ -14,7 +14,7 @@ import astropy.coordinates as coord
 from astropy.table import Table, vstack, Column
  
  
-filter_confused_sources= True
+filter_confused_sources= False
 search_radius = 4.08 #in arcseconds
 #search_radius =  10.
  
@@ -35,12 +35,12 @@ search_radius = 4.08 #in arcseconds
 #input_file= 'elm_survey.txt'
 #input_file='apj522588t5_mrt.txt'
 #output_file= 'elm_survey_gaia.csv'
-
+input_file='20190511_observed_objects.txt'
 #input_file= '20190104_chris.csv'
 #input_file='20190422_obs_objects.txt'
 #input_file='sdssj1330p6435.csv'
 #input_file ='sdssj1330_similar.csv'
-input_file ='sdssj1330_similar_subset.csv'
+#input_file ='sdssj1330_similar_subset.csv'
 #input_file= 'exc1_8_2_2_purple_search_gmaglimit.csv'
 #input_file= 'usdMs.csv'
 #input_file='Lindegren_odd_survivors.csv'
@@ -91,8 +91,9 @@ print("Log in succesful.")
 
 coord_list= []
 ####allarray= np.genfromtxt(input_file, names=True, delimiter=',', dtype='U6')
-allarray= np.genfromtxt(input_file, delimiter= ',', dtype= str)
+#allarray= np.genfromtxt(input_file, delimiter= ',', dtype= str)
 #allarray=np.genfromtxt(input_file, dtype=np.str_, delimiter= ' \t', skip_header=1)
+allarray=np.genfromtxt(input_file, dtype=np.str_, delimiter= '\t')
 #####allarray= np.genfromtxt(input_file, delimiter=[11,13,13], dtype= str)
 ####allarray= np.loadtxt(input_file, delimiter=',', dtype=bytes).astype(str)
 print(allarray)
@@ -100,7 +101,7 @@ print(allarray.shape)
 #print(allarray)
 #ra_array = allarray['Ra']
 #dec_array= allarray['Dec'] #Now I've got the RAs and Decs
-allarray=allarray[1:]
+#allarray=allarray[1:]
 #print(allarray)
 
 ra_array=allarray[:,1]

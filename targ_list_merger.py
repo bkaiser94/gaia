@@ -12,16 +12,18 @@ from __future__ import print_function
 import numpy as np
 
 
-starting_num=700
+starting_num=930
 
-output_filename='WDdMcands_target_list.txt'
+#output_filename='WDdMcands_target_list.txt'
+output_filename='coolWDcands_target_list.txt'
 
+list_of_names=['sdssj1330_similar_subset_gaia_sc_targlist.txt']
 
-list_of_names =['20190107_chris_merge_gaia_targlist_wcomps.txt',
-                'expanded_purple_search_gmaglimit_wcomps_targlist.txt',
-                'exc1_8_2_2_purple_search_gmaglimit_wcomps_targlist.txt',
-                '20190405_purple_search_gaia_unique_wcomps_targlist.txt'
-                ]
+#list_of_names =['20190107_chris_merge_gaia_targlist_wcomps.txt',
+                #'expanded_purple_search_gmaglimit_wcomps_targlist.txt',
+                #'exc1_8_2_2_purple_search_gmaglimit_wcomps_targlist.txt',
+                #'20190405_purple_search_gaia_unique_wcomps_targlist.txt'
+                #]
 #list_of_names =[
                 #'expanded_purple_search_gmaglimit_wcomps_targlist.txt',
                 #'exc1_8_2_2_purple_search_gmaglimit_wcomps_targlist.txt',
@@ -57,7 +59,8 @@ first_col= map('_'.join,zip(number_range, first_col))
 #print(first_col.shape)
 print(first_col)
 
-array_of_lists[0]=first_col
+#array_of_lists[0]=first_col
+array_of_lists=np.vstack([first_col,array_of_lists[1:]])
 
 print(array_of_lists)
 

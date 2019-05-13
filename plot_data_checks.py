@@ -70,7 +70,7 @@ percent_off = 34 #1-sigma equivalent
 #num_targs = 'all'
 #num_targs = '47Tuc'
 num_targs= 'Lindegren'
-selection_letter= 'B'
+selection_letter= 'C'
 distance = 100
 grid_num = 100
 
@@ -95,7 +95,7 @@ elif num_targs== 'Lindegren':
     #generic_input   ='usdMs_gaia.csv'
     #generic_input= 'Lindegren_odd_survivors_gaia_sc.csv'
     #generic_input= 'massive_zzceti_gaia.csv'
-
+    #generic_input='20190511_observed_objects_gaia.csv'
     #generic_input='NaD_objects.csv'
     #generic_input='WD_cooling_tip_gaia.csv'
     #generic_input='target_gaia.csv'
@@ -116,7 +116,7 @@ elif num_targs== 'Lindegren':
     #generic_input='20190121_excess_interesting_gaia.csv'
     #generic_input= 'Lindegren_appC_selA_hv_region.csv'
     #generic_input='Lindegren_appC_altC_noBDLMC.csv'
-    generic_input= '20190107_chris_merge_gaia.csv'
+    #generic_input= '20190107_chris_merge_gaia.csv'
     #generic_input= 'ar_sco_gaia.csv'
     #generic_input= '20190123_new_red_things_gaia_sc.csv'
 else:
@@ -136,7 +136,9 @@ zeropoint_dict={"g": [25.6883657251, 0.0017850023],
 generic_table = Table.read(generic_input)
 #########################################
 col_pairs=[
+    ['phot_g_mean_mag','astrometric_pseudo_colour_error'],
     ['bp_rp','mg'],
+    ['pmra','pmdec'],
     ['g_rp','mg'],
     ['astrometric_pseudo_colour','mg'],
     ['astrometric_excess_noise', 'astrometric_excess_noise_sig'],
@@ -163,8 +165,8 @@ col_pairs=[
     ['ra','pmra'],
     ['dec','pmra'],
     ['dec','pmdec'],
-    ['ra','pmdec'],
-    ['pmra','pmdec']]
+    ['ra','pmdec']
+    ]
 
 col_singles=[
     'ra',
@@ -202,18 +204,22 @@ def scatter_plot(string_pair):
         y_array=1./generic_table['astrometric_pseudo_colour'] * 1e4
         string_pair[1]= '1/astrometric_pseudo_colour (angstroms)'
         x_array = generic_table[string_pair[0]]
+    elif (string_pair[0]=='pmra') and (string_pair[1]=='pmdec'):
+        x_array=1000./generic_table['parallax']
+        y_array=4.74/generic_table['parallax'] *np.sqrt(generic_table['pmra']**2+generic_table['pmdec']**2)
+        string_pair=['distance (pc)', 'V_T']
     else:
         x_array = generic_table[string_pair[0]]
         y_array = generic_table[string_pair[1]]
     try:
         #plt.scatter(x_array, y_array, c= generic_table['phot_proc_mode'], alpha=0.5)
-        #sorted_order= np.argsort(generic_table['phot_bp_rp_excess_factor'])
-        sorted_order= np.argsort(generic_table['astrometric_excess_noise_sig'])
+        sorted_order= np.argsort(generic_table['phot_bp_rp_excess_factor'])
+        #sorted_order= np.argsort(generic_table['astrometric_excess_noise_sig'])
         sorted_x_array=x_array[sorted_order]
         sorted_y_array= y_array[sorted_order]
         #plt.scatter(x_array, y_array, c= generic_table['phot_bp_rp_excess_factor'], alpha=0.5, markersize=4)
-        #plt.scatter(sorted_x_array, sorted_y_array, c= generic_table['phot_bp_rp_excess_factor'][sorted_order], alpha=1, s=8, edgecolor='none')
-        plt.scatter(sorted_x_array, sorted_y_array, c= np.sqrt(generic_table['astrometric_excess_noise_sig'][sorted_order]), alpha=1, s=10, edgecolor='none')
+        plt.scatter(sorted_x_array, sorted_y_array, c= generic_table['phot_bp_rp_excess_factor'][sorted_order], alpha=1, s=8, edgecolor='none')
+        #plt.scatter(sorted_x_array, sorted_y_array, c= np.sqrt(generic_table['astrometric_excess_noise_sig'][sorted_order]), alpha=1, s=10, edgecolor='none')
     except KeyError as error:
         print('No ', error,'\nTherefore using uniform color for scatter plot.')
         plt.scatter(x_array, y_array, alpha=0.5)
@@ -395,8 +401,8 @@ for string_pair in col_pairs:
         #bp_rp_cut_line(string_pair)
         plot_cut_lines(string_pair)
         pseudo_colour_bp_rp_line(string_pair)
-        #scatter_plot(string_pair)
-        hexbin_plot(string_pair)
+        scatter_plot(string_pair)
+        #hexbin_plot(string_pair)
     except KeyError as error:
         plt.clf()
         print('No column named', error, '\nSkipping', string_pair[1] + ' vs. ' + string_pair[0])
