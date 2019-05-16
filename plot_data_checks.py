@@ -70,7 +70,7 @@ percent_off = 34 #1-sigma equivalent
 #num_targs = 'all'
 #num_targs = '47Tuc'
 num_targs= 'Lindegren'
-selection_letter= 'C'
+selection_letter= 'A'
 distance = 100
 grid_num = 100
 
@@ -176,7 +176,8 @@ col_singles=[
     'astrometric_excess_noise',
     'astrometric_excess_noise_sig',
     'parallax',
-    'astrometric_gof_al']
+    'astrometric_gof_al',
+    'phot_g_mean_mag']
     
 
 ############################################
@@ -360,15 +361,18 @@ plt.ylabel('cprime_y')
 plt.show()
 
 #plt.scatter(cprime_x, generic_table['phot_bp_rp_excess_factor'], alpha=0.5)
-polything = plt.hexbin(cprime_x,generic_table['phot_bp_rp_excess_factor'], gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1)
-counts = polything.get_array()
-#counts= np.sqrt(counts)
-counts=np.log(counts)
-polything.set_array(counts)
-polything.autoscale()
-plt.xlabel('cprime_x')
-plt.ylabel('phot_bp_rp_excess_factor')
-plt.show()
+try:
+    polything = plt.hexbin(cprime_x,generic_table['phot_bp_rp_excess_factor'], gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1)
+    counts = polything.get_array()
+    #counts= np.sqrt(counts)
+    counts=np.log(counts)
+    polything.set_array(counts)
+    polything.autoscale()
+    plt.xlabel('cprime_x')
+    plt.ylabel('phot_bp_rp_excess_factor')
+    plt.show()
+except KeyError:
+    pass
 
 
 try:
@@ -401,8 +405,8 @@ for string_pair in col_pairs:
         #bp_rp_cut_line(string_pair)
         plot_cut_lines(string_pair)
         pseudo_colour_bp_rp_line(string_pair)
-        scatter_plot(string_pair)
-        #hexbin_plot(string_pair)
+        #scatter_plot(string_pair)
+        hexbin_plot(string_pair)
     except KeyError as error:
         plt.clf()
         print('No column named', error, '\nSkipping', string_pair[1] + ' vs. ' + string_pair[0])

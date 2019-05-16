@@ -63,7 +63,8 @@ mc_number = 10000
 percent_off = 34 #1-sigma equivalent
 #############
 
-target_input='20190107_chris_merge_gaia.csv'
+#target_input='20190107_chris_merge_gaia.csv'
+#target_input= 'NLTT5306_comps_gaia.csv'
 #target_input='20190511_observed_objects_gaia.csv'
 #target_input= '20190405_purple_search_gaia_sc.csv'
 #target_input= 'mdwarf_spTs_gaia_sc.csv'
@@ -74,7 +75,7 @@ target_input='20190107_chris_merge_gaia.csv'
 #target_input= 'observed_purple_400m2.csv'
 #target_input= 'exc1_8_2_2_purple_search_gmaglimit_gaia_sc.csv'
 #target_input= 'expanded_purple_search_gmaglimit_gaia_sc.csv'
-#target_input='20190422_obs_objects_gaia.csv'
+target_input='20190422_obs_objects_gaia.csv'
 #target_input= 'sdssj1330p6435_gaia.csv'
 #target_input= 'sdssj1330_similar_gaia_sc.csv'
 #target_input= 'sdssj1330_similar_subset_gaia_sc.csv'
@@ -121,9 +122,9 @@ other_target_input= 'mdwarf_spTs_gaia_sc.csv'
 
 target_label= ''
 
-num_targs = 'all'
+#num_targs = 'all'
 #num_targs = '47Tuc'
-#num_targs= 'Lindegren'
+num_targs= 'Lindegren'
 selection_letter= 'C'
 distance = 100
 grid_num = 225
@@ -140,7 +141,8 @@ if num_targs == 'all':
 elif num_targs== '47Tuc':
     generic_input= "47Tuc_10arcmin.csv"
 elif num_targs== 'Lindegren':
-    generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
+    #generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
+    generic_input = 'Lindegren_appC_sel'+selection_letter + '_200pc.csv'
     #generic_input='Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
     #generic_input='Lindegren_appC_altC_noBDLMC.csv'
     #generic_input= 'Lindegren_appC_selB_antiC_cut2.csv'
@@ -540,10 +542,10 @@ def plot_abs_v_abs(generic_table= generic_table, colours=['g','rp']):
 #plt.title(generic_input)
 #plt.show()
 
-plot_target_table(target_table, pseudo_colour=True)
-plot_bkg_cmd(absmag='g', pseudo_colour=True)
-plt.title(generic_input)
-plt.show()
+#plot_target_table(target_table, pseudo_colour=True)
+#plot_bkg_cmd(absmag='g', pseudo_colour=True)
+#plt.title(generic_input)
+#plt.show()
 #plot_abs_v_abs()
 #make_cmd(target_table=other_target_table, generic_table= generic_table)
 
@@ -552,6 +554,22 @@ plot_target_table(target_table, colours=['g','rp'])
 plot_target_table(other_target_table, colours=['g','rp'], list_color='r')
 plt.show()
 
+
+#plot_bkg_cmd(generic_table=generic_table, absmag= 'rp', colours=['bp','rp'])
+#plot_target_table(target_table, colours=['bp','rp'], absmag= 'rp')
+#plot_target_table(other_target_table, absmag= 'rp', colours=['bp','rp'], list_color='r')
+#plt.show()
+
+
+#plot_bkg_cmd(generic_table=generic_table, absmag= 'bp', colours=['bp','rp'])
+#plot_target_table(target_table, colours=['bp','rp'], absmag= 'bp')
+#plot_target_table(other_target_table, absmag= 'bp', colours=['bp','rp'], list_color='r')
+#plt.show()
+
+#plot_bkg_cmd(generic_table=generic_table, colours=['bp','rp'])
+#plot_target_table(target_table, colours=['bp','rp'])
+#plot_target_table(other_target_table, colours=['bp','rp'], list_color='r')
+#plt.show()
 
 make_cmd(target_table=target_table, generic_table= generic_table)
 make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= colours)

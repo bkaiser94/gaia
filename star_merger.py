@@ -44,7 +44,10 @@ axes_y = [-4,18]
 y_fill= axes_y[1]
 x_fill= axes_x[0]
 
-list_color = '#1ca1f2'
+star1_color = '#1ca1f2'
+list_color=star1_color
+merged_color= 'magenta'
+star2_color= 'r'
 single_list=True#turns off the original for-loop method for plotting from a single list
 error_bar=True #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
 annotate= True #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
@@ -62,7 +65,8 @@ distance = 200
 grid_num = 225
 selection_letter= 'B'
 
-num_stars = 20 #number of stars in the track to use for merging
+#num_stars = 20 #number of stars in the track to use for merging
+num_stars = 5 #number of stars in the track to use for merging
 
 extrap_dist = 0.0 #magnitude distance to go outside the line ends for the hypothetical star mergers
 extrap_dist1= 0.1
@@ -91,8 +95,8 @@ star2_input='sdssj1330p6435_gaia.csv'
 #star1_input= 'CE40_gaia.csv'
 #merged_star_input= 'WISEA0615m1247.csv'
 
-#merged_star_input='WISEA0615m1247.csv'
-merged_star_input='LP178m49_gaia.csv' 
+merged_star_input='WISEA0615m1247.csv'
+#merged_star_input='LP178m49_gaia.csv' 
 #merged_star_input= 'WD1133p358_gaia.csv'
 #merged_star_input='WISEA0238p3617.csv'
 
@@ -355,106 +359,166 @@ def generate_star_grid(endpoint1,endpoint2,gridrows= 4, grid_space= 0.05, mode='
     
     return
 
+def generate_random_grid(abs_bounds=[14.,17.], colour_bounds=[-0.5, 1.], num_points=num_stars):
+    """
+    Create a grid of stars randomly distributed in the region defined to be used either as merged stars  or 
+    components in the other functions.
+    
+    """
+    abs_mags = np.random.rand(num_points)*(abs_bounds[1]-abs_bounds[0])+abs_bounds[0]
+    colour_vals= np.random.rand(num_points)*(colour_bounds[1]-colour_bounds[0])+colour_bounds[0]
+    rp_vals= abs_mags-colour_vals
+    print("abs_mags", abs_mags)
+    print("colour_vals", colour_vals)
+    print("rp_vals", rp_vals)
+    dict_list= []
+    for index in range(0,num_points):
+        star_dict= {'g':{
+            'absmag':abs_mags[index],
+            'absmag_error': 0,
+            'absmag_dist':0},
+        'bp':{
+            'absmag':0,
+            'absmag_error':0,
+            'absmag_dist':0},
+        'rp':{
+            'absmag':rp_vals[index],
+            'absmag_error':0,
+            'absmag_dist':0}}
+        dict_list.append(star_dict)
+    for thing in dict_list:
+        print(thing)
+    return dict_list
 
 
-
-def find_star2(star1_table, merged_star_table, bounded=False, bounds=[], halfreal=False, plot_all=False):
+def find_star2(star1_table, merged_star_table, bounded=False, bounds=[], halfreal=False, plot_all=False, num_points=num_stars):
     """
     Take the table for the first star, and the star that represents the position of the end product, and then
     return the position of the second star that is required to end up in that spot.
     
     """
     if halfreal:
-        pass
+        g_rp_vals= []
+        m_g_vals=[]
+        merged_absmag_dict =get_star_absmags(merged_star_table, plot_all=False)
+        #star_track1= generate_star_track([1.22, 11.],[1.56,15.226], num_points= num_points, extrap_dist=extrap_dist1)
+        star_track1=generate_random_grid(abs_bounds=[merged_absmag_dict['g']['absmag'], 17.])
+        merged_g_flux= mag_to_flux(merged_absmag_dict['g']['absmag'],'g')
+        merged_rp_flux= mag_to_flux(merged_absmag_dict['rp']['absmag'],'rp')
+        g_rp_subvals=[]
+        m_g_subvals=[]
+        plt.errorbar(merged_absmag_dict['g']['absmag']- merged_absmag_dict['rp']['absmag'], merged_absmag_dict['g']['absmag'], yerr = merged_absmag_dict['g']['absmag_error'],  xerr = get_errors(merged_absmag_dict['g']['absmag_dist']-merged_absmag_dict['rp']['absmag_dist']), marker = 'o', markersize = 6, color =merged_color, capsize = 4, label = 'merged', linestyle ='none')
+        star_track1_mg=[]
+        star_track1_g_rp=[]
+        for star1 in star_track1:
+            star1_g_flux= mag_to_flux(star1['g']['absmag'],'g')
+            star1_rp_flux= mag_to_flux(star1['rp']['absmag'],'rp')
+            #plt.plot(star1['g']['absmag']-star1['rp']['absmag'], star1['g']['absmag'], color= 'g', linestyle= None, marker='o', markersize= 6)
+            star_track1_mg.append(star1['g']['absmag'])
+            star_track1_g_rp.append(star1['g']['absmag']-star1['rp']['absmag'])
+            star2_g_flux = merged_g_flux-star1_g_flux
+            star2_rp_flux= merged_rp_flux-star1_rp_flux
+            star2_g_absmag= get_mag(star2_g_flux, 'g')
+            star2_rp_absmag= get_mag(star2_rp_flux, 'rp')
+            g_rp_subvals.append(star2_g_absmag-star2_rp_absmag)
+            m_g_subvals.append(star2_g_absmag)
+            g_rp_vals.append(star2_g_absmag-star2_rp_absmag)
+            m_g_vals.append(star2_g_absmag)
+            #plt.plot(g_rp_subvals, m_g_subvals, color='magenta', linestyle= None, marker='o', markersize= 6)
+        number_list=[]
+        plt.plot(g_rp_subvals, m_g_subvals, color=star2_color, linestyle= None, marker='o', markersize= 6)
+        plt.plot(star_track1_g_rp, star_track1_mg, color=star1_color, linestyle= None, marker='o', markersize= 6)
+        
+        #plt.annotate(str(),xy=(np.copy(target_colour_dif), np.copy(target_absmag)), xycoords='data', xytext=(np.copy(target_colour_dif+0.01),np.copy(target_absmag-0.1)), textcoords= 'data' , fontsize=8, color =list_color)
+        return g_rp_vals, m_g_vals
     else:
-        star1_absmag_dict =get_star_absmags(star1_table, plot_all=False)
-    merged_absmag_dict= get_star_absmags(merged_star_table, plot_all=False)
-    
-    def get_star2_absmag(bandpass='g'):
-        try:
-            print(bandpass, 'mag:', merged_absmag_dict[bandpass]['absmag'])
-            star2_flux= mag_to_flux(merged_absmag_dict[bandpass]['absmag'],bandpass)-mag_to_flux(star1_absmag_dict[bandpass]['absmag'], bandpass)
-            print(bandpass, 'flux:', star2_flux)
-            star2_flux_dist= mag_to_flux(merged_absmag_dict[bandpass]['absmag_dist'],bandpass)-mag_to_flux(star1_absmag_dict[bandpass]['absmag_dist'], bandpass)
-            star2_absmag= get_mag(star2_flux,bandpass)
-            star2_absmag_dist= get_mag(star2_flux_dist,bandpass)
-        except KeyError:
-            print(bandpass, 'mag:', merged_absmag_dict[bandpass]['absmag'])
-            star2_flux= mag_to_flux(merged_absmag_dict[bandpass]['absmag'],bandpass)-mag_to_flux(star1_absmag_dict[bandpass]['absmag'], bandpass)
-            print(bandpass, 'flux:', star2_flux)
-            star2_flux_dist= mag_to_flux(merged_absmag_dict[bandpass]['absmag_dist'],bandpass)-mag_to_flux(star1_absmag_dict[bandpass]['absmag'], bandpass)
-            star2_absmag= get_mag(star2_flux,bandpass)
-            star2_absmag_dist= get_mag(star2_flux_dist,bandpass)
-        return star2_absmag, star2_absmag_dist
-    star2_g_absmag, star2_g_absmag_dist= get_star2_absmag(bandpass='g')
-    star2_bp_absmag, star2_bp_absmag_dist= get_star2_absmag(bandpass='bp')
-    star2_rp_absmag, star2_rp_absmag_dist= get_star2_absmag(bandpass='rp')
-    star2_bp_absmag_dist=remove_negative(star2_bp_absmag_dist)
-    star2_rp_absmag_dist= remove_negative(star2_rp_absmag_dist)
-    star2_rp_absmag_dist,star2_bp_absmag_dist= match_sizes(star2_rp_absmag_dist, star2_bp_absmag_dist)
-    star2_g_absmag_dist,star2_rp_absmag_dist= match_sizes(star2_g_absmag_dist, star2_rp_absmag_dist)
-    if plot_all:
-        plt.title('')
-        plt.show()
+        merged_absmag_dict= get_star_absmags(merged_star_table, plot_all=False)
         
-        print(star2_rp_absmag_dist)
-        plt.title('star2 rp')
-        plt.hist(star2_rp_absmag_dist)
-        plt.show()
+        def get_star2_absmag(bandpass='g'):
+            try:
+                print(bandpass, 'mag:', merged_absmag_dict[bandpass]['absmag'])
+                star2_flux= mag_to_flux(merged_absmag_dict[bandpass]['absmag'],bandpass)-mag_to_flux(star1_absmag_dict[bandpass]['absmag'], bandpass)
+                print(bandpass, 'flux:', star2_flux)
+                star2_flux_dist= mag_to_flux(merged_absmag_dict[bandpass]['absmag_dist'],bandpass)-mag_to_flux(star1_absmag_dict[bandpass]['absmag_dist'], bandpass)
+                star2_absmag= get_mag(star2_flux,bandpass)
+                star2_absmag_dist= get_mag(star2_flux_dist,bandpass)
+            except KeyError:
+                print(bandpass, 'mag:', merged_absmag_dict[bandpass]['absmag'])
+                star2_flux= mag_to_flux(merged_absmag_dict[bandpass]['absmag'],bandpass)-mag_to_flux(star1_absmag_dict[bandpass]['absmag'], bandpass)
+                print(bandpass, 'flux:', star2_flux)
+                star2_flux_dist= mag_to_flux(merged_absmag_dict[bandpass]['absmag_dist'],bandpass)-mag_to_flux(star1_absmag_dict[bandpass]['absmag'], bandpass)
+                star2_absmag= get_mag(star2_flux,bandpass)
+                star2_absmag_dist= get_mag(star2_flux_dist,bandpass)
+            return star2_absmag, star2_absmag_dist
+        star2_g_absmag, star2_g_absmag_dist= get_star2_absmag(bandpass='g')
+        star2_bp_absmag, star2_bp_absmag_dist= get_star2_absmag(bandpass='bp')
+        star2_rp_absmag, star2_rp_absmag_dist= get_star2_absmag(bandpass='rp')
+        star2_bp_absmag_dist=remove_negative(star2_bp_absmag_dist)
+        star2_rp_absmag_dist= remove_negative(star2_rp_absmag_dist)
+        star2_rp_absmag_dist,star2_bp_absmag_dist= match_sizes(star2_rp_absmag_dist, star2_bp_absmag_dist)
+        star2_g_absmag_dist,star2_rp_absmag_dist= match_sizes(star2_g_absmag_dist, star2_rp_absmag_dist)
+        if plot_all:
+            plt.title('')
+            plt.show()
+            
+            print(star2_rp_absmag_dist)
+            plt.title('star2 rp')
+            plt.hist(star2_rp_absmag_dist)
+            plt.show()
+            
+            plt.title('star 2 g')
+            plt.hist(star2_g_absmag_dist)
+            plt.show()
+            
+            plt.title('star2 bp')
+            plt.hist(star2_bp_absmag_dist)
+            plt.show()
+        else:
+            pass
         
-        plt.title('star 2 g')
-        plt.hist(star2_g_absmag_dist)
-        plt.show()
         
-        plt.title('star2 bp')
-        plt.hist(star2_bp_absmag_dist)
-        plt.show()
-    else:
-        pass
+        star2_bp_rp= star2_bp_absmag-star2_rp_absmag
+        star2_bp_rp_dist= star2_bp_absmag_dist-star2_rp_absmag_dist
+        star2_bp_rp_error=get_errors(star2_bp_rp_dist)
+        star2_g_absmag_error= get_errors(star2_g_absmag_dist)
+        
+        star2_g_rp= star2_g_absmag-star2_rp_absmag
+        star2_g_rp_dist= star2_g_absmag_dist-star2_rp_absmag_dist
+        star2_g_rp_error=get_errors(star2_g_rp_dist)
+        #star2_g_absmag_error= get_errors(star2_g_absmag_dist)
     
+        #plt.title('bp_rp')
+        #plt.hist(star2_bp_rp_dist)
+        #plt.show()
+        
+        star1_bp_rp, star1_bp_rp_error = get_colour_dif(star1_table, colours=['bp','rp'])
+        merged_bp_rp, merged_bp_rp_error= get_colour_dif(merged_star_table, colours=['bp','rp'])
+        
+        star1_g_rp, star1_g_rp_error = get_colour_dif(star1_table, colours=['g','rp'])
+        merged_g_rp, merged_g_rp_error= get_colour_dif(merged_star_table, colours=['g','rp'])
+        print('=======')
+        print('star2 M_G:', star2_g_absmag, '+/-', star2_g_absmag_error)
+        print('star2 BP-RP:', star2_bp_rp, '+/-', star2_bp_rp_error)
+        #plt.errorbar(star2_bp_rp, star2_g_absmag, yerr = star2_g_absmag_error,  xerr = star2_bp_rp_error, marker = 'o', markersize = 6, color = 'magenta', capsize = 4, label = 'star2', linestyle ='none')
+        #plt.errorbar(star1_bp_rp, star1_absmag_dict['g']['absmag'], yerr = star1_absmag_dict['g']['absmag_error'],  xerr = star1_bp_rp_error, marker = 'o', markersize = 6, color = list_color, capsize = 4, label = 'star1', linestyle ='none')
+        #plt.errorbar(merged_bp_rp, merged_absmag_dict['g']['absmag'], yerr = merged_absmag_dict['g']['absmag_error'],  xerr = merged_bp_rp_error, marker = 'o', markersize = 6, color = 'g', capsize = 4, label = 'merged_star', linestyle ='none')
+        plt.errorbar(star2_g_rp, star2_g_absmag, yerr = star2_g_absmag_error,  xerr = star2_g_rp_error, marker = 'o', markersize = 6, color = 'magenta', capsize = 4, label = 'star2', linestyle ='none')
+        plt.errorbar(star1_g_rp, star1_absmag_dict['g']['absmag'], yerr = star1_absmag_dict['g']['absmag_error'],  xerr = star1_g_rp_error, marker = 'o', markersize = 6, color = list_color, capsize = 4, label = 'star1', linestyle ='none')
+        plt.errorbar(merged_g_rp, merged_absmag_dict['g']['absmag'], yerr = merged_absmag_dict['g']['absmag_error'],  xerr = merged_g_rp_error, marker = 'o', markersize = 6, color = 'g', capsize = 4, label = 'merged_star', linestyle ='none')
+        star2_dict= {'g':{
+            'absmag':star2_g_absmag,
+            'absmag_error':star2_g_absmag_error,
+            'absmag_dist':star2_g_absmag_dist},
+        'bp':{
+            'absmag':star2_bp_absmag,
+            'absmag_error':get_errors(star2_bp_absmag_dist),
+            'absmag_dist':star2_bp_absmag_dist},
+        'rp':{
+            'absmag':star2_rp_absmag,
+            'absmag_error':get_errors(star2_rp_absmag_dist),
+            'absmag_dist':star2_rp_absmag_dist}}
     
-    star2_bp_rp= star2_bp_absmag-star2_rp_absmag
-    star2_bp_rp_dist= star2_bp_absmag_dist-star2_rp_absmag_dist
-    star2_bp_rp_error=get_errors(star2_bp_rp_dist)
-    star2_g_absmag_error= get_errors(star2_g_absmag_dist)
-    
-    star2_g_rp= star2_g_absmag-star2_rp_absmag
-    star2_g_rp_dist= star2_g_absmag_dist-star2_rp_absmag_dist
-    star2_g_rp_error=get_errors(star2_g_rp_dist)
-    #star2_g_absmag_error= get_errors(star2_g_absmag_dist)
-   
-    #plt.title('bp_rp')
-    #plt.hist(star2_bp_rp_dist)
-    #plt.show()
-    
-    star1_bp_rp, star1_bp_rp_error = get_colour_dif(star1_table, colours=['bp','rp'])
-    merged_bp_rp, merged_bp_rp_error= get_colour_dif(merged_star_table, colours=['bp','rp'])
-    
-    star1_g_rp, star1_g_rp_error = get_colour_dif(star1_table, colours=['g','rp'])
-    merged_g_rp, merged_g_rp_error= get_colour_dif(merged_star_table, colours=['g','rp'])
-    print('=======')
-    print('star2 M_G:', star2_g_absmag, '+/-', star2_g_absmag_error)
-    print('star2 BP-RP:', star2_bp_rp, '+/-', star2_bp_rp_error)
-    #plt.errorbar(star2_bp_rp, star2_g_absmag, yerr = star2_g_absmag_error,  xerr = star2_bp_rp_error, marker = 'o', markersize = 6, color = 'magenta', capsize = 4, label = 'star2', linestyle ='none')
-    #plt.errorbar(star1_bp_rp, star1_absmag_dict['g']['absmag'], yerr = star1_absmag_dict['g']['absmag_error'],  xerr = star1_bp_rp_error, marker = 'o', markersize = 6, color = list_color, capsize = 4, label = 'star1', linestyle ='none')
-    #plt.errorbar(merged_bp_rp, merged_absmag_dict['g']['absmag'], yerr = merged_absmag_dict['g']['absmag_error'],  xerr = merged_bp_rp_error, marker = 'o', markersize = 6, color = 'g', capsize = 4, label = 'merged_star', linestyle ='none')
-    plt.errorbar(star2_g_rp, star2_g_absmag, yerr = star2_g_absmag_error,  xerr = star2_g_rp_error, marker = 'o', markersize = 6, color = 'magenta', capsize = 4, label = 'star2', linestyle ='none')
-    plt.errorbar(star1_g_rp, star1_absmag_dict['g']['absmag'], yerr = star1_absmag_dict['g']['absmag_error'],  xerr = star1_g_rp_error, marker = 'o', markersize = 6, color = list_color, capsize = 4, label = 'star1', linestyle ='none')
-    plt.errorbar(merged_g_rp, merged_absmag_dict['g']['absmag'], yerr = merged_absmag_dict['g']['absmag_error'],  xerr = merged_g_rp_error, marker = 'o', markersize = 6, color = 'g', capsize = 4, label = 'merged_star', linestyle ='none')
-    star2_dict= {'g':{
-        'absmag':star2_g_absmag,
-        'absmag_error':star2_g_absmag_error,
-        'absmag_dist':star2_g_absmag_dist},
-    'bp':{
-        'absmag':star2_bp_absmag,
-        'absmag_error':get_errors(star2_bp_absmag_dist),
-        'absmag_dist':star2_bp_absmag_dist},
-    'rp':{
-        'absmag':star2_rp_absmag,
-        'absmag_error':get_errors(star2_rp_absmag_dist),
-        'absmag_dist':star2_rp_absmag_dist}}
-    
-    return star2_dict
+        return star2_dict
 
 
 def merge_stars(star1_table=[], star2_table=[], real_stars=False, bounded=False, bounds=[], num_points=num_stars, halfreal=False):
@@ -672,7 +736,9 @@ def plot_bkg_cmd(generic_table= generic_table, absmag='g', colours=['bp','rp']):
 #plot_target_table(input_table, colours= ['g','rp'])
 #plot_bkg_cmd(colours=['g','rp'])
 #plt.show()
-merge_stars(star1_table=star1_table, real_stars=False, halfreal=True)
+ 
+star2_dict= find_star2(star1_table, merged_star_table, halfreal=True)
+#plot_target_table(input_table, colours= ['g','rp'])
 plot_bkg_cmd(colours=['g','rp'])
 plt.show()
 
