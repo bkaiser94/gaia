@@ -57,6 +57,7 @@ error_bar=True #turns off error bars on the multiple list plot, meaning it has n
 annotate= True #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
 parallax_correction = 0.029 #from Lindgren et al 2018
 
+bcolor='g'
 
 #######3error distribution variables
 mc_number = 10000
@@ -64,6 +65,7 @@ percent_off = 34 #1-sigma equivalent
 #############
 
 #target_input='20190107_chris_merge_gaia.csv'
+#target_input= '20190516_targeted_purple_search_gaia_scnb.csv'
 #target_input= 'NLTT5306_comps_gaia.csv'
 #target_input='20190511_observed_objects_gaia.csv'
 #target_input= '20190405_purple_search_gaia_sc.csv'
@@ -74,8 +76,8 @@ percent_off = 34 #1-sigma equivalent
 #target_input= 'WDJ0205m053ultracool_gaia.csv'
 #target_input= 'observed_purple_400m2.csv'
 #target_input= 'exc1_8_2_2_purple_search_gmaglimit_gaia_sc.csv'
-#target_input= 'expanded_purple_search_gmaglimit_gaia_sc.csv'
-target_input='20190422_obs_objects_gaia.csv'
+target_input= 'expanded_purple_search_gmaglimit_gaia_sc.csv'
+#target_input='20190422_obs_objects_gaia.csv'
 #target_input= 'sdssj1330p6435_gaia.csv'
 #target_input= 'sdssj1330_similar_gaia_sc.csv'
 #target_input= 'sdssj1330_similar_subset_gaia_sc.csv'
@@ -141,8 +143,8 @@ if num_targs == 'all':
 elif num_targs== '47Tuc':
     generic_input= "47Tuc_10arcmin.csv"
 elif num_targs== 'Lindegren':
-    #generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
-    generic_input = 'Lindegren_appC_sel'+selection_letter + '_200pc.csv'
+    generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
+    #generic_input = 'Lindegren_appC_sel'+selection_letter + '_200pc.csv'
     #generic_input='Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
     #generic_input='Lindegren_appC_altC_noBDLMC.csv'
     #generic_input= 'Lindegren_appC_selB_antiC_cut2.csv'
@@ -501,6 +503,25 @@ def plot_abs_v_abs(generic_table= generic_table, colours=['g','rp']):
     
     return
 
+
+def plot_ben_cuts():
+    x1vals= np.linspace(0.82, 0.97, 100)
+    y1vals= 8.87*x1vals + 6.8
+    x2vals= np.linspace(1.32, 1.52, 100)
+    y2vals= 8.15*x2vals+3.312
+    x3vals= np.linspace(0.82, 1.32,100)
+    y3vals=np.ones(x3vals.shape)*14.07
+    y4vals= np.linspace(15.4, 18, 100)
+    x4vals= np.ones(y4vals.shape)*0.97
+    y5vals= np.linspace(15.7, 18, 100)
+    x5vals= np.ones(y5vals.shape)*1.52
+    plt.plot(x1vals,y1vals, color= bcolor, label="Ben's cut")
+    plt.plot(x2vals, y2vals, color= bcolor)
+    plt.plot(x3vals, y3vals, color= bcolor)
+    plt.plot(x4vals, y4vals, color= bcolor)
+    plt.plot(x5vals, y5vals, color= bcolor)
+    return
+
 #def make_cmd_from_list(target_list=[target_table], generic_table=generic_table, absmag='g', colours=['bp','rp']):
     #plot_bkg_cmd(generic_table=generic_table, absmag=absmag, colours=colours)
     #for target_table in target_list:
@@ -552,6 +573,7 @@ def plot_abs_v_abs(generic_table= generic_table, colours=['g','rp']):
 plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
 plot_target_table(target_table, colours=['g','rp'])
 plot_target_table(other_target_table, colours=['g','rp'], list_color='r')
+plot_ben_cuts()
 plt.show()
 
 

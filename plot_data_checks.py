@@ -60,6 +60,9 @@ ncolor= 'cyan' #Nicola's line color
 bcolor= 'g' #Bens' line color
 lcolor= 'magenta' #Lindegren's line color
 
+#point_color_key='phot_bp_rp_excess_factor'
+#point_color_key='astrometric_excess_noise_sig
+point_color_key='null'
 
 #######3error distribution variables
 mc_number = 10000
@@ -70,9 +73,9 @@ percent_off = 34 #1-sigma equivalent
 #num_targs = 'all'
 #num_targs = '47Tuc'
 num_targs= 'Lindegren'
-selection_letter= 'A'
+selection_letter= 'C'
 distance = 100
-grid_num = 100
+grid_num = 500
 
 #basis vector components for orthnormal bp vs. rp plot
 v1bp=-0.78013779
@@ -89,7 +92,8 @@ if num_targs == 'all':
 elif num_targs== '47Tuc':
     generic_input= "47Tuc_10arcmin.csv"
 elif num_targs== 'Lindegren':
-    generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
+    #generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
+    #generic_input='20190516_targeted_purple_search_gaia_scnb.csv'
     #generic_input='sdssj1330p6435_gaia.csv'
     #generic_input= 'sdssj1330_similar_gaia_sc.csv'
     #generic_input   ='usdMs_gaia.csv'
@@ -103,7 +107,7 @@ elif num_targs== 'Lindegren':
     #generic_input='expanded_purple_search_gmaglimit_gaia_sc.csv'
     #generic_input='exc1_8_2_2_purple_search_gmaglimit_gaia_sc.csv'
     #generic_input='Lindegren_appB_bulge_only.csv'
-    #generic_input='20190107_chris_merge_gaia.csv'
+    generic_input='20190107_chris_merge_gaia.csv'
     #generic_input= '20190128_wdMS_gaia.csv'
     #generic_input= 'RNe_gaia.csv'
     #generic_input= 'coolDZ_Na_gaia.csv'
@@ -214,12 +218,14 @@ def scatter_plot(string_pair):
         y_array = generic_table[string_pair[1]]
     try:
         #plt.scatter(x_array, y_array, c= generic_table['phot_proc_mode'], alpha=0.5)
-        sorted_order= np.argsort(generic_table['phot_bp_rp_excess_factor'])
+        #sorted_order= np.argsort(generic_table['phot_bp_rp_excess_factor'])
+        sorted_order= np.argsort(generic_table[point_color_key])
         #sorted_order= np.argsort(generic_table['astrometric_excess_noise_sig'])
         sorted_x_array=x_array[sorted_order]
         sorted_y_array= y_array[sorted_order]
         #plt.scatter(x_array, y_array, c= generic_table['phot_bp_rp_excess_factor'], alpha=0.5, markersize=4)
-        plt.scatter(sorted_x_array, sorted_y_array, c= generic_table['phot_bp_rp_excess_factor'][sorted_order], alpha=1, s=8, edgecolor='none')
+        #plt.scatter(sorted_x_array, sorted_y_array, c= generic_table['phot_bp_rp_excess_factor'][sorted_order], alpha=1, s=8, edgecolor='none')
+        plt.scatter(sorted_x_array, sorted_y_array, c= generic_table[point_color_key][sorted_order], alpha=1, s=8, edgecolor='none')
         #plt.scatter(sorted_x_array, sorted_y_array, c= np.sqrt(generic_table['astrometric_excess_noise_sig'][sorted_order]), alpha=1, s=10, edgecolor='none')
     except KeyError as error:
         print('No ', error,'\nTherefore using uniform color for scatter plot.')
@@ -312,6 +318,7 @@ def plot_cut_lines(string_pair):
         plt.plot(xvals,yvalsL2,linestyle='--',color='magenta')
         plt.plot(xvals,yvals, linestyle='--', color='g', label= "Ben's cut")
         plt.plot(xvals, y2vals, linestyle = '--', color='cyan', label = "Nicola's cut")
+        plt.axhline(y=1.8,linestyle='--', color='blue', label='1.8 flat cut')
         plt.legend()
     if ((string_pair[0]== 'bp_rp') and (string_pair[1]=='mg')):
         x1vals= np.linspace(-1,-0.184268, 300)
@@ -332,6 +339,23 @@ def plot_cut_lines(string_pair):
         plt.axhline(y=0.32,color='magenta', linestyle='--')
         plt.axhline(y=-0.73, color='k', label='"constrained range"')
         plt.axhline(y=0.73, color='k')
+        plt.legend()
+    if ((string_pair[0]=='g_rp') and (string_pair[1] == 'mg')):
+        x1vals= np.linspace(0.82, 0.97, 100)
+        y1vals= 8.87*x1vals + 6.8
+        x2vals= np.linspace(1.32, 1.52, 100)
+        y2vals= 8.15*x2vals+3.312
+        x3vals= np.linspace(0.82, 1.32,100)
+        y3vals=np.ones(x3vals.shape)*14.07
+        y4vals= np.linspace(15.4, 18, 100)
+        x4vals= np.ones(y4vals.shape)*0.97
+        y5vals= np.linspace(15.7, 18, 100)
+        x5vals= np.ones(y5vals.shape)*1.52
+        plt.plot(x1vals,y1vals, color= bcolor, label="Ben's cut")
+        plt.plot(x2vals, y2vals, color= bcolor)
+        plt.plot(x3vals, y3vals, color= bcolor)
+        plt.plot(x4vals, y4vals, color= bcolor)
+        plt.plot(x5vals, y5vals, color= bcolor)
         plt.legend()
     else:
         pass
@@ -405,8 +429,8 @@ for string_pair in col_pairs:
         #bp_rp_cut_line(string_pair)
         plot_cut_lines(string_pair)
         pseudo_colour_bp_rp_line(string_pair)
-        #scatter_plot(string_pair)
-        hexbin_plot(string_pair)
+        scatter_plot(string_pair)
+        #hexbin_plot(string_pair)
     except KeyError as error:
         plt.clf()
         print('No column named', error, '\nSkipping', string_pair[1] + ' vs. ' + string_pair[0])

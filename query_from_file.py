@@ -14,10 +14,14 @@ import astropy.coordinates as coord
 from astropy.table import Table, vstack, Column
  
  
-filter_confused_sources= False
-#search_radius = 4.08 #in arcseconds
-search_radius =  10.
+filter_confused_sources= True
+search_radius = 4.08 #in arcseconds
+#search_radius =  10.
+
+filter_bright_contam= True
  
+bright_search_radius = 15.
+bright_star_limit= 15 #faintest G mag of what's considered a bright star for purposes of filtering
  
 #input_file= 'BLAPs_table1_Piet2017.csv'
 #output_file= 'BLAPs_gaia.csv'
@@ -31,7 +35,7 @@ search_radius =  10.
 
 #input_file= 'pre_elms.txt'
 #output_file= 'pre_elms_gaia.csv'
-input_file='NLTT5306_comps.csv'
+#input_file='NLTT5306_comps.csv'
 #input_file= 'elm_survey.txt'
 #input_file='apj522588t5_mrt.txt'
 #output_file= 'elm_survey_gaia.csv'
@@ -71,10 +75,18 @@ input_file='NLTT5306_comps.csv'
 #input_file= 'Gianinas2016_coolWDs.txt'
 #input_file='Eriks_disk_candidates.csv'
 #input_file='all_l-0.3bp_g_gaia_corr.csv'
+input_file= '20190516_targeted_purple_search.csv'
+
+
+additional_suffixes= ''
+
+if filter_bright_contam:
+    additional_suffixes= additional_suffixes+'nb'
 
 if filter_confused_sources:
     output_name_parts = input_file.split('.')
-    output_file= output_name_parts[0]+ '_gaia_sc.' + output_name_parts[1]
+    #output_file= output_name_parts[0]+ '_gaia_sc.' + output_name_parts[1]
+    output_file= output_name_parts[0]+ '_gaia_sc' + additional_suffixes+'.'+output_name_parts[1]
 else:
     output_name_parts = input_file.split('.')
     if output_name_parts[1]=='txt':
@@ -101,7 +113,7 @@ print(allarray.shape)
 #print(allarray)
 #ra_array = allarray['Ra']
 #dec_array= allarray['Dec'] #Now I've got the RAs and Decs
-allarray=allarray[1:]
+allarray=allarray[1:] #remove the header of the file (or column names)
 #print(allarray)
 
 ra_array=allarray[:,1]
@@ -113,7 +125,7 @@ print(name_array)
 print(ra_array)
 print(dec_array)
 
-def cone_search(ra, dec):
+def cone_search(ra, dec, search_radius= search_radius):
     #print(ra)
     #print(dec)
     print(ra)
@@ -150,24 +162,48 @@ for ra,dec,name in zip(ra_array, dec_array,name_array):
         if (filter_confused_sources and table_length>1):
             print("Too many sources in aperture")
         else:
-            #new_array = np.full(table_length, name, dtype=str)
-            #new_array= np.empty(table_length, dtype=str)
-            #new_array[:]=name
-            #print(new_array)
-            new_array=[]
-            for i in range(0,table_length):
-                new_array.append(name)
-            print(new_array)
-            name_col= Column(new_array, name='name',dtype=str) #yeah that's a confusing series of 'names'
-            #output_row.add_column(name_col)
-            results.add_column(name_col)
-            try:
-                collected_results.append(results[0])
-                #collected_results.append(output_row)
-                #collected_results.append(results)
-            except IndexError:
-                print("index error")
-                pass
+            if filter_bright_contam:
+                bright_results= cone_search(ra,dec, search_radius=bright_search_radius)
+                if np.nanmin(bright_results['phot_g_mean_mag']) < bright_star_limit:
+                    print("Star brighter than G=" + str(bright_star_limit) + " , so likely contamination, thus excluding.")
+                else:
+                    #new_array = np.full(table_length, name, dtype=str)
+                    #new_array= np.empty(table_length, dtype=str)
+                    #new_array[:]=name
+                    #print(new_array)
+                    new_array=[]
+                    for i in range(0,table_length):
+                        new_array.append(name)
+                    print(new_array)
+                    name_col= Column(new_array, name='name',dtype=str) #yeah that's a confusing series of 'names'
+                    #output_row.add_column(name_col)
+                    results.add_column(name_col)
+                    try:
+                        collected_results.append(results[0])
+                        #collected_results.append(output_row)
+                        #collected_results.append(results)
+                    except IndexError:
+                        print("index error")
+                        pass
+            else:
+                #new_array = np.full(table_length, name, dtype=str)
+                #new_array= np.empty(table_length, dtype=str)
+                #new_array[:]=name
+                #print(new_array)
+                new_array=[]
+                for i in range(0,table_length):
+                    new_array.append(name)
+                print(new_array)
+                name_col= Column(new_array, name='name',dtype=str) #yeah that's a confusing series of 'names'
+                #output_row.add_column(name_col)
+                results.add_column(name_col)
+                try:
+                    collected_results.append(results[0])
+                    #collected_results.append(output_row)
+                    #collected_results.append(results)
+                except IndexError:
+                    print("index error")
+                    pass
     except TypeError as error:
         print(error)
         pass
