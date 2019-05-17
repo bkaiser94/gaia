@@ -93,6 +93,7 @@ elif num_targs== '47Tuc':
     generic_input= "47Tuc_10arcmin.csv"
 elif num_targs== 'Lindegren':
     #generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
+    generic_input= '20190516B_retargeted_purple_search_gaia_scbd.csv'
     #generic_input='20190516_targeted_purple_search_gaia_scnb.csv'
     #generic_input='sdssj1330p6435_gaia.csv'
     #generic_input= 'sdssj1330_similar_gaia_sc.csv'
@@ -107,7 +108,7 @@ elif num_targs== 'Lindegren':
     #generic_input='expanded_purple_search_gmaglimit_gaia_sc.csv'
     #generic_input='exc1_8_2_2_purple_search_gmaglimit_gaia_sc.csv'
     #generic_input='Lindegren_appB_bulge_only.csv'
-    generic_input='20190107_chris_merge_gaia.csv'
+    #generic_input='20190107_chris_merge_gaia.csv'
     #generic_input= '20190128_wdMS_gaia.csv'
     #generic_input= 'RNe_gaia.csv'
     #generic_input= 'coolDZ_Na_gaia.csv'
@@ -146,6 +147,7 @@ col_pairs=[
     ['g_rp','mg'],
     ['astrometric_pseudo_colour','mg'],
     ['astrometric_excess_noise', 'astrometric_excess_noise_sig'],
+    ['astrometric_excess_noise', 'astrometric_sigma5d_max'],
     ['astrometric_excess_noise', 'astrometric_gof_al'],
     ['phot_g_mean_mag', 'astrometric_gof_al'],
     ['bp_rp', 'phot_bp_rp_excess_factor'],
@@ -356,6 +358,14 @@ def plot_cut_lines(string_pair):
         plt.plot(x3vals, y3vals, color= bcolor)
         plt.plot(x4vals, y4vals, color= bcolor)
         plt.plot(x5vals, y5vals, color= bcolor)
+        plt.legend()
+    elif ((string_pair[0]== 'astrometric_excess_noise') and (string_pair[1]==  'astrometric_sigma5d_max')):
+        plt.axhline(y=1.5, linestyle = '--', color= ncolor, label= "Nicola's cut")
+        plt.axvline(x=1, linestyle='--', color=ncolor)
+        plt.legend()
+    elif((string_pair[0]=='astrometric_excess_noise') and (string_pair[1]=='astrometric_excess_noise_sig')):
+        plt.axvline(x=1, linestyle='--', color=ncolor,label="Nicola's cut")
+        plt.axhline(y=2, linestyle='--', color = 'k', label = 'data model significance threshold')
         plt.legend()
     else:
         pass

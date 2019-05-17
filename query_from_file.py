@@ -12,27 +12,22 @@ from astroquery.gaia import Gaia
 import astropy.units as u
 import astropy.coordinates as coord
 from astropy.table import Table, vstack, Column
- 
+import time
+start = time.time()
+
  
 filter_confused_sources= True
 search_radius = 4.08 #in arcseconds
 #search_radius =  10.
 
 filter_bright_contam= True
+filter_dense= True #filter to remove crowded fields; didn't use 'crowded' because it has a 'c' like confusion
  
 bright_search_radius = 15.
 bright_star_limit= 15 #faintest G mag of what's considered a bright star for purposes of filtering
+dense_number= 6 #corresponds to >100,000 stars per square degree for 15" search radius, so should be greater than or equal to this number to qualify as 'dense' or 'crowded'
  
-#input_file= 'BLAPs_table1_Piet2017.csv'
-#output_file= 'BLAPs_gaia.csv'
-#input_file= 'pulsar_companions.txt'
-#output_file= 'pulsar_companions_gaia.csv'
-#input_file= 'hot_wind_wds.txt'
-#output_file= 'hot_wind_wds_gaia.csv'
-
-#input_file= 'hv_wds.txt'
-#output_file= 'hv_wds_gaia.csv'
-
+input_file= '20190516B_retargeted_purple_search.csv'
 #input_file= 'pre_elms.txt'
 #output_file= 'pre_elms_gaia.csv'
 #input_file='NLTT5306_comps.csv'
@@ -75,13 +70,15 @@ bright_star_limit= 15 #faintest G mag of what's considered a bright star for pur
 #input_file= 'Gianinas2016_coolWDs.txt'
 #input_file='Eriks_disk_candidates.csv'
 #input_file='all_l-0.3bp_g_gaia_corr.csv'
-input_file= '20190516_targeted_purple_search.csv'
+#input_file= '20190516_targeted_purple_search.csv'
 
 
 additional_suffixes= ''
 
 if filter_bright_contam:
-    additional_suffixes= additional_suffixes+'nb'
+    additional_suffixes= additional_suffixes+'b'
+if filter_dense:
+    additional_suffixes= additional_suffixes+'d'
 
 if filter_confused_sources:
     output_name_parts = input_file.split('.')
@@ -125,6 +122,20 @@ print(name_array)
 print(ra_array)
 print(dec_array)
 
+num_targets= ra_array.shape[0]
+print('\n\n')
+print('num_targets:', num_targets)
+print('\n\n')
+
+def find_time_difference(begin, end):
+    difference = end-begin
+    hours = int(difference) // 3600
+    minutes = int(difference%3600)//60
+    seconds = difference%60
+    #print("Runtime: ", hours, 'h', minutes, 'm', seconds, 's')
+    output_string= ' '.join(["Runtime: ", str(hours), 'h',str( minutes), 'm', str(seconds), 's'])
+    return output_string
+
 def cone_search(ra, dec, search_radius= search_radius):
     #print(ra)
     #print(dec)
@@ -145,7 +156,10 @@ def cone_search(ra, dec, search_radius= search_radius):
     r.pprint()
     return r
 
+target_num = 1
 for ra,dec,name in zip(ra_array, dec_array,name_array):
+    begin_time = time.time()
+    print("\n\ntarget ", str(target_num) + '/' + str(num_targets),'\n\n')
     results= cone_search(ra,dec)
     #print(results.shape)
     #new_col= Column(name, name='name')
@@ -162,10 +176,12 @@ for ra,dec,name in zip(ra_array, dec_array,name_array):
         if (filter_confused_sources and table_length>1):
             print("Too many sources in aperture")
         else:
-            if filter_bright_contam:
+            if (filter_bright_contam or filter_dense):
                 bright_results= cone_search(ra,dec, search_radius=bright_search_radius)
-                if np.nanmin(bright_results['phot_g_mean_mag']) < bright_star_limit:
+                if (filter_bright_contam and np.nanmin(bright_results['phot_g_mean_mag']) < bright_star_limit):
                     print("Star brighter than G=" + str(bright_star_limit) + " , so likely contamination, thus excluding.")
+                elif (filter_dense and len(bright_results['dist']) >= dense_number):
+                    print("Stellar density greater than 100,000 deg^-2, there are ", len(bright_results['dist']), " stars")
                 else:
                     #new_array = np.full(table_length, name, dtype=str)
                     #new_array= np.empty(table_length, dtype=str)
@@ -207,11 +223,21 @@ for ra,dec,name in zip(ra_array, dec_array,name_array):
     except TypeError as error:
         print(error)
         pass
+    target_num += 1
+    end_time= time.time()
+    print('Target search time: ', find_time_difference(begin_time, end_time))
+    print('\nTotal elapsed time', find_time_difference(start, end_time))
+    print('\n\n\n===============')
+    
     
 stacked_results= vstack(collected_results)
 stacked_results.pprint()
 
 stacked_results.write(output_file, format='ascii.csv', overwrite=True)
+
+end_overall= time.time()
+print('\n\n')
+print('Total elapsed time: ', find_time_difference(start, end_overall))
 
 #for thing in coord_list:
     #print(thing.ra.to(u.hourangle), thing.dec)
