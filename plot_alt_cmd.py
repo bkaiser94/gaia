@@ -58,6 +58,7 @@ annotate= True #controls whether or not object names appear beside points in the
 parallax_correction = 0.029 #from Lindgren et al 2018
 
 bcolor='g'
+ncolor= 'cyan'
 
 #######3error distribution variables
 mc_number = 10000
@@ -134,6 +135,44 @@ other_target_table=Table.read(other_target_input)
 #target_table=target_table[np.where(target_table['repeat'] == 'False')]
 
 ####################################
+
+def plot_ben_cuts():
+    x1vals= np.linspace(0.82, 0.97, 100)
+    y1vals= 8.87*x1vals + 6.8
+    x2vals= np.linspace(1.32, 1.52, 100)
+    y2vals= 8.15*x2vals+3.312
+    x3vals= np.linspace(0.82, 1.32,100)
+    y3vals=np.ones(x3vals.shape)*14.07
+    y4vals= np.linspace(15.4, 18, 100)
+    x4vals= np.ones(y4vals.shape)*0.97
+    y5vals= np.linspace(15.7, 18, 100)
+    x5vals= np.ones(y5vals.shape)*1.52
+    plt.plot(x1vals,y1vals, color= bcolor, label="Ben's cut")
+    plt.plot(x2vals, y2vals, color= bcolor)
+    plt.plot(x3vals, y3vals, color= bcolor)
+    plt.plot(x4vals, y4vals, color= bcolor)
+    plt.plot(x5vals, y5vals, color= bcolor)
+    plt.legend()
+    return
+
+def plot_nicola_cuts():
+    x1vals= np.linspace(-1,-0.184268, 300)
+    y1vals= np.ones(x1vals.shape)*5
+    x2vals= np.linspace(np.max(x1vals),0.297505,300)
+    y2vals= 5.93+5.047*x2vals
+    x3vals= np.linspace(np.max(x2vals), 1.7, 300)
+    y3vals = 6*x3vals**3.-21.77*x3vals**2.+27.91*x3vals+0.897
+    y4vals= np.linspace(14.9067,16,300)
+    x4vals= np.ones(y4vals.shape)*1.7
+    plt.plot(x1vals,y1vals, color= ncolor, label="Nicola's cut")
+    plt.plot(x2vals, y2vals, color= ncolor)
+    plt.plot(x3vals, y3vals, color= ncolor)
+    plt.plot(x4vals, y4vals, color= ncolor)
+    plt.legend()
+    return
+
+
+
 def distance_modulus(g_mag, distance):
     return g_mag - 5*np.log10(distance/10.)
     
@@ -411,8 +450,17 @@ def fig_bkg_cmd(longax, generic_table= generic_table, absmag='g', colours=['bp',
     return longax
 
 
-def make_cmd(target_table=target_table, generic_table= generic_table, absmag='g', colours=['bp', 'rp']):
+def make_cmd(target_table=target_table, generic_table= generic_table, absmag='g', colours=['bp', 'rp'], plot_cuts=False):
     plot_bkg_cmd(generic_table=generic_table, absmag=absmag, colours=colours)
+    if plot_cuts:
+        if ((colours==['bp','rp']) and (absmag=='g')):
+            plot_nicola_cuts()
+        elif((colours==['g','rp']) and (absmag=='g')):
+            plot_ben_cuts()
+        else:
+            print('no cuts for selected absolute mag vs. colours')
+    else:
+        pass
     plot_target_table(target_table, absmag=absmag, colours=colours)
     plt.show()
     return
@@ -468,24 +516,6 @@ def plot_abs_v_abs(generic_table= generic_table, colours=['g','rp']):
     
     return
 
-
-def plot_ben_cuts():
-    x1vals= np.linspace(0.82, 0.97, 100)
-    y1vals= 8.87*x1vals + 6.8
-    x2vals= np.linspace(1.32, 1.52, 100)
-    y2vals= 8.15*x2vals+3.312
-    x3vals= np.linspace(0.82, 1.32,100)
-    y3vals=np.ones(x3vals.shape)*14.07
-    y4vals= np.linspace(15.4, 18, 100)
-    x4vals= np.ones(y4vals.shape)*0.97
-    y5vals= np.linspace(15.7, 18, 100)
-    x5vals= np.ones(y5vals.shape)*1.52
-    plt.plot(x1vals,y1vals, color= bcolor, label="Ben's cut")
-    plt.plot(x2vals, y2vals, color= bcolor)
-    plt.plot(x3vals, y3vals, color= bcolor)
-    plt.plot(x4vals, y4vals, color= bcolor)
-    plt.plot(x5vals, y5vals, color= bcolor)
-    return
 
 #def make_cmd_from_list(target_list=[target_table], generic_table=generic_table, absmag='g', colours=['bp','rp']):
     #plot_bkg_cmd(generic_table=generic_table, absmag=absmag, colours=colours)
@@ -558,8 +588,9 @@ plt.show()
 #plot_target_table(other_target_table, colours=['bp','rp'], list_color='r')
 #plt.show()
 
-make_cmd(target_table=target_table, generic_table= generic_table)
-make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= colours)
+#make_cmd(target_table=target_table, generic_table= generic_table)
+make_cmd(target_table=target_table, generic_table= generic_table, plot_cuts=True)
+make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= colours, plot_cuts=True)
 make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= ['bp','g'])
 #make_cmd(target_table=target_table, generic_table= generic_table, absmag= 'bp', colours= ['bp','rp'])
 
