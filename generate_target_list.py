@@ -20,8 +20,11 @@ from astropy.table import Table, vstack, Column
 #input_file='sdssj1330_similar_subset_gaia_sc.csv'
 #output_file= '20190107_chris_merge_targlist.txt'
 #input_file='expanded_purple_search_gmaglimit_gaia_sc.csv'
-input_file= '20190516B_retargeted_purple_search_gaia_scbd.csv'
-comment_string='retarg_purple'
+#input_file= '20190516B_retargeted_purple_search_gaia_scbd.csv'
+input_file= 'josh_object.csv'
+#input_file='20190516B_retargeted_purple_subset.csv'
+#comment_string='retarg_purple'
+comment_string=''
 
 output_file= input_file.split('.')[0]+'_targlist.txt'
 input_table= Table.read(input_file, format= 'ascii.csv')

@@ -54,7 +54,7 @@ x_fill= axes_x[0]
 list_color = '#1ca1f2'
 single_list=False#turns off the original for-loop method for plotting from a single list
 error_bar=True #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
-annotate= True #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
+annotate= False #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
 parallax_correction = 0.029 #from Lindgren et al 2018
 
 bcolor='g'
@@ -83,16 +83,20 @@ percent_off = 34 #1-sigma equivalent
 #target_input= 'sdssj1330_similar_gaia_sc.csv'
 #target_input= 'sdssj1330_similar_subset_gaia_sc.csv'
 #target_input= 'sdssj1330_similar_subset_observed.csv'
-target_input ='20190516B_retargeted_purple_search_gaia_scbd.csv'
+#target_input ='20190516B_retargeted_purple_search_gaia_scbd.csv'
+target_input= 'josh_object.csv'
+#target_input= '20190528_named_objects_from_retarg.csv'
+#target_input='sdssj1240p6710_DS_oxygenrich.csv'
+#target_input= 'psrj1048p2339_gaia.csv'
 
 
 other_target_input= 'mdwarf_spTs_gaia_sc.csv'
 
 target_label= ''
 
-#num_targs = 'all'
+num_targs = 'all'
 #num_targs = '47Tuc'
-num_targs= 'Lindegren'
+#num_targs= 'Lindegren'
 selection_letter= 'C'
 distance = 100
 grid_num = 225
