@@ -42,6 +42,7 @@ colours= ['g','rp']
 
 
 axes_x= [-1.5, 6]
+#axes_x= [-0.5, 2]
 axes_y = [-4,18]
 
 
@@ -54,7 +55,7 @@ x_fill= axes_x[0]
 list_color = '#1ca1f2'
 single_list=False#turns off the original for-loop method for plotting from a single list
 error_bar=True #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
-annotate= False #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
+annotate= True #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
 parallax_correction = 0.029 #from Lindgren et al 2018
 
 bcolor='g'
@@ -84,13 +85,29 @@ percent_off = 34 #1-sigma equivalent
 #target_input= 'sdssj1330_similar_subset_gaia_sc.csv'
 #target_input= 'sdssj1330_similar_subset_observed.csv'
 #target_input ='20190516B_retargeted_purple_search_gaia_scbd.csv'
-target_input= 'josh_object.csv'
+#target_input= '20190730_obs_objects.csv'
+#target_input='GaiaJ1453m2258_andnearones.csv'
+#target_input= 'gaiaj1644m0449_gaia.csv'
+target_input='20190829_alkaliWD_targeted_gaia_scbd.csv'
+#target_input='20190616_TIC294.csv'
+#target_input='20190616_TIC294andother.csv'
+#target_input= 'josh_object.csv'
+#target_input= '20190601_obs_objects.csv'
 #target_input= '20190528_named_objects_from_retarg.csv'
 #target_input='sdssj1240p6710_DS_oxygenrich.csv'
 #target_input= 'psrj1048p2339_gaia.csv'
 
 
 other_target_input= 'mdwarf_spTs_gaia_sc.csv'
+#other_target_input= '20190730_obs_objects.csv'
+#other_target_input='gaiaj1644m0449other_gaia.csv'
+#other_target_input='GaiaJ1453m2258_andnearones.csv'
+#other_target_input= '20190703_obs_objects.csv'
+#other_target_input='sdssj1330p6435_gaia.csv'
+#other_target_input='20190516B_retargeted_purple_search_gaia_scbd.csv'
+#other_target_input='wd2251m070_gaia.csv'
+#other_target_input= 'sdssj1330_similar_subset_observed.csv'
+#other_target_input='20190616_obs.csv'
 
 target_label= ''
 
@@ -114,6 +131,7 @@ elif num_targs== '47Tuc':
     generic_input= "47Tuc_10arcmin.csv"
 elif num_targs== 'Lindegren':
     generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
+    #generic_input='rand_astrometric_primaries1.csv'
     #generic_input = 'Lindegren_appC_sel'+selection_letter + '_200pc.csv'
     #generic_input='Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
     #generic_input='Lindegren_appC_altC_noBDLMC.csv'
@@ -137,7 +155,14 @@ generic_table = Table.read(generic_input)
 target_table = Table.read(target_input)
 other_target_table=Table.read(other_target_input)
 #target_table=target_table[np.where(target_table['repeat'] == 'False')]
+#target_table=target_table[np.where(target_table['priority'] <= 4.5)]
+#target_table=target_table[np.where(target_table['priority']> 98)]
+#other_target_table=other_target_table[np.where(other_target_table['priority'] > 98)]
+#blank_val=np.copy(target_table[2]['name'])
+#target_table=target_table[np.where(target_table['name']!='')]
+#target_table=target_table[np.where(target_table['wd_dm']> 0)]
 
+#print('name',target_table[2]['name'])
 ####################################
 
 def plot_ben_cuts():
@@ -323,7 +348,7 @@ def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = Tr
     return abs_mag, abs_mag_error, abs_mag_dist
 
 
-def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color=list_color, pseudo_colour=False):
+def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color=list_color, pseudo_colour=False, annotate=annotate):
     for row in input_table:
         if pseudo_colour:
             target_absmag, target_absmag_err, target_absmag_dist= get_pass_abs_mag(row, plot_all = False, passband_string= absmag)
@@ -570,10 +595,21 @@ def plot_abs_v_abs(generic_table= generic_table, colours=['g','rp']):
 #make_cmd(target_table=other_target_table, generic_table= generic_table)
 
 plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=True)
 plot_target_table(target_table, colours=['g','rp'])
-plot_target_table(other_target_table, colours=['g','rp'], list_color='r')
 plot_ben_cuts()
 plt.show()
+
+plot_target_table(target_table, colours=['bp','rp'])
+plot_target_table(other_target_table, colours=['bp','rp'], list_color='r', annotate=True)
+plot_bkg_cmd(generic_table=generic_table, colours=['bp','rp'])
+plt.show()
+
+
+#plot_target_table(target_table, colours=['bp','g'])
+#plot_target_table(other_target_table, colours=['bp','g'], list_color='r', annotate=True)
+#plot_bkg_cmd(generic_table=generic_table, colours=['bp','g'])
+#plt.show()
 
 
 #plot_bkg_cmd(generic_table=generic_table, absmag= 'rp', colours=['bp','rp'])

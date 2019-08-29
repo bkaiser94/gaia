@@ -21,13 +21,15 @@ search_radius = 4.08 #in arcseconds
 #search_radius =  10.
 
 filter_bright_contam= True
-filter_dense= True #filter to remove crowded fields; didn't use 'crowded' because it has a 'c' like confusion
+filter_dense= True#filter to remove crowded fields; didn't use 'crowded' because it has a 'c' like confusion
  
 bright_search_radius = 15.
 bright_star_limit= 15 #faintest G mag of what's considered a bright star for purposes of filtering
 dense_number= 6 #corresponds to >100,000 stars per square degree for 15" search radius, so should be greater than or equal to this number to qualify as 'dense' or 'crowded'
  
-input_file= '20190516B_retargeted_purple_search.csv'
+#input_file= '20190516B_retargeted_purple_search.csv'
+#input_file= 'WDpec.csv'
+input_file= '20190829_alkaliWD_targeted.csv'
 #input_file= 'pre_elms.txt'
 #output_file= 'pre_elms_gaia.csv'
 #input_file='NLTT5306_comps.csv'

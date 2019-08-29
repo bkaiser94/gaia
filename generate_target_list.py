@@ -21,7 +21,9 @@ from astropy.table import Table, vstack, Column
 #output_file= '20190107_chris_merge_targlist.txt'
 #input_file='expanded_purple_search_gmaglimit_gaia_sc.csv'
 #input_file= '20190516B_retargeted_purple_search_gaia_scbd.csv'
-input_file= 'josh_object.csv'
+#input_file= '20190820B_priorityupdate_retargeted_purple_search_gaia_scbd.csv'
+input_file= '20190829B_priorityupdate_retargeted_purple_search_gaia_scbd.csv'
+#input_file= 'josh_object.csv'
 #input_file='20190516B_retargeted_purple_subset.csv'
 #comment_string='retarg_purple'
 comment_string=''
@@ -49,7 +51,9 @@ mag_list=[]
 name_list=[]
 mag_string='g'
 full_mag_string= 'phot_'+mag_string+'_mean_mag'
-for thing, name, mag  in zip(string_coords, name_array, input_table[full_mag_string]):
+#for thing, name, mag  in zip(string_coords, name_array, input_table[full_mag_string]):
+for thing, name, mag, target_num  in zip(string_coords, name_array, input_table[full_mag_string], input_table['target_num']):
+
     print(name)
     print(thing)
     for char in replace_chars:
@@ -70,6 +74,9 @@ for thing, name, mag  in zip(string_coords, name_array, input_table[full_mag_str
         name='GaiaJ'+small_ra+small_dec
         print('new name:', name)
     print(thing)
+    
+    name=str(target_num)+'_' + name
+    
     name_list.append(name)
     ra_list.append(ra)
     dec_list.append(dec)
@@ -80,7 +87,10 @@ for thing, name, mag  in zip(string_coords, name_array, input_table[full_mag_str
         #print(other.replace(['d','h','m','s'], ':'))
 print(name_array)
 
-output_array= np.vstack([name_list, ra_list, dec_list, epoch_list, mag_list])
+output_array= np.vstack([name_list, ra_list, dec_list, epoch_list, mag_list]).T
+priority_good= np.where(input_table['priority']< 10)
+output_array=output_array[priority_good]
+output_array=output_array.T
 if sort_by_ra:
     sorted_order= np.argsort(output_array[1])
     print(sorted_order)

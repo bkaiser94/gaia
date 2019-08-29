@@ -75,7 +75,7 @@ percent_off = 34 #1-sigma equivalent
 num_targs= 'Lindegren'
 selection_letter= 'C'
 distance = 100
-grid_num = 500
+grid_num = 200
 
 #basis vector components for orthnormal bp vs. rp plot
 v1bp=-0.78013779
@@ -92,9 +92,17 @@ if num_targs == 'all':
 elif num_targs== '47Tuc':
     generic_input= "47Tuc_10arcmin.csv"
 elif num_targs== 'Lindegren':
-    #generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
-    generic_input= '20190516B_retargeted_purple_search_gaia_scbd.csv'
-    #generic_input='20190516_targeted_purple_search_gaia_scnb.csv'
+    generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
+    #generic_input='rand_astrometric_primaries1.csv'
+    #generic_input= '20190516B_retargeted_purple_search_gaia_scbd.csv'
+    #generic_input='20190703_obs_objects.csv'
+    generic_input='20190516_targeted_purple_search_gaia_scnb.csv'
+    #generic_input='20190829_DCs.csv'
+    #generic_input='20190829_DQpecs.csv'
+    #generic_input='20190829_DZNas.csv'
+    #generic_input='20190829_WDdM.csv'
+    #generic_input= 'WD_DZNa.csv'
+    generic_input='20190829_alkaliWD_targeted_gaia_scbd.csv'
     #generic_input='sdssj1330p6435_gaia.csv'
     #generic_input= 'sdssj1330_similar_gaia_sc.csv'
     #generic_input   ='usdMs_gaia.csv'
@@ -141,7 +149,9 @@ zeropoint_dict={"g": [25.6883657251, 0.0017850023],
 generic_table = Table.read(generic_input)
 #########################################
 col_pairs=[
+    ['parallax','astrometric_excess_noise'],
     ['phot_g_mean_mag','astrometric_pseudo_colour_error'],
+    ['phot_bp_rp_excess_factor', 'mg'],
     ['bp_rp','mg'],
     ['pmra','pmdec'],
     ['g_rp','mg'],
@@ -215,6 +225,16 @@ def scatter_plot(string_pair):
         x_array=1000./generic_table['parallax']
         y_array=4.74/generic_table['parallax'] *np.sqrt(generic_table['pmra']**2+generic_table['pmdec']**2)
         string_pair=['distance (pc)', 'V_T']
+    elif ((string_pair[0]=='phot_bp_rp_excess_factor') and (string_pair[1])=='mg'):
+        try:
+            x_array = generic_table[string_pair[0]]
+            y_array = generic_table[string_pair[1]]
+        except KeyError as error:
+            print('No column named', error)
+            x_array = generic_table[string_pair[0]]
+            distance=1000./generic_table['parallax']
+            gmag= generic_table['phot_g_mean_mag']
+            y_array=gmag - 5*np.log10(distance/10.)
     else:
         x_array = generic_table[string_pair[0]]
         y_array = generic_table[string_pair[1]]
@@ -318,7 +338,7 @@ def plot_cut_lines(string_pair):
         yvalsL2=1.0+0.015*xvals**2.
         plt.plot(xvals,yvalsL, linestyle='--', color='magenta', label = "Lindegren's cut")
         plt.plot(xvals,yvalsL2,linestyle='--',color='magenta')
-        plt.plot(xvals,yvals, linestyle='--', color='g', label= "Ben's cut")
+        #plt.plot(xvals,yvals, linestyle='--', color='g', label= "Ben's cut")
         plt.plot(xvals, y2vals, linestyle = '--', color='cyan', label = "Nicola's cut")
         plt.axhline(y=1.8,linestyle='--', color='blue', label='1.8 flat cut')
         plt.legend()

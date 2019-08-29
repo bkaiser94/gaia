@@ -13,12 +13,14 @@ from astropy.table import Table, QTable, Column
 
 
 #newest_search= '20190405_purple_search_gaia_sc.csv'
-newest_search= '20190516B_retargeted_purple_search_gaia_scbd.csv'
+#newest_search= '20190516B_retargeted_purple_search_gaia_scbd.csv'
+newest_search= '20190829_alkaliWD_targeted_gaia_scbd.csv'
 check_searches=['20190107_chris_merge_gaia.csv',
                 'expanded_purple_search_gmaglimit_gaia_sc.csv',
                 'exc1_8_2_2_purple_search_gmaglimit_gaia_sc.csv',
                 'sdssj1330_similar_subset_gaia_sc.csv',
-                '20190405_purple_search_gaia_sc.csv'] #old filenames that should be searched for duplicates
+                '20190405_purple_search_gaia_sc.csv',
+                '20190516B_retargeted_purple_search_gaia_scbd.csv'] #old filenames that should be searched for duplicates
 
 comp_name= 'source_id' #column name that should be used to check if it's a repeat Probably should be 'source_id' since that's it's Gaia-assigned name. A long string of numbers unique to each object.
 

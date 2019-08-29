@@ -65,8 +65,8 @@ distance = 200
 grid_num = 225
 selection_letter= 'B'
 
-#num_stars = 20 #number of stars in the track to use for merging
-num_stars = 5 #number of stars in the track to use for merging
+num_stars = 20 #number of stars in the track to use for merging
+#num_stars = 5 #number of stars in the track to use for merging
 
 extrap_dist = 0.0 #magnitude distance to go outside the line ends for the hypothetical star mergers
 extrap_dist1= 0.1
@@ -91,11 +91,13 @@ star1_input='2MASSJ1458p2839_gaia.csv'
 
 #star1_input='two_low_reds_gaia.csv'
 #star2_input= '20190218_test_ultcool.csv'
-star2_input='sdssj1330p6435_gaia.csv'
+#star2_input='sdssj1330p6435_gaia.csv'
+star2_input= 'gaiaj1644m0449_gaia.csv'
 #star1_input= 'CE40_gaia.csv'
 #merged_star_input= 'WISEA0615m1247.csv'
 
 merged_star_input='WISEA0615m1247.csv'
+#merged_star_input='20190616_TIC294.csv'
 #merged_star_input='LP178m49_gaia.csv' 
 #merged_star_input= 'WD1133p358_gaia.csv'
 #merged_star_input='WISEA0238p3617.csv'
@@ -168,6 +170,14 @@ def remove_negative(array, verbose= True):
     if (verbose and array.shape[0]-output_array.shape[0] >0):
         print('Removed ' +str(array.shape[0]-output_array.shape[0]) + ' negatives')
     return output_array
+
+def remove_nans(array, verbose=True):
+    output_array = array[~np.isnan(array)]
+    if (verbose and array.shape[0]-output_array.shape[0] >0):
+        print('Removed ' +str(array.shape[0]-output_array.shape[0]) + ' nans')
+    return output_array
+
+
 
 def match_sizes(change_array, match_array):
     """
@@ -316,7 +326,7 @@ def get_star_absmags(star_table, plot_all=False):
         'absmag_dist':rp_absmag_dist}}
     return star_dict
 
-def generate_star_track(endpoint1,endpoint2,mode='linear', num_points=num_stars, colours= ['g','rp'], extrap_dist= 0.0):
+def generate_star_track(endpoint1,endpoint2,mode='linear', num_points=num_stars, colours= ['g','rp'], extrap_dist= 0.0, colour_offset=0.0):
     """
     Takes two CMD endpoints and draws a line between them then populates with evenly-spaced stars (in
     magnitude space).
@@ -329,6 +339,7 @@ def generate_star_track(endpoint1,endpoint2,mode='linear', num_points=num_stars,
     """
     xpoints= np.array([endpoint1[0], endpoint2[0]])
     ypoints= np.array([endpoint1[1],endpoint2[1]])
+    xpoints= xpoints+colour_offset
     if mode=='linear':
         coeffs = np.polyfit(xpoints, ypoints, 1)
     else:
@@ -401,8 +412,8 @@ def find_star2(star1_table, merged_star_table, bounded=False, bounds=[], halfrea
         g_rp_vals= []
         m_g_vals=[]
         merged_absmag_dict =get_star_absmags(merged_star_table, plot_all=False)
-        #star_track1= generate_star_track([1.22, 11.],[1.56,15.226], num_points= num_points, extrap_dist=extrap_dist1)
-        star_track1=generate_random_grid(abs_bounds=[merged_absmag_dict['g']['absmag'], 17.])
+        star_track1= generate_star_track([1.22, 11.],[1.56,15.226], num_points= num_points, extrap_dist=extrap_dist1, colour_offset=-0.08)
+        #star_track1=generate_random_grid(abs_bounds=[merged_absmag_dict['g']['absmag'], 17.])
         merged_g_flux= mag_to_flux(merged_absmag_dict['g']['absmag'],'g')
         merged_rp_flux= mag_to_flux(merged_absmag_dict['rp']['absmag'],'rp')
         g_rp_subvals=[]
@@ -433,7 +444,7 @@ def find_star2(star1_table, merged_star_table, bounded=False, bounds=[], halfrea
         return g_rp_vals, m_g_vals
     else:
         merged_absmag_dict= get_star_absmags(merged_star_table, plot_all=False)
-        
+        star1_absmag_dict=get_star_absmags(star1_table, plot_all=False)
         def get_star2_absmag(bandpass='g'):
             try:
                 print(bandpass, 'mag:', merged_absmag_dict[bandpass]['absmag'])
@@ -453,26 +464,36 @@ def find_star2(star1_table, merged_star_table, bounded=False, bounds=[], halfrea
         star2_g_absmag, star2_g_absmag_dist= get_star2_absmag(bandpass='g')
         star2_bp_absmag, star2_bp_absmag_dist= get_star2_absmag(bandpass='bp')
         star2_rp_absmag, star2_rp_absmag_dist= get_star2_absmag(bandpass='rp')
-        star2_bp_absmag_dist=remove_negative(star2_bp_absmag_dist)
-        star2_rp_absmag_dist= remove_negative(star2_rp_absmag_dist)
+        star2_bp_absmag_dist=remove_nans(star2_bp_absmag_dist)
+        star2_rp_absmag_dist= remove_nans(star2_rp_absmag_dist)
+        star2_g_absmag_dist=remove_nans(star2_g_absmag_dist)
         star2_rp_absmag_dist,star2_bp_absmag_dist= match_sizes(star2_rp_absmag_dist, star2_bp_absmag_dist)
         star2_g_absmag_dist,star2_rp_absmag_dist= match_sizes(star2_g_absmag_dist, star2_rp_absmag_dist)
         if plot_all:
             plt.title('')
             plt.show()
             
-            print(star2_rp_absmag_dist)
-            plt.title('star2 rp')
-            plt.hist(star2_rp_absmag_dist)
-            plt.show()
+            try:
+                print(star2_rp_absmag_dist)
+                plt.title('star2 rp')
+                plt.hist(star2_rp_absmag_dist)
+                plt.show()
+            except ValueError as error:
+                print("ValueError:",'rp', error)
             
-            plt.title('star 2 g')
-            plt.hist(star2_g_absmag_dist)
-            plt.show()
+            try:
+                plt.title('star 2 g')
+                plt.hist(star2_g_absmag_dist)
+                plt.show()
+            except ValueError as error:
+                print("ValueError:", 'g',error)
             
-            plt.title('star2 bp')
-            plt.hist(star2_bp_absmag_dist)
-            plt.show()
+            try:
+                plt.title('star2 bp')
+                plt.hist(star2_bp_absmag_dist)
+                plt.show()
+            except ValueError as error:
+                print("ValueError:", 'bp',error)
         else:
             pass
         
@@ -486,7 +507,21 @@ def find_star2(star1_table, merged_star_table, bounded=False, bounds=[], halfrea
         star2_g_rp_dist= star2_g_absmag_dist-star2_rp_absmag_dist
         star2_g_rp_error=get_errors(star2_g_rp_dist)
         #star2_g_absmag_error= get_errors(star2_g_absmag_dist)
-    
+        
+        print("max g_rp", np.max(star2_g_rp_dist), np.nanmax(star2_g_rp_dist))
+        print("min g_rp", np.min(star2_g_rp_dist), np.nanmin(star2_g_rp_dist))
+        if plot_all:
+            try:
+                plt.title('star 2 g-rp')
+                plt.hist(star2_g_rp_dist, bins=100)
+                plt.axvline(np.nanmedian(star2_g_rp_dist), color='k', linestyle='--', label='median:'+str(np.nanmedian(star2_g_rp_dist)))
+                plt.axvline(star2_g_rp, color='red', linestyle='--', label='g-rp point:'+str(star2_g_rp))
+                plt.legend(loc='best')
+                plt.show()
+            except ValueError as error:
+                print("ValueError:", 'g-rp',error)
+        else:
+            pass
         #plt.title('bp_rp')
         #plt.hist(star2_bp_rp_dist)
         #plt.show()
@@ -737,14 +772,14 @@ def plot_bkg_cmd(generic_table= generic_table, absmag='g', colours=['bp','rp']):
 #plot_bkg_cmd(colours=['g','rp'])
 #plt.show()
  
-star2_dict= find_star2(star1_table, merged_star_table, halfreal=True)
-#plot_target_table(input_table, colours= ['g','rp'])
-plot_bkg_cmd(colours=['g','rp'])
-plt.show()
+#star2_dict= find_star2(star1_table, merged_star_table, halfreal=True)
+##plot_target_table(input_table, colours= ['g','rp'])
+#plot_bkg_cmd(colours=['g','rp'])
+#plt.show()
 
-merge_stars(star1_table=star1_table, star2_table=star2_table, real_stars=True)
-plot_bkg_cmd(colours=['g','rp'])
-plt.show()
+#merge_stars(star1_table=star1_table, star2_table=star2_table, real_stars=True)
+#plot_bkg_cmd(colours=['g','rp'])
+#plt.show()
 
 star2_dict= find_star2(star1_table, merged_star_table)
 #plot_bkg_cmd()
@@ -752,7 +787,7 @@ plot_bkg_cmd(colours=['g','rp'])
 plt.show()
 
 
-star2_dict= find_star2(star2_table, merged_star_table)
+star2_dict= find_star2(star2_table, merged_star_table, plot_all=True)
 plot_bkg_cmd(colours=['g','rp'])
 #plot_bkg_cmd()
 plt.show()
