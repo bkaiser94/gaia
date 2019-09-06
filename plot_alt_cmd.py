@@ -90,6 +90,7 @@ percent_off = 34 #1-sigma equivalent
 #target_input= 'gaiaj1644m0449_gaia.csv'
 target_input='20190829_alkaliWD_targeted_gaia_scbd.csv'
 #target_input='20190616_TIC294.csv'
+#target_input= '20190901and02_obs_objects.csv'
 #target_input='20190616_TIC294andother.csv'
 #target_input= 'josh_object.csv'
 #target_input= '20190601_obs_objects.csv'
