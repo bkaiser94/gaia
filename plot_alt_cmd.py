@@ -20,7 +20,7 @@ from astropy.table import Table, QTable
 import matplotlib.pyplot as plt
 import scipy.stats as scistats
 #import seaborn as sns
-import astropy
+#import astropy
 
 
 #import passband_model_convolution as pmc
@@ -247,7 +247,8 @@ def get_errors(distribution, percent_off = percent_off):
     high_bar = np.nanpercentile(distribution, 50+percent_off)
     try:
         return np.array([[median-low_bar],[high_bar-median]])
-    except astropy.units.core.UnitsError as error:
+    #except astropy.units.core.UnitsError as error:
+    except u.core.UnitsError as error:
         return  np.array([[median.value-low_bar],[high_bar-median.value]])
 
 
@@ -493,14 +494,6 @@ def make_cmd(target_table=target_table, generic_table= generic_table, absmag='g'
         pass
     plot_target_table(target_table, absmag=absmag, colours=colours)
     plt.show()
-    return
-
-def get_vT(target_table):
-    
-    return
-
-def plot_vT(target_table=target_table):
-    
     return
 
 
