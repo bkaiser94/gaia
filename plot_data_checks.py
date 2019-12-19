@@ -102,7 +102,7 @@ elif num_targs== 'Lindegren':
     #generic_input='20190829_DZNas.csv'
     #generic_input='20190829_WDdM.csv'
     #generic_input= 'WD_DZNa.csv'
-    generic_input='20190829_alkaliWD_targeted_gaia_scbd.csv'
+    #generic_input='20190829_alkaliWD_targeted_gaia_scbd.csv'
     #generic_input='sdssj1330p6435_gaia.csv'
     #generic_input= 'sdssj1330_similar_gaia_sc.csv'
     #generic_input   ='usdMs_gaia.csv'
@@ -149,6 +149,7 @@ zeropoint_dict={"g": [25.6883657251, 0.0017850023],
 generic_table = Table.read(generic_input)
 #########################################
 col_pairs=[
+    ['ra','dec'],
     ['parallax','astrometric_excess_noise'],
     ['phot_g_mean_mag','astrometric_pseudo_colour_error'],
     ['phot_bp_rp_excess_factor', 'mg'],
@@ -164,7 +165,6 @@ col_pairs=[
     ['mg','mean_varpi_factor_al'],
     ['phot_bp_rp_excess_factor','mean_varpi_factor_al'],
     ['astrometric_excess_noise','mean_varpi_factor_al'],
-    ['ra','dec'],
     ['l','b'],
     ['parallax','phot_g_mean_mag'],
     ['phot_bp_mean_mag','phot_rp_mean_mag'],

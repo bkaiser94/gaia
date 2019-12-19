@@ -63,7 +63,7 @@ ncolor= 'cyan'
 
 #######3error distribution variables
 mc_number = 10000
-percent_off = 34 #1-sigma equivalent
+percent_off = 34. #1-sigma equivalent
 #############
 
 #target_input='20190107_chris_merge_gaia.csv'
@@ -88,7 +88,9 @@ percent_off = 34 #1-sigma equivalent
 #target_input= '20190730_obs_objects.csv'
 #target_input='GaiaJ1453m2258_andnearones.csv'
 #target_input= 'gaiaj1644m0449_gaia.csv'
-target_input='20190829_alkaliWD_targeted_gaia_scbd.csv'
+#target_input='20190829_alkaliWD_targeted_gaia_scbd.csv'
+target_input='20190829_DZNas.csv'
+#target_input= 'SDSSJ1029p1729_extlowmetal_gaia.csv'
 #target_input='20190616_TIC294.csv'
 #target_input= '20190901and02_obs_objects.csv'
 #target_input='20190616_TIC294andother.csv'
@@ -100,6 +102,8 @@ target_input='20190829_alkaliWD_targeted_gaia_scbd.csv'
 
 
 other_target_input= 'mdwarf_spTs_gaia_sc.csv'
+#other_target_input= 'SDSSJ1150p2403_gaia.csv'
+#other_target_input= 'HE1327m2326_extlowmetal_gaia.csv'
 #other_target_input= '20190730_obs_objects.csv'
 #other_target_input='gaiaj1644m0449other_gaia.csv'
 #other_target_input='GaiaJ1453m2258_andnearones.csv'
@@ -296,7 +300,8 @@ def get_colour_dif(table, plot_all = False, verbose =True, colours=['bp','rp']):
         plt.hist(bp_rp_dist, bins=75, normed=1, label = 'MC Distribution', color = 'g')
         plt.axvline(np.nanmedian(colour_dif_dist), color = 'k', linestyle = '--', label = 'Median of MC Dist')
         plt.axvline(np.nanpercentile(colour_dif_dist, 84), color = 'cyan')
-        plt.errorbar(colour_dif, 0.5, xerr = colour_dif_error, marker = '*', markersize = 8, color = 'b', label = colours[0]+"-" + colours[1], capsize = 4)
+        #plt.errorbar(colour_dif, 0.5, xerr = colour_dif_error, marker = '*', markersize = 8, color = 'b', label = colours[0]+"-" + colours[1], capsize = 4)
+        plt.errorbar(colour_dif, 0.5, xerr = colour_dif_error, marker = '*', markersize = 8, color = 'b', label = 'changed', capsize = 4)
         #plt.xlabel(r'$G_{BP}-G_{RP}$')
         plt.xlabel(colours[0]+'-'+colours[1])
         plt.legend()
@@ -334,6 +339,7 @@ def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = Tr
     print("index_length",index_length)
     print("mag_dist.shape", mag_dist.shape)
     mag_dist = mag_dist[:index_length]
+    mag_dist, distance_dist= match_sizes(mag_dist, distance_dist)
     abs_mag = distance_modulus(mag, distance)
     abs_mag_dist = distance_modulus(mag_dist, distance_dist)
     abs_mag_error= get_errors(abs_mag_dist)
@@ -350,7 +356,7 @@ def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = Tr
     return abs_mag, abs_mag_error, abs_mag_dist
 
 
-def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color=list_color, pseudo_colour=False, annotate=annotate):
+def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color=list_color, pseudo_colour=False, annotate=annotate, label=''):
     for row in input_table:
         if pseudo_colour:
             target_absmag, target_absmag_err, target_absmag_dist= get_pass_abs_mag(row, plot_all = False, passband_string= absmag)
@@ -360,7 +366,7 @@ def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color
             target_colour_dif_err= get_errors(target_pseudo_wave_dist)
             target_colour_dif = 1./target_pseudo_colour*1e4
             plt.xlabel('1./astrometric_pseudo_colour (angstroms)')
-            plt.errorbar(np.copy(target_colour_dif), np.copy(target_absmag), yerr = np.copy(target_absmag_err),  xerr = np.copy(target_colour_dif_err), marker = 'o', markersize = 6, color = list_color, capsize = 4, label = target_label, linestyle ='none')
+            plt.errorbar(np.copy(target_colour_dif), np.copy(target_absmag), yerr = np.copy(target_absmag_err),  xerr = np.copy(target_colour_dif_err), marker = 'o', markersize = 6, color = list_color, capsize = 4, linestyle ='none')
             print(target_colour_dif, target_absmag)
             print(row['name'])
             if annotate:
@@ -377,13 +383,17 @@ def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color
                 target_colour_dif_err= 0
             if row['parallax']>1e18:
                 target_absmag=y_fill
-            plt.errorbar(np.copy(target_colour_dif), np.copy(target_absmag), yerr = np.copy(target_absmag_err),  xerr = np.copy(target_colour_dif_err), marker = 'o', markersize = 6, color = list_color, capsize = 4, label = target_label, linestyle ='none')
+            plt.errorbar(np.copy(target_colour_dif), np.copy(target_absmag), yerr = np.copy(target_absmag_err),  xerr = np.copy(target_colour_dif_err), marker = 'o', markersize = 6, color = list_color, capsize = 4, linestyle ='none')
             print(target_colour_dif, target_absmag)
             print(row['name'])
             if annotate:
                 plt.annotate(str(row['name']),xy=(np.copy(target_colour_dif), np.copy(target_absmag)), xycoords='data', xytext=(np.copy(target_colour_dif+0.01),np.copy(target_absmag-0.1)), textcoords= 'data' , fontsize=8, color =list_color)
             else:
                 pass
+    if label=='':
+        pass
+    else:
+        plt.errorbar(np.nan, np.nan, yerr = np.nan,  xerr = np.nan, marker = 'o', markersize = 6, color = list_color, capsize = 4, label =label, linestyle ='none')
     return
 
 
@@ -422,7 +432,8 @@ def plot_bkg_cmd(generic_table= generic_table, absmag='g', colours=['bp','rp'], 
                 print("Can't use the simplified file with alternative colours or absolute magnitudes; it only works with M_G and BP-RP")
         generic_absmag= generic_table['mg']
         generic_colour_dif= generic_table['bp_rp']
-    polything = plt.hexbin(generic_colour_dif, generic_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
+    #polything = plt.hexbin(generic_colour_dif, generic_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
+    polything = plt.hexbin(generic_colour_dif, generic_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label='')
     counts = polything.get_array()
     print(counts.shape)
     counts= np.sqrt(counts)
@@ -461,7 +472,7 @@ def fig_bkg_cmd(longax, generic_table= generic_table, absmag='g', colours=['bp',
                 print("Can't use the simplified file with alternative colours or absolute magnitudes; it only works with M_G and BP-RP")
         generic_absmag= generic_table['mg']
         generic_colour_dif= generic_table['bp_rp']
-    polything = longax.hexbin(generic_colour_dif, generic_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
+    polything = longax.hexbin(generic_colour_dif, generic_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1)
     counts = polything.get_array()
     print(counts.shape)
     #counts= np.sqrt(counts)
@@ -562,70 +573,84 @@ def plot_abs_v_abs(generic_table= generic_table, colours=['g','rp']):
     #longax.set_xlabel('Wavelength $(\AA)$')
     #longfig.savefig(dest_dir+target_dir+'long_spectrum_'+ str(wave_limits[0])+','+str(wave_limits[1]) + '.pdf')
 
-#plot_bkg_cmd()
-#plt.title(generic_input)
-#plt.show()
-#plot_bkg_cmd(absmag= absmag_band, colours= colours)
-#plt.title(generic_input)
-#plt.show()
-#plot_bkg_cmd(generic_table= generic_table, absmag= absmag_band, colours= ['bp','g'])
-#plt.title(generic_input)
-#plt.show()
+if __name__ == '__main__':
+    #plot_bkg_cmd()
+    #plt.title(generic_input)
+    #plt.show()
+    #plot_bkg_cmd(absmag= absmag_band, colours= colours)
+    #plt.title(generic_input)
+    #plt.show()
+    #plot_bkg_cmd(generic_table= generic_table, absmag= absmag_band, colours= ['bp','g'])
+    #plt.title(generic_input)
+    #plt.show()
 
-#plot_bkg_cmd(absmag= 'bp', colours= ['bp','g'])
-#plt.title(generic_input)
-#plt.show()
-
-
-#plot_bkg_cmd(absmag= 'rp', colours= ['g','rp'])
-#plt.title(generic_input)
-#plt.show()
-
-#plot_target_table(target_table, pseudo_colour=True)
-#plot_bkg_cmd(absmag='g', pseudo_colour=True)
-#plt.title(generic_input)
-#plt.show()
-#plot_abs_v_abs()
-#make_cmd(target_table=other_target_table, generic_table= generic_table)
-
-plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
-plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=True)
-plot_target_table(target_table, colours=['g','rp'])
-plot_ben_cuts()
-plt.show()
-
-plot_target_table(target_table, colours=['bp','rp'])
-plot_target_table(other_target_table, colours=['bp','rp'], list_color='r', annotate=True)
-plot_bkg_cmd(generic_table=generic_table, colours=['bp','rp'])
-plt.show()
+    #plot_bkg_cmd(absmag= 'bp', colours= ['bp','g'])
+    #plt.title(generic_input)
+    #plt.show()
 
 
-#plot_target_table(target_table, colours=['bp','g'])
-#plot_target_table(other_target_table, colours=['bp','g'], list_color='r', annotate=True)
-#plot_bkg_cmd(generic_table=generic_table, colours=['bp','g'])
-#plt.show()
+    #plot_bkg_cmd(absmag= 'rp', colours= ['g','rp'])
+    #plt.title(generic_input)
+    #plt.show()
+
+    #plot_target_table(target_table, pseudo_colour=True)
+    #plot_bkg_cmd(absmag='g', pseudo_colour=True)
+    #plt.title(generic_input)
+    #plt.show()
+    #plot_abs_v_abs()
+    #make_cmd(target_table=other_target_table, generic_table= generic_table)
+
+    plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+    plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=True)
+    plot_target_table(target_table, colours=['g','rp'])
+    plot_ben_cuts()
+    plt.show()
 
 
-#plot_bkg_cmd(generic_table=generic_table, absmag= 'rp', colours=['bp','rp'])
-#plot_target_table(target_table, colours=['bp','rp'], absmag= 'rp')
-#plot_target_table(other_target_table, absmag= 'rp', colours=['bp','rp'], list_color='r')
-#plt.show()
+    plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'], absmag='rp')
+    plot_target_table(other_target_table, colours=['g','rp'], absmag='rp', list_color='r', annotate=True)
+    plot_target_table(target_table, colours=['g','rp'], absmag='rp')
+    plt.show()
 
 
-#plot_bkg_cmd(generic_table=generic_table, absmag= 'bp', colours=['bp','rp'])
-#plot_target_table(target_table, colours=['bp','rp'], absmag= 'bp')
-#plot_target_table(other_target_table, absmag= 'bp', colours=['bp','rp'], list_color='r')
-#plt.show()
+    plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'], absmag='bp')
+    plot_target_table(other_target_table, colours=['g','rp'], absmag='bp', list_color='r', annotate=True)
+    plot_target_table(target_table, colours=['g','rp'], absmag='bp')
+    plt.show()
 
-#plot_bkg_cmd(generic_table=generic_table, colours=['bp','rp'])
-#plot_target_table(target_table, colours=['bp','rp'])
-#plot_target_table(other_target_table, colours=['bp','rp'], list_color='r')
-#plt.show()
 
-#make_cmd(target_table=target_table, generic_table= generic_table)
-make_cmd(target_table=target_table, generic_table= generic_table, plot_cuts=True)
-make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= colours, plot_cuts=True)
-make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= ['bp','g'])
-#make_cmd(target_table=target_table, generic_table= generic_table, absmag= 'bp', colours= ['bp','rp'])
+    plot_target_table(other_target_table, colours=['bp','rp'], list_color='r', annotate=True)
+    plot_target_table(target_table, colours=['bp','rp'])
+    plot_bkg_cmd(generic_table=generic_table, colours=['bp','rp'])
+    plt.show()
 
-#make_cmd(target_table=target_table, generic_table= generic_table, absmag= 'bp', colours= ['bp','rp'])
+
+    #plot_target_table(target_table, colours=['bp','g'])
+    #plot_target_table(other_target_table, colours=['bp','g'], list_color='r', annotate=True)
+    #plot_bkg_cmd(generic_table=generic_table, colours=['bp','g'])
+    #plt.show()
+
+
+    #plot_bkg_cmd(generic_table=generic_table, absmag= 'rp', colours=['bp','rp'])
+    #plot_target_table(target_table, colours=['bp','rp'], absmag= 'rp')
+    #plot_target_table(other_target_table, absmag= 'rp', colours=['bp','rp'], list_color='r')
+    #plt.show()
+
+
+    #plot_bkg_cmd(generic_table=generic_table, absmag= 'bp', colours=['bp','rp'])
+    #plot_target_table(target_table, colours=['bp','rp'], absmag= 'bp')
+    #plot_target_table(other_target_table, absmag= 'bp', colours=['bp','rp'], list_color='r')
+    #plt.show()
+
+    #plot_bkg_cmd(generic_table=generic_table, colours=['bp','rp'])
+    #plot_target_table(target_table, colours=['bp','rp'])
+    #plot_target_table(other_target_table, colours=['bp','rp'], list_color='r')
+    #plt.show()
+
+    #make_cmd(target_table=target_table, generic_table= generic_table)
+    make_cmd(target_table=target_table, generic_table= generic_table, plot_cuts=True)
+    make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= colours, plot_cuts=True)
+    make_cmd(target_table=target_table, generic_table= generic_table, absmag= absmag_band, colours= ['bp','g'])
+    #make_cmd(target_table=target_table, generic_table= generic_table, absmag= 'bp', colours= ['bp','rp'])
+
+    #make_cmd(target_table=target_table, generic_table= generic_table, absmag= 'bp', colours= ['bp','rp'])

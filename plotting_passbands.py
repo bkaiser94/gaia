@@ -116,7 +116,7 @@ def plot_gaia_passbands(plot_all=False, render_main_plot=True):
         print('Main plot is not being rendered per instructions.')
     return
 
-def plot_panstarrs_passbands():
+def plot_panstarrs_passbands(render_main_plot=True):
     ps1_passband_file= 'PanSTARRS1_bandpasses.txt'
     ps1_all= np.genfromtxt(ps1_passband_file, skip_header=26).T
     ps1_wavelengths= ps1_all[0] *10. #convert to angstroms
@@ -141,7 +141,10 @@ def plot_panstarrs_passbands():
     plt.ylabel('Transmissivity')
     plt.ylim(0,1)
     plt.grid()
-    plt.show()
+    if render_main_plot:
+        plt.show()
+    else:
+        pass
     
     return
 

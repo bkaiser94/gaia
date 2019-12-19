@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 import scipy.stats as scistats
 #import seaborn as sns
 import astropy
+import csv
 
 import gaia_extinction
 #import wdatmos
@@ -52,6 +53,9 @@ single_list=True#turns off the original for-loop method for plotting from a sing
 error_bar=True #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
 annotate= True #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
 parallax_correction = 0.029 #from Lindgren et al 2018
+
+save_output=True
+output_name='20191007_GRP_decomp.csv'
 
 
 #######3error distribution variables
@@ -95,8 +99,8 @@ star1_input='2MASSJ1458p2839_gaia.csv'
 star2_input= 'gaiaj1644m0449_gaia.csv'
 #star1_input= 'CE40_gaia.csv'
 #merged_star_input= 'WISEA0615m1247.csv'
-
-merged_star_input='WISEA0615m1247.csv'
+merged_star_input='Josh_object.csv'
+#merged_star_input='WISEA0615m1247.csv'
 #merged_star_input='20190616_TIC294.csv'
 #merged_star_input='LP178m49_gaia.csv' 
 #merged_star_input= 'WD1133p358_gaia.csv'
@@ -412,7 +416,7 @@ def find_star2(star1_table, merged_star_table, bounded=False, bounds=[], halfrea
         g_rp_vals= []
         m_g_vals=[]
         merged_absmag_dict =get_star_absmags(merged_star_table, plot_all=False)
-        star_track1= generate_star_track([1.22, 11.],[1.56,15.226], num_points= num_points, extrap_dist=extrap_dist1, colour_offset=-0.08)
+        star_track1= generate_star_track([1.22, 11.],[1.56,15.226], num_points= num_points, extrap_dist=extrap_dist1, colour_offset=0)
         #star_track1=generate_random_grid(abs_bounds=[merged_absmag_dict['g']['absmag'], 17.])
         merged_g_flux= mag_to_flux(merged_absmag_dict['g']['absmag'],'g')
         merged_rp_flux= mag_to_flux(merged_absmag_dict['rp']['absmag'],'rp')
@@ -441,7 +445,7 @@ def find_star2(star1_table, merged_star_table, bounded=False, bounds=[], halfrea
         plt.plot(star_track1_g_rp, star_track1_mg, color=star1_color, linestyle= None, marker='o', markersize= 6)
         
         #plt.annotate(str(),xy=(np.copy(target_colour_dif), np.copy(target_absmag)), xycoords='data', xytext=(np.copy(target_colour_dif+0.01),np.copy(target_absmag-0.1)), textcoords= 'data' , fontsize=8, color =list_color)
-        return g_rp_vals, m_g_vals
+        return m_g_vals, g_rp_vals, star_track1_mg, star_track1_g_rp
     else:
         merged_absmag_dict= get_star_absmags(merged_star_table, plot_all=False)
         star1_absmag_dict=get_star_absmags(star1_table, plot_all=False)
@@ -781,11 +785,26 @@ def plot_bkg_cmd(generic_table= generic_table, absmag='g', colours=['bp','rp']):
 #plot_bkg_cmd(colours=['g','rp'])
 #plt.show()
 
-star2_dict= find_star2(star1_table, merged_star_table)
-#plot_bkg_cmd()
+#star2_dict= find_star2(star1_table, merged_star_table)
+##plot_bkg_cmd()
+#plot_bkg_cmd(colours=['g','rp'])
+#plt.show()
+
+star2_dict= find_star2(star2_table, merged_star_table, halfreal=True)
+print('star2_dict', star2_dict)
+star2_output_table= Table(star2_dict, names=('star2_m_g', 'star2_g_rp', 'star1_m_g', 'star1_g_rp'))
+if save_output:
+    star2_output_table.pprint()
+    print('Saving output')
+    #csvwriter= csv.writer(open(output_name, 'w'))
+    #for key, val in star2_dict.items():
+        #csvwriter.writerow([key, val])
+    star2_output_table.write(output_name, overwrite=True)
+else:
+    pass
+        
 plot_bkg_cmd(colours=['g','rp'])
 plt.show()
-
 
 star2_dict= find_star2(star2_table, merged_star_table, plot_all=True)
 plot_bkg_cmd(colours=['g','rp'])
