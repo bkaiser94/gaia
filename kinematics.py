@@ -76,8 +76,9 @@ rv_sigma=100.
 
 #target_input ='20190516B_retargeted_purple_search_gaia_scbd.csv'
 #target_input='20190829_alkaliWD_targeted_gaia_scbd.csv'
-#target_input='20190829_DZNas.csv'
-target_input='20191218_DZs_for_paper.csv'
+target_input='20190829_DZNas.csv'
+#target_input='20191218_DZs_for_paper.csv'
+#target_input='20200110_ultracoolDZs.csv'
 #target_input='gas_disk_objs_gaia.csv'
 
 target_table = Table.read(target_input)
@@ -502,12 +503,15 @@ galactic_coords= get_galactic_coords(target_table)
 plt.scatter(galactic_coords.x.to(u.kpc), galactic_coords.y, label="WD")
 plt.scatter(-1*sun_dist, 0., color='orange', label='sun')
 #plt.quiver(galactic_coords.x.to(u.kpc), galactic_coords.y, galactic_coords.v_x, galactic_coords.v_y, headwidth=3, width=0.005)
-plt.quiver(galactic_coords.x.to(u.kpc), galactic_coords.y,U, V, headwidth=2, width=0.005, label='proj. pec. velocity (km/s)')
+#plt.quiver(galactic_coords.x.to(u.kpc), galactic_coords.y,U, V, headwidth=2, width=0.005, label='proj. pec. velocity (km/s)')
+plt.quiver(galactic_coords.x.to(u.kpc), galactic_coords.y,U, -V, headwidth=2, width=0.005, label='proj. pec. velocity (km/s)') #assuming the y-axis will be inverted. The quiver plot doesn't actually correct the arrows for some reason....
 for row, gal_coord  in zip(target_table, galactic_coords):
     plt.annotate(str(row['name']),xy=(gal_coord.x.to(u.kpc).value, gal_coord.y.value), xycoords='data', xytext=(gal_coord.x.to(u.kpc).value, gal_coord.y.value), textcoords= 'data' , fontsize=8, color =list_color)
 plt.xlabel('X (kpc)')
 plt.ylabel('Y (pc)')
 plt.legend(loc='best')
+plt.gca().invert_yaxis()
+
 plt.title(target_input + ' kinematics')
 plt.show()
 

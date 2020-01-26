@@ -23,7 +23,9 @@ from astropy.table import Table, vstack, Column
 #input_file= '20190516B_retargeted_purple_search_gaia_scbd.csv'
 #input_file= '20190820B_priorityupdate_retargeted_purple_search_gaia_scbd.csv'
 #input_file= '20190829B_priorityupdate_retargeted_purple_search_gaia_scbd.csv'
-input_file= '20191213B_priorityupdate_retargeted_purple_search_gaia_scbd.csv'
+#input_file= '20191213B_priorityupdate_retargeted_purple_search_gaia_scbd.csv'
+#input_file='20200110B_priorityupdate_retargeted_purple_search_gaia_scbd.csv'
+input_file='20200113B_priorityupdate_retargeted_purple_search_gaia_scbd.csv'
 #input_file='20190917_alkaliWD_attempt2_gaia_scbd.csv'
 #input_file= 'josh_object.csv'
 #input_file='20190516B_retargeted_purple_subset.csv'
@@ -90,7 +92,9 @@ for thing, name, mag, target_num  in zip(string_coords, name_array, input_table[
 print(name_array)
 
 output_array= np.vstack([name_list, ra_list, dec_list, epoch_list, mag_list]).T
-priority_good= np.where(input_table['priority']< 10)
+#priority_good= np.where(input_table['priority']< 10)
+#priority_good= np.where(input_table['400m2_need_bool']== 1)
+priority_good= np.where(input_table['400m1_need_bool']== 1)
 output_array=output_array[priority_good]
 output_array=output_array.T
 if sort_by_ra:
