@@ -20,13 +20,13 @@ from __future__ import print_function
 import numpy as np
 import astropy.units as u
 import astropy.coordinates as coord
-from astropy.table import Table, QTable
+from astropy.table import Table, QTable, Column
 import matplotlib.pyplot as plt
 import scipy.stats as scistats
 import matplotlib.patches as mp
 
 
-import plotting_dicts as pod
+#import plotting_dicts as pod
 
 
 ###########
@@ -37,6 +37,7 @@ circular_v_at_sun=240.*u.km/u.s
 v_sun_pec= [11.1,12.24, 7.25] *u.km/u.s
 v_sun_bobylev=[7.90, 11.73, 7.39]*u.km/u.s #Bobylev 2017 value, used by Torres et al. 2019
 
+
 v_sun_tot= coord.CartesianDifferential([v_sun_pec[0], v_sun_pec[1]+circular_v_at_sun, v_sun_pec[2]])
 v_sun_bobylev_diff= coord.CartesianDifferential(v_sun_bobylev)
 
@@ -46,7 +47,10 @@ gc_frame= coord.Galactocentric(galcen_distance=sun_dist,
 
 galcart= coord.Galactic(representation_type= coord.CartesianRepresentation, differential_type=coord.CartesianDifferential)
 
-altGalacticLSR=coord.GalacticLSR(v_bary=v_sun_bobylev_diff)
+#altGalacticLSR=coord.GalacticLSR(v_bary=v_sun_bobylev_diff)
+
+altGalacticLSR=coord.GalacticLSR(v_bary=v_sun_bobylev_diff, differential_type='cartesian')
+
 
 #galLSR_base=coord.GalacticLSR
 galLSR_base=altGalacticLSR
@@ -77,6 +81,10 @@ rv_sigma=100.
 #target_input ='20190516B_retargeted_purple_search_gaia_scbd.csv'
 #target_input='20190829_alkaliWD_targeted_gaia_scbd.csv'
 target_input='20190829_DZNas.csv'
+#target_input='20200218_WD_Napol.csv'
+#target_input='Torres_50_cat_original_gaia_sc.csv'
+#target_input='Kilic_velocities_tabsupp_2_rand50_gaia.csv'
+
 #target_input='20191218_DZs_for_paper.csv'
 #target_input='20200110_ultracoolDZs.csv'
 #target_input='gas_disk_objs_gaia.csv'
@@ -161,7 +169,7 @@ def test_errorbars(group_vel, group_disp, label):
     #plt.show()
     return [group_vel[1], group_disp[1]], [uw_mean, uw_std]
 
-    
+
 def generate_toomre_diagram():
     #fig= plt.figure()
     def plot_kinematic_group(group_vel, group_disp, label):
@@ -210,6 +218,7 @@ def get_galactic_coords(row):
 
 def get_galLSR_coords(row, do_mc=False, vary_rv=False):
     star_coord= coord.SkyCoord(row['ra']*u.deg, row['dec']*u.deg, pm_ra_cosdec= row['pmra']*u.mas/u.yr, pm_dec= row['pmdec']*u.mas/u.yr, radial_velocity=0. *u.km/u.s, distance= 1000./row['parallax'] *u.pc , frame='icrs')
+    #star_coord= coord.SkyCoord(row['ra']*u.deg, row['dec']*u.deg, pm_ra_cosdec= row['pmra']/np.cos(row['dec']/180*np.pi)*u.mas/u.yr, pm_dec= row['pmdec']*u.mas/u.yr, radial_velocity=0. *u.km/u.s, distance= (1000./row['parallax']) *u.pc, frame='icrs')
     #galLSR_coords= star_coord.transform_to(coord.GalacticLSR)
     galLSR_coords= star_coord.transform_to(galLSR_base)
 
@@ -284,7 +293,9 @@ def plot_values(target_table, plot_vals=['V', 'UW'], do_mc=True, vary_rv=False, 
         V=galLSR_single.velocity.d_y
         W=galLSR_single.velocity.d_z
         UW=np.sqrt(U**2. +W**2.)
+        print('\n')
         print(row['name'], U, V, W)
+        print('+/-', get_errors(U_dist), get_errors(V_dist),get_errors(W_dist))
         #plt.hist(UW_dist.value)
         #plt.show()
         if plot_vals[0]=='V':
@@ -344,13 +355,24 @@ generate_toomre_diagram()
 
 plt.show()
 
+all_list=[]
+uw_err_list=[]
+v_err_list=[]
 
 for row in target_table:
-    galLSR_single, galLSR_dist= get_galLSR_coords(row, do_mc=True, vary_rv=True)
+    galLSR_single, galLSR_dist= get_galLSR_coords(row, do_mc=True, vary_rv=False)
+    
+    #output_vel=get_galLSR_coords(row,do_mc=False, vary_rv=False)
+    output_vel=galLSR_single.velocity
+    #output_row=[row['name'], row['ra'],row['dec'],output_vel.d_x.to(u.km/u.s).value, output_vel.d_y.to(u.km/u.s).value, output_vel.d_z.to(u.km/u.s).value, 1000./row['parallax'], row['parallax']]
+    #all_list.append(output_row)
+    
+    
     galLSR_vel_dist=galLSR_dist.velocity
     U_dist=galLSR_vel_dist.d_x
     V_dist= galLSR_vel_dist.d_y
     W_dist= galLSR_vel_dist.d_z
+    
     UW_dist=np.sqrt(U_dist**2. +W_dist**2.)
     V_err= get_errors(V_dist)
     UW_err=get_errors(UW_dist)
@@ -358,10 +380,43 @@ for row in target_table:
     V=galLSR_single.velocity.d_y.value
     W=galLSR_single.velocity.d_z
     UW=np.sqrt(U**2. +W**2.).value
+    
+    output_row=[row['name'], row['ra'],row['dec'], output_vel.d_y.to(u.km/u.s).value, np.median(UW_dist.value), 1000./row['parallax'], row['parallax'], V_err[0,0], V_err[1,0], UW_err[0,0], UW_err[1,0]]
+    all_list.append(output_row)
+    
+    
+    #v_err_list.append([V_err])
+    #uw_err_list.append([UW_err])
+  
+    print('\n\n')
+    print(row['name'])
+    print('U', 'cat. val:',U, 'MC dist med:',np.median(U_dist.value))
+    print('V', 'cat. val:',V, 'MC dist med:',np.median(V_dist.value))
+    print('W', 'cat. val:',W, 'MC dist med:',np.median(W_dist.value))
+    print('**********\n\n')
     #plt.hist(UW_dist.value)
     #plt.show()
     plt.errorbar(np.median(V_dist.value),np.median(UW_dist.value), xerr=V_err, yerr=UW_err, marker='o', color='r')
     plt.annotate(str(row['name']),xy=(np.median(V_dist.value),np.median(UW_dist.value)), xycoords='data', xytext=(np.median(V_dist.value),np.median(UW_dist.value)), textcoords= 'data' , fontsize=6, color ='r')
+
+
+all_list_array=np.array(all_list)
+#v_err_col= Column(v_err_list)
+#uw_err_col=Column(uw_err_list)
+
+#v_err_col.pprint()
+
+#text_names=['name','ra','dec','u', 'v', 'w', 'distance', 'parallax']
+text_names=['name','ra','dec','v', 'uw2', 'distance', 'parallax', 'v_err_lo', 'v_err_hi','uw2_err_lo', 'uw2_err_hi']
+#text_header=','.join(text_names)
+#np.savetxt('20200517_output_velocities_test.csv',all_list_array, delimiter=',')
+#np.savetxt('J1644_paper_outputs.csv',all_list, delimiter=',', header=text_header)
+output_table=Table(all_list_array, names=text_names)
+
+#output_table.add_column(v_err_col, name='v_err')
+#output_table.add_column(uw_err_col, name='uw2_err')
+
+output_table.write('J1644_paper_outputs.csv')
 
 for row in target_table:
     galLSR_single, galLSR_dist= get_galLSR_coords(row, do_mc=True)
@@ -432,6 +487,7 @@ plt.show()
     
 
 galLSR_vel= galLSR_coords.velocity
+#galLSR_vel.write(target_input.split('.')[0]+'_velocities.csv')
 print('galLSR_coords')
 print(galLSR_coords)
 print(galLSR_vel)

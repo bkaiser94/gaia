@@ -17,14 +17,18 @@ start = time.time()
 
  
 filter_confused_sources= True
+#search_radius=1.
 search_radius = 4.08 #in arcseconds
 #search_radius =  10.
 
 filter_bright_contam= True
 filter_dense= True#filter to remove crowded fields; didn't use 'crowded' because it has a 'c' like confusion
  
+ 
+ 
 #filter_confused_sources= False
-#search_radius = 4.08 #in arcseconds
+#search_radius=1.
+##search_radius = 4.08 #in arcseconds
 ##search_radius =  10.
 
 #filter_bright_contam= False
@@ -33,10 +37,19 @@ filter_dense= True#filter to remove crowded fields; didn't use 'crowded' because
 bright_search_radius = 15.
 bright_star_limit= 15 #faintest G mag of what's considered a bright star for purposes of filtering
 dense_number= 6 #corresponds to >11,008 stars per square degree for 15" search radius, so should be greater than or equal to this number to qualify as 'dense' or 'crowded'
+
+name_index=0
+ra_index=1
+dec_index=2
+
+
+ 
  
  
 #input_file= 'gas_disk_objs.csv'
-input_file='20191024_DZNa_and_redder_search.csv'
+input_file='Kilic_velocities_tabsupp_2_rand50.csv'
+#input_file='20191024_DZNa_and_redder_search.csv'
+#input_file='Torres_50_cat_original.csv'
 #input_file= '20190516B_retargeted_purple_search.csv'
 #input_file= 'WDpec.csv'
 #input_file= '20190829_alkaliWD_targeted.csv'
@@ -114,6 +127,7 @@ print("Log in succesful.")
 coord_list= []
 ####allarray= np.genfromtxt(input_file, names=True, delimiter=',', dtype='U6')
 allarray= np.genfromtxt(input_file, delimiter= ',', dtype= str)
+
 #allarray=np.genfromtxt(input_file, dtype=np.str_, delimiter= ' \t', skip_header=1)
 #allarray=np.genfromtxt(input_file, dtype=np.str_, delimiter= '\t')
 #####allarray= np.genfromtxt(input_file, delimiter=[11,13,13], dtype= str)
@@ -123,12 +137,22 @@ print(allarray.shape)
 #print(allarray)
 #ra_array = allarray['Ra']
 #dec_array= allarray['Dec'] #Now I've got the RAs and Decs
+
+
 allarray=allarray[1:] #remove the header of the file (or column names)
+
 #print(allarray)
 
-ra_array=allarray[:,1]
-dec_array= allarray[:,2] #I couldn't get the names and dtype to work so I'm just doing it the less efficient way I guess
-name_array=allarray[:,0]
+#ra_array=allarray[:,1]
+#dec_array= allarray[:,2] #I couldn't get the names and dtype to work so I'm just doing it the less efficient way I guess
+#name_array=allarray[:,0]
+
+
+
+ra_array=allarray[:,ra_index]
+dec_array= allarray[:,dec_index] #I couldn't get the names and dtype to work so I'm just doing it the less efficient way I guess
+name_array=allarray[:,name_index]
+
 
 collected_results=[]
 print(name_array)
