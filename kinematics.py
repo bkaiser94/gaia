@@ -78,16 +78,8 @@ rv_sigma=100.
 
 
 
-#target_input ='20190516B_retargeted_purple_search_gaia_scbd.csv'
-#target_input='20190829_alkaliWD_targeted_gaia_scbd.csv'
-target_input='20190829_DZNas.csv'
-#target_input='20200218_WD_Napol.csv'
-#target_input='Torres_50_cat_original_gaia_sc.csv'
-#target_input='Kilic_velocities_tabsupp_2_rand50_gaia.csv'
 
-#target_input='20191218_DZs_for_paper.csv'
-#target_input='20200110_ultracoolDZs.csv'
-#target_input='gas_disk_objs_gaia.csv'
+target_input='20190829_DZNas.csv'
 
 target_table = Table.read(target_input)
 
@@ -415,8 +407,9 @@ output_table=Table(all_list_array, names=text_names)
 
 #output_table.add_column(v_err_col, name='v_err')
 #output_table.add_column(uw_err_col, name='uw2_err')
-
-output_table.write('J1644_paper_outputs.csv')
+output_name='kinematics_outputs.csv'
+print('\n\nSaving', output_name, '\n\n')
+output_table.write(output_name)
 
 for row in target_table:
     galLSR_single, galLSR_dist= get_galLSR_coords(row, do_mc=True)
