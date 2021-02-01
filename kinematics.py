@@ -79,7 +79,11 @@ rv_sigma=100.
 
 
 
-target_input='20190829_DZNas.csv'
+#target_input='20190829_DZNas.csv'
+#target_input='SDSSJ1636p1619_gaia.csv'
+#target_input='20190516B_retargeted_purple_search_gaia_scbd.csv'
+#target_input='BU1941m1919_gaia.csv'
+target_input='20210201_DZs_for_J1636paper_gaia.csv'
 
 target_table = Table.read(target_input)
 
@@ -373,7 +377,12 @@ for row in target_table:
     W=galLSR_single.velocity.d_z
     UW=np.sqrt(U**2. +W**2.).value
     
-    output_row=[row['name'], row['ra'],row['dec'], output_vel.d_y.to(u.km/u.s).value, np.median(UW_dist.value), 1000./row['parallax'], row['parallax'], V_err[0,0], V_err[1,0], UW_err[0,0], UW_err[1,0]]
+    #UVW=np.sqrt(U**2.+V**2.+W**2.).value
+    UVW_dist=np.sqrt(U_dist**2. +V_dist**2.+W_dist**2.)
+    UVW_err=get_errors(UVW_dist)
+    
+    #output_row=[row['name'], row['ra'],row['dec'], output_vel.d_y.to(u.km/u.s).value, np.median(UW_dist.value), 1000./row['parallax'], row['parallax'], V_err[0,0], V_err[1,0], UW_err[0,0], UW_err[1,0]]
+    output_row=[row['name'], row['ra'],row['dec'], output_vel.d_y.to(u.km/u.s).value, np.median(UW_dist.value), 1000./row['parallax'], row['parallax'], V_err[0,0], V_err[1,0], UW_err[0,0], UW_err[1,0],np.median(UVW_dist.value),UVW_err[0,0],UVW_err[1,0]]
     all_list.append(output_row)
     
     
@@ -398,18 +407,27 @@ all_list_array=np.array(all_list)
 
 #v_err_col.pprint()
 
+#print(all_list_array)
+#print(all_list_array.dtype)
+
 #text_names=['name','ra','dec','u', 'v', 'w', 'distance', 'parallax']
-text_names=['name','ra','dec','v', 'uw2', 'distance', 'parallax', 'v_err_lo', 'v_err_hi','uw2_err_lo', 'uw2_err_hi']
+#text_names=['name','ra','dec','v', 'uw2', 'distance', 'parallax', 'v_err_lo', 'v_err_hi','uw2_err_lo', 'uw2_err_hi']
+
+text_names=['name','ra','dec','v', 'uw2', 'distance', 'parallax', 'v_err_lo', 'v_err_hi','uw2_err_lo', 'uw2_err_hi','vtan_lsr','vtan_lsr_err_lo','vtan_lsr_err_hi']
+all_table=Table(all_list_array,names=text_names)
+#all_table.pprint()
 #text_header=','.join(text_names)
 #np.savetxt('20200517_output_velocities_test.csv',all_list_array, delimiter=',')
 #np.savetxt('J1644_paper_outputs.csv',all_list, delimiter=',', header=text_header)
-output_table=Table(all_list_array, names=text_names)
+#np.savetxt('20210201_output_velocities_test.csv',all_list_array, delimiter=',')
+#all_table.write('20210201_LiWDs_for_J1636_paper_gaia_kinematics.csv', delimiter=',',format='csv')
+#output_table=Table(all_list_array, names=text_names)
 
 #output_table.add_column(v_err_col, name='v_err')
 #output_table.add_column(uw_err_col, name='uw2_err')
-output_name='kinematics_outputs.csv'
-print('\n\nSaving', output_name, '\n\n')
-output_table.write(output_name)
+#output_name='kinematics_outputs.csv'
+#print('\n\nSaving', output_name, '\n\n')
+#output_table.write(output_name)
 
 for row in target_table:
     galLSR_single, galLSR_dist= get_galLSR_coords(row, do_mc=True)

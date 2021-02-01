@@ -90,7 +90,10 @@ percent_off = 34. #1-sigma equivalent
 #target_input= 'gaiaj1644m0449_gaia.csv'
 #target_input='20190829_alkaliWD_targeted_gaia_scbd.csv'
 #target_input='20190829_DZNas.csv'
-target_input='PSO_ucool_gaia.csv'
+#target_input= 'BU1941m1919_gaia.csv'
+target_input='BU1941m1919_gaia_edr3.csv'
+#target_input='PSO_ucool_gaia.csv'
+#target_input='WD_DZLi.csv'
 #target_input= 'SDSSJ1029p1729_extlowmetal_gaia.csv'
 #target_input='20190616_TIC294.csv'
 #target_input= '20190901and02_obs_objects.csv'
@@ -384,7 +387,10 @@ def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color
                 target_colour_dif_err= 0
             if row['parallax']>1e18:
                 target_absmag=y_fill
-            plt.errorbar(np.copy(target_colour_dif), np.copy(target_absmag), yerr = np.copy(target_absmag_err),  xerr = np.copy(target_colour_dif_err), marker = 'o', markersize = 6, color = list_color, capsize = 4, linestyle ='none')
+            if error_bar:
+                plt.errorbar(np.copy(target_colour_dif), np.copy(target_absmag), yerr = np.copy(target_absmag_err),  xerr = np.copy(target_colour_dif_err), marker = 'o', markersize = 6, color = list_color, capsize = 4, linestyle ='none')
+            else:
+                plt.plot(np.copy(target_colour_dif), np.copy(target_absmag),  marker = 'o', markersize = 6, color = list_color,  linestyle ='none')
             print(target_colour_dif, target_absmag)
             print(row['name'])
             if annotate:
@@ -393,8 +399,10 @@ def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color
                 pass
     if label=='':
         pass
-    else:
+    elif error_bar:
         plt.errorbar(np.nan, np.nan, yerr = np.nan,  xerr = np.nan, marker = 'o', markersize = 6, color = list_color, capsize = 4, label =label, linestyle ='none')
+    else:
+        plt.plot(np.nan, np.nan,marker = 'o', markersize = 6, color = list_color, label =label, linestyle ='none')
     return
 
 

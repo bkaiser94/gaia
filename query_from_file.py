@@ -193,6 +193,15 @@ def cone_search(ra, dec, search_radius= search_radius):
     r.pprint()
     return r
 
+def get_panstarrs(source_id):
+    gaiadr2.panstarrs1_best_neighbour
+
+    
+    
+    return ps_data
+ps_table=Gaia.load_table('gaiadr2.panstarrs1_best_neighbour')
+print(ps_table)
+sys.exit()
 target_num = 1
 for ra,dec,name in zip(ra_array, dec_array,name_array):
     begin_time = time.time()

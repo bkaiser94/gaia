@@ -54,7 +54,7 @@ error_bar=True #turns off error bars on the multiple list plot, meaning it has n
 annotate= True #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
 parallax_correction = 0.029 #from Lindgren et al 2018
 
-save_output=True
+save_output=False
 output_name='20191007_GRP_decomp.csv'
 
 
@@ -89,6 +89,8 @@ extrap_dist2=extrap_dist
 #star1_input= 'test_WD.csv'
 #star1_input= 'mystery_red_object.csv'
 star1_input='2MASSJ1458p2839_gaia.csv'
+#star1_input='WDJ2317p1830_gaia.csv'
+
 #star1_input='2MASSJ1055p0808_gaia.csv'
 #star1_input= '2MASSIJ0821p4532_gaia.csv'
 #star1_input='sdssj1408p2021_gaia.csv'
@@ -96,11 +98,12 @@ star1_input='2MASSJ1458p2839_gaia.csv'
 #star1_input='two_low_reds_gaia.csv'
 #star2_input= '20190218_test_ultcool.csv'
 #star2_input='sdssj1330p6435_gaia.csv'
-star2_input= 'gaiaj1644m0449_gaia.csv'
+#star2_input= 'gaiaj1644m0449_gaia.csv'
+star2_input='WDJ2317p1830_gaia.csv'
 #star1_input= 'CE40_gaia.csv'
 #merged_star_input= 'WISEA0615m1247.csv'
-merged_star_input='Josh_object.csv'
-#merged_star_input='WISEA0615m1247.csv'
+#merged_star_input='Josh_object.csv'
+merged_star_input='WISEA0615m1247.csv'
 #merged_star_input='20190616_TIC294.csv'
 #merged_star_input='LP178m49_gaia.csv' 
 #merged_star_input= 'WD1133p358_gaia.csv'

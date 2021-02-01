@@ -47,11 +47,11 @@ use_gaia=False
 #mdwarf_gaia_file='2MASSJ1055p0808_gaia.csv'
 
 
-mdwarf_spec_file='2MASSJ1458p2839_sdss_spec.fits'
-mdwarf_gaia_file='2MASSJ1458p2839_gaia.csv'
+#mdwarf_spec_file='2MASSJ1458p2839_sdss_spec.fits'
+#mdwarf_gaia_file='2MASSJ1458p2839_gaia.csv'
 
-#mdwarf_spec_file='2MASSIJ0821p4532m7,5_sdss_spec.fits'
-#mdwarf_gaia_file= '2MASSIJ0821p4532_gaia.csv'
+mdwarf_spec_file='2MASSIJ0821p4532m7,5_sdss_spec.fits'
+mdwarf_gaia_file= '2MASSIJ0821p4532_gaia.csv'
 
 #wdwarf_spec_file='WD1401p457_sdss_spec.fits'
 #wdwarf_gaia_file='20190218_test_ultcool.csv'
