@@ -63,6 +63,8 @@ lcolor= 'magenta' #Lindegren's line color
 #point_color_key='phot_bp_rp_excess_factor'
 #point_color_key='astrometric_excess_noise_sig
 point_color_key='null'
+#point_color_key='plot_color'
+
 
 #######3error distribution variables
 mc_number = 10000
@@ -94,9 +96,10 @@ elif num_targs== '47Tuc':
 elif num_targs== 'Lindegren':
     generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
     #generic_input='rand_astrometric_primaries1.csv'
-    #generic_input= '20190516B_retargeted_purple_search_gaia_scbd.csv'
+    generic_input= '20190516B_retargeted_purple_search_gaia_scbd.csv'
+    #generic_input='20190516B_retargeted_purple_search_gaia_scbd_20210117_update_colors.csv'
     #generic_input='20190703_obs_objects.csv'
-    generic_input='20190516_targeted_purple_search_gaia_scnb.csv'
+    #generic_input='20190516_targeted_purple_search_gaia_scnb.csv'
     #generic_input='20190829_DCs.csv'
     #generic_input='20190829_DQpecs.csv'
     #generic_input='20190829_DZNas.csv'
@@ -147,6 +150,9 @@ zeropoint_dict={"g": [25.6883657251, 0.0017850023],
 ################################
 #Reading in the tables for the background and target files
 generic_table = Table.read(generic_input)
+#original_table = Table.read(generic_input)
+
+#generic_table= original_table[np.where(original_table['sp_type']=='WDdM')]
 #########################################
 col_pairs=[
     ['ra','dec'],
@@ -249,6 +255,21 @@ def scatter_plot(string_pair):
         #plt.scatter(sorted_x_array, sorted_y_array, c= generic_table['phot_bp_rp_excess_factor'][sorted_order], alpha=1, s=8, edgecolor='none')
         plt.scatter(sorted_x_array, sorted_y_array, c= generic_table[point_color_key][sorted_order], alpha=1, s=8, edgecolor='none')
         #plt.scatter(sorted_x_array, sorted_y_array, c= np.sqrt(generic_table['astrometric_excess_noise_sig'][sorted_order]), alpha=1, s=10, edgecolor='none')
+        #float('sgringvalues')
+    except ValueError as error:
+        print('ValueError', error)
+        print("So I guess they're specific colors")
+        sorted_order= np.argsort(generic_table[point_color_key])
+        sorted_x_array=x_array[sorted_order][::-1]
+        sorted_y_array=y_array[sorted_order][::-1]
+        sorted_generic_table=generic_table[point_color_key][sorted_order][::-1]
+        for x,y,c in zip(sorted_x_array, sorted_y_array, sorted_generic_table):
+            try:
+                #plt.scatter(x, y, c= c, alpha=1, s=8, edgecolor='none')
+                plt.plot(x, y, color= c, marker='o', alpha=1, markersize=8, linestyle='None')
+            except ValueError:
+                print('color failed:', c)
+                pass
     except KeyError as error:
         print('No ', error,'\nTherefore using uniform color for scatter plot.')
         plt.scatter(x_array, y_array, alpha=0.5)

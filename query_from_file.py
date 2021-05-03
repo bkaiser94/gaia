@@ -13,6 +13,7 @@ import astropy.units as u
 import astropy.coordinates as coord
 from astropy.table import Table, vstack, Column
 import time
+import sys
 start = time.time()
 
  
@@ -47,7 +48,8 @@ dec_index=2
  
  
 #input_file= 'gas_disk_objs.csv'
-input_file='Kilic_velocities_tabsupp_2_rand50.csv'
+#input_file='Kilic_velocities_tabsupp_2_rand50.csv'
+input_file='20210305B_ultracool_switchback_gaia.csv'
 #input_file='20191024_DZNa_and_redder_search.csv'
 #input_file='Torres_50_cat_original.csv'
 #input_file= '20190516B_retargeted_purple_search.csv'
@@ -199,9 +201,9 @@ def get_panstarrs(source_id):
     
     
     return ps_data
-ps_table=Gaia.load_table('gaiadr2.panstarrs1_best_neighbour')
-print(ps_table)
-sys.exit()
+#ps_table=Gaia.load_table('gaiadr2.panstarrs1_best_neighbour')
+#print(ps_table)
+#sys.exit()
 target_num = 1
 for ra,dec,name in zip(ra_array, dec_array,name_array):
     begin_time = time.time()

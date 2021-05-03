@@ -76,6 +76,9 @@ percent_off = 34. #1-sigma equivalent
 #target_input= 'Lindegren_appC_selC_noBLMCbperr_wd1401_bincomp_gaia_sc.csv'
 #target_input='SDSSJ0744p4649_gaia.csv'
 #target_input= 'WDJ0205m053ultracool_gaia.csv'
+#target_input='top100_blue_cmd.csv'
+#target_input='20190109_star1_ultracool.csv'
+target_input='20210305B_ultracool_switchback_gaia_gaia_scbd.csv'
 #target_input= 'observed_purple_400m2.csv'
 #target_input= 'exc1_8_2_2_purple_search_gmaglimit_gaia_sc.csv'
 #target_input= 'expanded_purple_search_gmaglimit_gaia_sc.csv'
@@ -91,7 +94,8 @@ percent_off = 34. #1-sigma equivalent
 #target_input='20190829_alkaliWD_targeted_gaia_scbd.csv'
 #target_input='20190829_DZNas.csv'
 #target_input= 'BU1941m1919_gaia.csv'
-target_input='BU1941m1919_gaia_edr3.csv'
+#target_input='BU1941m1919_gaia_edr3.csv'
+#target_input='20210305_DZs_wBe_and_J1113_gaia.csv'
 #target_input='PSO_ucool_gaia.csv'
 #target_input='WD_DZLi.csv'
 #target_input= 'SDSSJ1029p1729_extlowmetal_gaia.csv'
@@ -392,9 +396,12 @@ def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color
             else:
                 plt.plot(np.copy(target_colour_dif), np.copy(target_absmag),  marker = 'o', markersize = 6, color = list_color,  linestyle ='none')
             print(target_colour_dif, target_absmag)
-            print(row['name'])
-            if annotate:
-                plt.annotate(str(row['name']),xy=(np.copy(target_colour_dif), np.copy(target_absmag)), xycoords='data', xytext=(np.copy(target_colour_dif+0.01),np.copy(target_absmag-0.1)), textcoords= 'data' , fontsize=8, color =list_color)
+            try:
+                print(row['name'])
+                if annotate:
+                    plt.annotate(str(row['name']),xy=(np.copy(target_colour_dif), np.copy(target_absmag)), xycoords='data', xytext=(np.copy(target_colour_dif+0.01),np.copy(target_absmag-0.1)), textcoords= 'data' , fontsize=8, color =list_color)
+            except KeyError as newerror:
+                print("KeyError:",newerror)
             else:
                 pass
     if label=='':

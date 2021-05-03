@@ -83,7 +83,10 @@ rv_sigma=100.
 #target_input='SDSSJ1636p1619_gaia.csv'
 #target_input='20190516B_retargeted_purple_search_gaia_scbd.csv'
 #target_input='BU1941m1919_gaia.csv'
-target_input='20210201_DZs_for_J1636paper_gaia.csv'
+#target_input='20210201_DZs_for_J1636paper_gaia.csv'
+#target_input='20210301_DZs_with_Be_included_gaia.csv'
+target_input='20210305_DZs_wBe_and_J1113_gaia.csv'
+#target_input='20210305B_ultracool_switchback_gaia_gaia_scbd.csv'
 
 target_table = Table.read(target_input)
 
@@ -302,6 +305,9 @@ def plot_values(target_table, plot_vals=['V', 'UW'], do_mc=True, vary_rv=False, 
             yvals=UW
             yerr=UW_err
             y_dist=UW_dist
+            #plt.hist(UW_dist.value)
+            #plt.xlabel('sqrt(U^2 +W^2)')
+            #plt.show()
         if plot_vals[0]=='U':
             xvals=U
             xerr=get_errors(U_dist)
@@ -345,7 +351,7 @@ def plot_values(target_table, plot_vals=['V', 'UW'], do_mc=True, vary_rv=False, 
 
 #plt.show()
 
-#plot_values(target_table, plot_vals=['V','UW'], color='r', vary_rv=True)
+plot_values(target_table, plot_vals=['V','UW'], color='r', vary_rv=False)
 plot_values(target_table, plot_vals=['V','UW'], color=list_color)
 generate_toomre_diagram()
 
@@ -570,8 +576,9 @@ galactic_coords= get_galactic_coords(target_table)
 plt.scatter(galactic_coords.x.to(u.kpc), galactic_coords.y, label="WD")
 plt.scatter(-1*sun_dist, 0., color='orange', label='sun')
 #plt.quiver(galactic_coords.x.to(u.kpc), galactic_coords.y, galactic_coords.v_x, galactic_coords.v_y, headwidth=3, width=0.005)
-#plt.quiver(galactic_coords.x.to(u.kpc), galactic_coords.y,U, V, headwidth=2, width=0.005, label='proj. pec. velocity (km/s)')
-plt.quiver(galactic_coords.x.to(u.kpc), galactic_coords.y,U, -V, headwidth=2, width=0.005, label='proj. pec. velocity (km/s)') #assuming the y-axis will be inverted. The quiver plot doesn't actually correct the arrows for some reason....
+#with some astropy update the quiver function stopped working with this stuff
+plt.quiver(galactic_coords.x.to(u.kpc).value, galactic_coords.y.value,U.value, V.value, headwidth=2, width=0.005, label='proj. pec. velocity (km/s)')
+#plt.quiver(galactic_coords.x.to(u.kpc), galactic_coords.y,U, -V, headwidth=2, width=0.005, label='proj. pec. velocity (km/s)') #assuming the y-axis will be inverted. The quiver plot doesn't actually correct the arrows for some reason....
 for row, gal_coord  in zip(target_table, galactic_coords):
     plt.annotate(str(row['name']),xy=(gal_coord.x.to(u.kpc).value, gal_coord.y.value), xycoords='data', xytext=(gal_coord.x.to(u.kpc).value, gal_coord.y.value), textcoords= 'data' , fontsize=8, color =list_color)
 plt.xlabel('X (kpc)')
@@ -582,11 +589,11 @@ plt.gca().invert_yaxis()
 plt.title(target_input + ' kinematics')
 plt.show()
 
-
+print("about to try plotting x and z position coordinates")
 plt.scatter(galactic_coords.x.to(u.kpc), galactic_coords.z, label="WD")
 plt.scatter(-1*sun_dist, sun_height, color='orange',label='sun')
 #plt.quiver(galactic_coords.x.to(u.kpc), galactic_coords.z, galactic_coords.v_x, galactic_coords.v_z, headwidth=3, width=0.005)
-plt.quiver(galactic_coords.x.to(u.kpc), galactic_coords.z, U, W, headwidth=2, width=0.005, label='proj. pec. velocity (km/s)')
+plt.quiver(galactic_coords.x.to(u.kpc), galactic_coords.z.value, U.value, W.value, headwidth=2, width=0.005, label='proj. pec. velocity (km/s)')
 for row, gal_coord  in zip(target_table, galactic_coords):
     plt.annotate(str(row['name']),xy=(gal_coord.x.to(u.kpc).value, gal_coord.z.value), xycoords='data', xytext=(gal_coord.x.to(u.kpc).value, gal_coord.z.value), textcoords= 'data' , fontsize=8, color =list_color)
 
@@ -596,6 +603,7 @@ plt.ylabel('Z (pc)')
 plt.title(target_input + ' kinematics')
 plt.legend(loc='best')
 plt.show()
+print("should have plotted x and z position coordinates")
 
 
 
