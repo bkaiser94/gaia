@@ -58,8 +58,13 @@ error_bar=True #turns off error bars on the multiple list plot, meaning it has n
 annotate= True #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
 parallax_correction = 0.029 #from Lindgren et al 2018
 
-bcolor='g'
-ncolor= 'cyan'
+#bcolor='g'
+#ncolor= 'cyan'
+
+markersize=6
+
+bcolor='purple'
+ncolor= 'red'
 
 #######3error distribution variables
 mc_number = 10000
@@ -78,7 +83,7 @@ percent_off = 34. #1-sigma equivalent
 #target_input= 'WDJ0205m053ultracool_gaia.csv'
 #target_input='top100_blue_cmd.csv'
 #target_input='20190109_star1_ultracool.csv'
-target_input='20210305B_ultracool_switchback_gaia_gaia_scbd.csv'
+#target_input='20210305B_ultracool_switchback_gaia_gaia_scbd.csv'
 #target_input= 'observed_purple_400m2.csv'
 #target_input= 'exc1_8_2_2_purple_search_gmaglimit_gaia_sc.csv'
 #target_input= 'expanded_purple_search_gmaglimit_gaia_sc.csv'
@@ -96,8 +101,10 @@ target_input='20210305B_ultracool_switchback_gaia_gaia_scbd.csv'
 #target_input= 'BU1941m1919_gaia.csv'
 #target_input='BU1941m1919_gaia_edr3.csv'
 #target_input='20210305_DZs_wBe_and_J1113_gaia.csv'
+#target_input='WDJ0850p1956_gaia_LiWDcand.csv'
+#target_input='HD113083_omegacen_gaiadr2.csv'
 #target_input='PSO_ucool_gaia.csv'
-#target_input='WD_DZLi.csv'
+target_input='WD_DZLi.csv'
 #target_input= 'SDSSJ1029p1729_extlowmetal_gaia.csv'
 #target_input='20190616_TIC294.csv'
 #target_input= '20190901and02_obs_objects.csv'
@@ -110,6 +117,7 @@ target_input='20210305B_ultracool_switchback_gaia_gaia_scbd.csv'
 
 
 other_target_input= 'mdwarf_spTs_gaia_sc.csv'
+#other_target_input='DESJ2147m4035_Appsweirdcool28pc_dr2.csv'
 #other_target_input= 'SDSSJ1150p2403_gaia.csv'
 #other_target_input= 'HE1327m2326_extlowmetal_gaia.csv'
 #other_target_input= '20190730_obs_objects.csv'
@@ -129,6 +137,7 @@ num_targs = 'all'
 #num_targs= 'Lindegren'
 selection_letter= 'C'
 distance = 100
+#distance=200
 grid_num = 225
 
 
@@ -189,7 +198,7 @@ def plot_ben_cuts():
     x4vals= np.ones(y4vals.shape)*0.97
     y5vals= np.linspace(15.7, 18, 100)
     x5vals= np.ones(y5vals.shape)*1.52
-    plt.plot(x1vals,y1vals, color= bcolor, label="Ben's cut")
+    plt.plot(x1vals,y1vals, color= bcolor, label="Purple Object Survey")
     plt.plot(x2vals, y2vals, color= bcolor)
     plt.plot(x3vals, y3vals, color= bcolor)
     plt.plot(x4vals, y4vals, color= bcolor)
@@ -206,7 +215,8 @@ def plot_nicola_cuts():
     y3vals = 6*x3vals**3.-21.77*x3vals**2.+27.91*x3vals+0.897
     y4vals= np.linspace(14.9067,16,300)
     x4vals= np.ones(y4vals.shape)*1.7
-    plt.plot(x1vals,y1vals, color= ncolor, label="Nicola's cut")
+    #plt.plot(x1vals,y1vals, color= ncolor, label="Nicola's cut")
+    plt.plot(x1vals,y1vals, color= ncolor, label="Gentile Fusillo et al. 2019")
     plt.plot(x2vals, y2vals, color= ncolor)
     plt.plot(x3vals, y3vals, color= ncolor)
     plt.plot(x4vals, y4vals, color= ncolor)
@@ -364,7 +374,7 @@ def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = Tr
     return abs_mag, abs_mag_error, abs_mag_dist
 
 
-def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color=list_color, pseudo_colour=False, annotate=annotate, label=''):
+def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color=list_color, pseudo_colour=False, annotate=annotate, label='', markersize=markersize):
     for row in input_table:
         if pseudo_colour:
             target_absmag, target_absmag_err, target_absmag_dist= get_pass_abs_mag(row, plot_all = False, passband_string= absmag)
@@ -374,7 +384,7 @@ def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color
             target_colour_dif_err= get_errors(target_pseudo_wave_dist)
             target_colour_dif = 1./target_pseudo_colour*1e4
             plt.xlabel('1./astrometric_pseudo_colour (angstroms)')
-            plt.errorbar(np.copy(target_colour_dif), np.copy(target_absmag), yerr = np.copy(target_absmag_err),  xerr = np.copy(target_colour_dif_err), marker = 'o', markersize = 6, color = list_color, capsize = 4, linestyle ='none')
+            plt.errorbar(np.copy(target_colour_dif), np.copy(target_absmag), yerr = np.copy(target_absmag_err),  xerr = np.copy(target_colour_dif_err), marker = 'o', markersize = markersize, color = list_color, capsize = 4, linestyle ='none')
             print(target_colour_dif, target_absmag)
             print(row['name'])
             if annotate:
@@ -392,9 +402,9 @@ def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color
             if row['parallax']>1e18:
                 target_absmag=y_fill
             if error_bar:
-                plt.errorbar(np.copy(target_colour_dif), np.copy(target_absmag), yerr = np.copy(target_absmag_err),  xerr = np.copy(target_colour_dif_err), marker = 'o', markersize = 6, color = list_color, capsize = 4, linestyle ='none')
+                plt.errorbar(np.copy(target_colour_dif), np.copy(target_absmag), yerr = np.copy(target_absmag_err),  xerr = np.copy(target_colour_dif_err), marker = 'o', markersize = markersize, color = list_color, capsize = 4, linestyle ='none')
             else:
-                plt.plot(np.copy(target_colour_dif), np.copy(target_absmag),  marker = 'o', markersize = 6, color = list_color,  linestyle ='none')
+                plt.plot(np.copy(target_colour_dif), np.copy(target_absmag),  marker = 'o', markersize = markersize, color = list_color,  linestyle ='none')
             print(target_colour_dif, target_absmag)
             try:
                 print(row['name'])
@@ -407,9 +417,9 @@ def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color
     if label=='':
         pass
     elif error_bar:
-        plt.errorbar(np.nan, np.nan, yerr = np.nan,  xerr = np.nan, marker = 'o', markersize = 6, color = list_color, capsize = 4, label =label, linestyle ='none')
+        plt.errorbar(np.nan, np.nan, yerr = np.nan,  xerr = np.nan, marker = 'o', markersize = markersize, color = list_color, capsize = 4, label =label, linestyle ='none')
     else:
-        plt.plot(np.nan, np.nan,marker = 'o', markersize = 6, color = list_color, label =label, linestyle ='none')
+        plt.plot(np.nan, np.nan,marker = 'o', markersize = markersize, color = list_color, label =label, linestyle ='none')
     return
 
 

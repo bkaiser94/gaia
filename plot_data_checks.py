@@ -62,8 +62,8 @@ lcolor= 'magenta' #Lindegren's line color
 
 #point_color_key='phot_bp_rp_excess_factor'
 #point_color_key='astrometric_excess_noise_sig
-point_color_key='null'
-#point_color_key='plot_color'
+#point_color_key='null'
+point_color_key='plot_color'
 
 
 #######3error distribution variables
@@ -96,8 +96,8 @@ elif num_targs== '47Tuc':
 elif num_targs== 'Lindegren':
     generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
     #generic_input='rand_astrometric_primaries1.csv'
-    generic_input= '20190516B_retargeted_purple_search_gaia_scbd.csv'
-    #generic_input='20190516B_retargeted_purple_search_gaia_scbd_20210117_update_colors.csv'
+    #generic_input= '20190516B_retargeted_purple_search_gaia_scbd.csv'
+    generic_input='20190516B_retargeted_purple_search_gaia_scbd_20210117_update_colors.csv'
     #generic_input='20190703_obs_objects.csv'
     #generic_input='20190516_targeted_purple_search_gaia_scnb.csv'
     #generic_input='20190829_DCs.csv'
@@ -156,6 +156,7 @@ generic_table = Table.read(generic_input)
 #########################################
 col_pairs=[
     ['ra','dec'],
+    ['g_rp', 'phot_bp_rp_excess_factor'],
     ['parallax','astrometric_excess_noise'],
     ['phot_g_mean_mag','astrometric_pseudo_colour_error'],
     ['phot_bp_rp_excess_factor', 'mg'],
@@ -255,7 +256,7 @@ def scatter_plot(string_pair):
         #plt.scatter(sorted_x_array, sorted_y_array, c= generic_table['phot_bp_rp_excess_factor'][sorted_order], alpha=1, s=8, edgecolor='none')
         plt.scatter(sorted_x_array, sorted_y_array, c= generic_table[point_color_key][sorted_order], alpha=1, s=8, edgecolor='none')
         #plt.scatter(sorted_x_array, sorted_y_array, c= np.sqrt(generic_table['astrometric_excess_noise_sig'][sorted_order]), alpha=1, s=10, edgecolor='none')
-        #float('sgringvalues')
+        float('sgringvalues')
     except ValueError as error:
         print('ValueError', error)
         print("So I guess they're specific colors")

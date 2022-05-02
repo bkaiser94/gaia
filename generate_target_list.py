@@ -27,15 +27,18 @@ from astropy.table import Table, vstack, Column
 #input_file='20200110B_priorityupdate_retargeted_purple_search_gaia_scbd.csv'
 #input_file='20200113B_priorityupdate_retargeted_purple_search_gaia_scbd.csv'
 #input_file='20200712B_priorityupdate_retargeted_purple_search_gaia_scbd.csv'
-input_file= '20190516B_retargeted_purple_search_gaia_scbd_20210117_update.csv'
-
+#input_file= '20190516B_retargeted_purple_search_gaia_scbd_20210117_update.csv'
+#input_file='20190516B_retargeted_purple_search_gaia_scbd_20210707_update_neededobs.csv'
+#input_file='20190516B_retargeted_purple_search_gaia_scbd_20211117_update.csv'
+input_file='20190516B_retargeted_purple_search_gaia_scbd_20211205_update.csv'
 #input_file='20190917_alkaliWD_attempt2_gaia_scbd.csv'
 #input_file= 'josh_object.csv'
 #input_file='20190516B_retargeted_purple_subset.csv'
 #comment_string='retarg_purple'
 comment_string=''
 
-output_file= input_file.split('.')[0]+'_targlist.txt'
+#output_file= input_file.split('.')[0]+'_targlist.txt'
+output_file= input_file.split('.')[0]+'_400M1needed_targlist.txt'
 input_table= Table.read(input_file, format= 'ascii.csv')
 delimiter='\t'
 
@@ -96,9 +99,9 @@ print(name_array)
 
 output_array= np.vstack([name_list, ra_list, dec_list, epoch_list, mag_list]).T
 #priority_good= np.where(input_table['priority']< 10)
-priority_good= np.where(input_table['400m2_need_bool']== 1)
+#priority_good= np.where(input_table['400m2_need_bool']== 1)
 #priority_good= np.where((input_table['400m1_need_bool']!= 0) and  (input_table['400m2_need_bool']!=0))
-#priority_good= np.where(input_table['400m1_need_bool']== 1)
+priority_good= np.where(input_table['400m1_need_bool']== 1)
 #priority_good= np.where((input_table['400m1_need_bool']== 1) or (input_table['400m2_need_bool']==1))
 output_array=output_array[priority_good]
 output_array=output_array.T

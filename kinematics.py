@@ -73,7 +73,14 @@ percent_off = 34 #1-sigma equivalent
 #############
 rv_zero=0.
 rv_sigma=100.
-#####
+
+#rv_zero=-100.
+#rv_sigma=25.
+
+#HD113083 RV from Navarrete et al. 2015
+#rv_zero=227.91 
+#rv_sigma=0.46
+######
 
 
 
@@ -85,7 +92,11 @@ rv_sigma=100.
 #target_input='BU1941m1919_gaia.csv'
 #target_input='20210201_DZs_for_J1636paper_gaia.csv'
 #target_input='20210301_DZs_with_Be_included_gaia.csv'
-target_input='20210305_DZs_wBe_and_J1113_gaia.csv'
+target_input='DESJ2147m4035_Appsweirdcool28pc_dr2.csv'
+#target_input='20210305_DZs_wBe_and_J1113_gaia.csv'
+#target_input='WDJ0850p1956_gaia_LiWDcand.csv'
+#target_input='HD113083_omegacen_gaiadr2.csv'
+
 #target_input='20210305B_ultracool_switchback_gaia_gaia_scbd.csv'
 
 target_table = Table.read(target_input)
@@ -328,7 +339,7 @@ def plot_values(target_table, plot_vals=['V', 'UW'], do_mc=True, vary_rv=False, 
         y_dist=y_dist.value
         #plt.errorbar(xvals, yvals, xerr=xerr, yerr=yerr, marker='o', color=color)
         if (legend_needed and vary_rv):
-            plt.errorbar(np.median(x_dist), np.median(y_dist), xerr=xerr, yerr=yerr, marker='o', color=color, label='Gaussian RV dist. around 0')
+            plt.errorbar(np.median(x_dist), np.median(y_dist), xerr=xerr, yerr=yerr, marker='o', color=color, label='Gaussian RV dist. around'+str(rv_zero)+' +/- ' +str(rv_sigma))
             legend_needed=False
         if (legend_needed and not vary_rv):
             plt.errorbar(np.median(x_dist), np.median(y_dist), xerr=xerr, yerr=yerr, marker='o', color=color, label=r'RV$\equiv$0')
@@ -351,7 +362,7 @@ def plot_values(target_table, plot_vals=['V', 'UW'], do_mc=True, vary_rv=False, 
 
 #plt.show()
 
-plot_values(target_table, plot_vals=['V','UW'], color='r', vary_rv=False)
+plot_values(target_table, plot_vals=['V','UW'], color='r', vary_rv=True)
 plot_values(target_table, plot_vals=['V','UW'], color=list_color)
 generate_toomre_diagram()
 
@@ -392,8 +403,8 @@ for row in target_table:
     all_list.append(output_row)
     
     
-    #v_err_list.append([V_err])
-    #uw_err_list.append([UW_err])
+    v_err_list.append([V_err])
+    uw_err_list.append([UW_err])
   
     print('\n\n')
     print(row['name'])
@@ -408,8 +419,8 @@ for row in target_table:
 
 
 all_list_array=np.array(all_list)
-#v_err_col= Column(v_err_list)
-#uw_err_col=Column(uw_err_list)
+v_err_col= Column(v_err_list)
+uw_err_col=Column(uw_err_list)
 
 #v_err_col.pprint()
 
@@ -426,12 +437,15 @@ all_table=Table(all_list_array,names=text_names)
 #np.savetxt('20200517_output_velocities_test.csv',all_list_array, delimiter=',')
 #np.savetxt('J1644_paper_outputs.csv',all_list, delimiter=',', header=text_header)
 #np.savetxt('20210201_output_velocities_test.csv',all_list_array, delimiter=',')
-#all_table.write('20210201_LiWDs_for_J1636_paper_gaia_kinematics.csv', delimiter=',',format='csv')
+#all_table.write('20210719_kinematics_outputs.csv', delimiter=',',format='csv')
 #output_table=Table(all_list_array, names=text_names)
 
 #output_table.add_column(v_err_col, name='v_err')
 #output_table.add_column(uw_err_col, name='uw2_err')
-#output_name='kinematics_outputs.csv'
+##output_name='kinematics_outputs.csv'
+#output_name='20210719_kinematics_outputs.csv'
+
+
 #print('\n\nSaving', output_name, '\n\n')
 #output_table.write(output_name)
 
@@ -515,6 +529,7 @@ V= galLSR_vel.d_y
 W=galLSR_vel.d_z
 UW= np.sqrt(U**2. +W**2.)
 v_tot=np.sqrt(U**2. +V**2. + W**2.)
+print("v_tot",v_tot)
 
 
 plt.scatter(V, np.sqrt(U**2. +W**2.))
