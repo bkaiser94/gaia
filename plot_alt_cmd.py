@@ -104,7 +104,8 @@ percent_off = 34. #1-sigma equivalent
 #target_input='WDJ0850p1956_gaia_LiWDcand.csv'
 #target_input='HD113083_omegacen_gaiadr2.csv'
 #target_input='PSO_ucool_gaia.csv'
-target_input='WD_DZLi.csv'
+#target_input='WD_DZLi.csv'
+#target_input='20220929_reallydim_WD_search_gaia_scbd.csv'
 #target_input= 'SDSSJ1029p1729_extlowmetal_gaia.csv'
 #target_input='20190616_TIC294.csv'
 #target_input= '20190901and02_obs_objects.csv'
@@ -114,10 +115,15 @@ target_input='WD_DZLi.csv'
 #target_input= '20190528_named_objects_from_retarg.csv'
 #target_input='sdssj1240p6710_DS_oxygenrich.csv'
 #target_input= 'psrj1048p2339_gaia.csv'
+#target_input='20190516B_retargeted_purple_search_gaia_scbd_20220804_update.csv'
+#target_input='BPSCS29528m0028_CEMPs_gaiaDR2.csv'
+target_input='CEMPs_Narich_gaiaDR2.csv'
 
+#other_target_input='20220929_reallydim_WD_search_gaia_scbd.csv'
 
 other_target_input= 'mdwarf_spTs_gaia_sc.csv'
 #other_target_input='DESJ2147m4035_Appsweirdcool28pc_dr2.csv'
+#other_target_input='20190516B_retargeted_purple_search_gaia_scbd_20220804_update.csv'
 #other_target_input= 'SDSSJ1150p2403_gaia.csv'
 #other_target_input= 'HE1327m2326_extlowmetal_gaia.csv'
 #other_target_input= '20190730_obs_objects.csv'
@@ -627,7 +633,8 @@ if __name__ == '__main__':
     #make_cmd(target_table=other_target_table, generic_table= generic_table)
 
     plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
-    plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=True)
+    #plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=True)
+    plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=annotate)
     plot_target_table(target_table, colours=['g','rp'])
     plot_ben_cuts()
     plt.show()

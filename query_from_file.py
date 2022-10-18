@@ -49,7 +49,9 @@ dec_index=2
  
 #input_file= 'gas_disk_objs.csv'
 #input_file='Kilic_velocities_tabsupp_2_rand50.csv'
-input_file='20210305B_ultracool_switchback_gaia.csv'
+#input_file='20210305B_ultracool_switchback_gaia.csv'
+input_file='20220929_reallydim_WD_search.csv'
+
 #input_file='20191024_DZNa_and_redder_search.csv'
 #input_file='Torres_50_cat_original.csv'
 #input_file= '20190516B_retargeted_purple_search.csv'
