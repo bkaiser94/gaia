@@ -30,28 +30,43 @@ from astropy.table import Table, vstack, Column
 #input_file= '20190516B_retargeted_purple_search_gaia_scbd_20210117_update.csv'
 #input_file='20190516B_retargeted_purple_search_gaia_scbd_20210707_update_neededobs.csv'
 #input_file='20190516B_retargeted_purple_search_gaia_scbd_20211117_update.csv'
-input_file='20190516B_retargeted_purple_search_gaia_scbd_20211205_update.csv'
+#input_file='20190516B_retargeted_purple_search_gaia_scbd_20211205_update.csv'
+input_file='dimWDMS_F0toK7_eDR3.fits'
 #input_file='20190917_alkaliWD_attempt2_gaia_scbd.csv'
 #input_file= 'josh_object.csv'
 #input_file='20190516B_retargeted_purple_subset.csv'
 #comment_string='retarg_purple'
 comment_string=''
+num='2'
+start_target_num=100
 
 #output_file= input_file.split('.')[0]+'_targlist.txt'
 output_file= input_file.split('.')[0]+'_400M1needed_targlist.txt'
-input_table= Table.read(input_file, format= 'ascii.csv')
+#input_table= Table.read(input_file, format= 'ascii.csv')
+input_table=Table.read(input_file)
 delimiter='\t'
 
 sort_by_ra= True
+list_length=input_table['ra'+num].shape[0]
+target_num_array=np.arange(start_target_num,list_length+start_target_num+1,1)
 
 try:
     name_array= np.array(input_table['name'])
 except KeyError as error:
     print(error)
     print('No names column, so just making all Gaia names')
-    name_array=np.full(input_table['ra'].shape, '.')
+    name_array=np.full(input_table['ra'+num].shape, '.')
 
-coords= coord.SkyCoord(input_table['ra'], input_table['dec'], unit=(u.deg, u.deg))
+input_table.pprint()
+if sort_by_ra:
+    sorted_order= np.argsort(input_table['ra'+num])
+    print(sorted_order)
+    print('sorted_order:')
+    input_table=input_table[sorted_order]
+    input_table.pprint()
+    #output_array= output_array[:,sorted_order]
+
+coords= coord.SkyCoord(input_table['ra'+num], input_table['dec'+num], unit=(u.deg, u.deg))
 string_coords= coords.to_string(style='hmsdms')
 replace_chars= ['d','h','m']
 ra_list=[]
@@ -60,9 +75,15 @@ epoch_list=[]
 mag_list=[]
 name_list=[]
 mag_string='g'
-full_mag_string= 'phot_'+mag_string+'_mean_mag'
+full_mag_string= 'phot_'+mag_string+'_mean_mag'+num
 #for thing, name, mag  in zip(string_coords, name_array, input_table[full_mag_string]):
-for thing, name, mag, target_num  in zip(string_coords, name_array, input_table[full_mag_string], input_table['target_num']):
+#for thing, name, mag, target_num  in zip(string_coords, name_array, input_table[full_mag_string], input_table['target_num']):
+
+
+    
+
+for thing, name, mag, target_num  in zip(string_coords, name_array, input_table[full_mag_string], target_num_array):
+
 
     print(name)
     print(thing)
@@ -85,7 +106,7 @@ for thing, name, mag, target_num  in zip(string_coords, name_array, input_table[
         print('new name:', name)
     print(thing)
     
-    name=str(target_num)+'_' + name
+    name=str(int(target_num))+'_' + name
     
     name_list.append(name)
     ra_list.append(ra)
@@ -101,15 +122,15 @@ output_array= np.vstack([name_list, ra_list, dec_list, epoch_list, mag_list]).T
 #priority_good= np.where(input_table['priority']< 10)
 #priority_good= np.where(input_table['400m2_need_bool']== 1)
 #priority_good= np.where((input_table['400m1_need_bool']!= 0) and  (input_table['400m2_need_bool']!=0))
-priority_good= np.where(input_table['400m1_need_bool']== 1)
+#priority_good= np.where(input_table['400m1_need_bool']== 1)
 #priority_good= np.where((input_table['400m1_need_bool']== 1) or (input_table['400m2_need_bool']==1))
-output_array=output_array[priority_good]
+#output_array=output_array[priority_good]
 output_array=output_array.T
-if sort_by_ra:
-    sorted_order= np.argsort(output_array[1])
-    print(sorted_order)
-    print('sorted_order:',output_array[:,sorted_order])
-    output_array= output_array[:,sorted_order]
+#if sort_by_ra:
+    #sorted_order= np.argsort(output_array[1])
+    #print(sorted_order)
+    #print('sorted_order:',output_array[:,sorted_order])
+    #output_array= output_array[:,sorted_order]
 print(output_array)
 print(output_array.dtype)
 output_array= output_array.T

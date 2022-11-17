@@ -71,11 +71,11 @@ list_color = '#1ca1f2'
 mc_number = 100000
 percent_off = 34 #1-sigma equivalent
 #############
-rv_zero=0.
-rv_sigma=100.
+#rv_zero=0.
+#rv_sigma=100.
 
-#rv_zero=-100.
-#rv_sigma=25.
+rv_zero=100.
+rv_sigma=25.
 
 #HD113083 RV from Navarrete et al. 2015
 #rv_zero=227.91 
@@ -92,7 +92,8 @@ rv_sigma=100.
 #target_input='BU1941m1919_gaia.csv'
 #target_input='20210201_DZs_for_J1636paper_gaia.csv'
 #target_input='20210301_DZs_with_Be_included_gaia.csv'
-target_input='DESJ2147m4035_Appsweirdcool28pc_dr2.csv'
+#target_input='DESJ2147m4035_Appsweirdcool28pc_dr2.csv'
+target_input='20210201_DZs_for_J1636paper_gaia_gaiaDR3.csv'
 #target_input='20210305_DZs_wBe_and_J1113_gaia.csv'
 #target_input='WDJ0850p1956_gaia_LiWDcand.csv'
 #target_input='HD113083_omegacen_gaiadr2.csv'
@@ -160,6 +161,9 @@ def get_errors(distribution, percent_off = percent_off):
     #except astropy.units.core.UnitsError as error:
     except u.core.UnitsError as error:
         return  np.array([[median.value-low_bar],[high_bar-median.value]])
+    #I think this is needed for python3...
+    except TypeError as error:
+        return  np.array([[median.value-low_bar.value],[high_bar.value-median.value]])
     
 def test_errorbars(group_vel, group_disp, label):
     group_vel=np.array(group_vel)
@@ -172,7 +176,8 @@ def test_errorbars(group_vel, group_disp, label):
     uw_mean= np.nanmean(uw_dist)
     uw_std= np.std(uw_dist)
     print(label, 'UW', uw_mean, '+/-', uw_std)
-    print('quadrature version', np.sqrt(group_vel[0]**2+group_vel[2]**2),np.sqrt(group_disp[0]**2+group_disp[2]**2))
+    #print('quadrature version', np.sqrt(group_vel[0]**2+group_vel[2]**2),np.sqrt(group_disp[0]**2+group_disp[2]**2))
+    print('quadrature version', np.sqrt(group_vel[0]**2+group_vel[2]**2),(1./np.sqrt(group_vel[0]**2+group_vel[2]**2))*np.sqrt(group_disp[0]**2*group_vel[0]**2+group_disp[2]**2*group_vel[2]**2)) #remember that squaring a distribution centered around 0 causes its central value to move further from 0 overall. So this doesn't actually work. Your central value will no longer be central once your square the distribution. (and no squaring your central value does not fix the problem; consider a distribution centered on 0; the new squared distribution will not be centered on 0.)
     print(label, 'V MC', np.nanmean(v_dist), '+/-', np.std(v_dist), np.median(v_dist))
     print(label, 'V reported', group_vel[1], group_disp[1])
     #plt.hist(uw_dist)
@@ -297,6 +302,8 @@ def plot_values(target_table, plot_vals=['V', 'UW'], do_mc=True, vary_rv=False, 
         V_dist= galLSR_vel_dist.d_y
         W_dist= galLSR_vel_dist.d_z
         UW_dist=np.sqrt(U_dist**2. +W_dist**2.)
+        print("V_dist",V_dist)
+        print(type(V_dist))
         V_err= get_errors(V_dist)
         UW_err=get_errors(UW_dist)
         U=galLSR_single.velocity.d_x
@@ -365,6 +372,12 @@ def plot_values(target_table, plot_vals=['V', 'UW'], do_mc=True, vary_rv=False, 
 plot_values(target_table, plot_vals=['V','UW'], color='r', vary_rv=True)
 plot_values(target_table, plot_vals=['V','UW'], color=list_color)
 generate_toomre_diagram()
+
+plt.show()
+
+plot_values(target_table, plot_vals=['V','U'], color='r', vary_rv=True)
+plot_values(target_table, plot_vals=['V','U'], color=list_color)
+#generate_toomre_diagram()
 
 plt.show()
 
@@ -437,7 +450,7 @@ all_table=Table(all_list_array,names=text_names)
 #np.savetxt('20200517_output_velocities_test.csv',all_list_array, delimiter=',')
 #np.savetxt('J1644_paper_outputs.csv',all_list, delimiter=',', header=text_header)
 #np.savetxt('20210201_output_velocities_test.csv',all_list_array, delimiter=',')
-#all_table.write('20210719_kinematics_outputs.csv', delimiter=',',format='csv')
+#all_table.write('20221108_LiPapertrio_kinematics_outputs.csv', delimiter=',',format='csv')
 #output_table=Table(all_list_array, names=text_names)
 
 #output_table.add_column(v_err_col, name='v_err')

@@ -27,13 +27,16 @@ elBadry_file='all_columns_catalog.fits'
 elBadry_dir='/Users/BenKaiser/Desktop/elBadry_catalogue/'
 
 #output_filename='dimWDMS_eDR3.fits'
-output_filename='dimWDMS_eDR3_radec.csv'
+#output_filename='dimWDMS_eDR3_radec.csv'
+output_filename='dimWDMS_F0toK7_eDR3_highconf.fits'
 
 output_filename=elBadry_dir+output_filename
 
 wd_abs_g_cut= 14.8
 wd_g_rp_cut=1.5
 
+ms_F0K7_abs_g_cut=[3.0,7.4] #inner bounds of the 3 test F0 and K7. Assuming the most extreme of each set of 3 is adequate to keep out the objects outside the range... a bit presumptuous, but such is life.
+chance_align_cut=0.1 #the limit set by el-Badry for "high-confidence" binaries. So R<0.1 is high-confidence
 
 elBadry_file=elBadry_dir+elBadry_file
 
@@ -76,15 +79,33 @@ cool_wdms_table=cool_wdms_table[blue_wds]
 ms_primaries=np.where(cool_wdms_table['abs_g_mag1']<((17.77-7.5)/(1.3))*cool_wdms_table['g_rp1']+7.5)
 
 cool_wdms_table=cool_wdms_table[ms_primaries]
-
+print('MS primaries only:')
 cool_wdms_table.pprint()
 
-#cool_wdms_table.write(output_filename)
+preK7_primaries=np.where((cool_wdms_table['abs_g_mag1']< ms_F0K7_abs_g_cut[1]))
+cool_wdms_table=cool_wdms_table[preK7_primaries]
+
+postF0_primaries=np.where((cool_wdms_table['abs_g_mag1']> ms_F0K7_abs_g_cut[0]))
+cool_wdms_table=cool_wdms_table[postF0_primaries]
+print('\n\n\nF0 to K7 primaries only')
+cool_wdms_table.pprint()
+
+highconf=np.where(cool_wdms_table['R_chance_align']<chance_align_cut)
+cool_wdms_table=cool_wdms_table[highconf]
+print('\n\n\nR<',chance_align_cut)
+cool_wdms_table.pprint()
+
+cool_wdms_table.write(output_filename)
 
 secondary_table=Table([cool_wdms_table['ra2'],cool_wdms_table['dec2']],names=['ra','dec'])
 
 secondary_table.write(output_filename)
+#cool_wdms_table.header()
 
+new_table_list=[]
+for name in cool_wdms_table.col():
+    print(name)
+#cool_wdms_table.write('el_badry_dimWDMS.csv')
 
 
 plt.scatter(cool_wdms_table['g_rp1'],cool_wdms_table['abs_g_mag1'],s=4)
