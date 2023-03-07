@@ -21,9 +21,9 @@ from astropy.io import fits as iofits
 #import seaborn as sns
 import astropy
 
-import gaia_extinction
+#import gaia_extinction
 #import wdatmos
-import plotting_dicts as pod
+#import plotting_dicts as pod
 import spec_plot_tools as spt
 ########################################
 ########################################

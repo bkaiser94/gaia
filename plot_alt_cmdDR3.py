@@ -154,8 +154,8 @@ num_targs = 'all'
 #num_targs = '47Tuc'
 #num_targs= 'Lindegren'
 selection_letter= 'C'
-distance = 100
-#distance=200
+#distance = 100
+distance=200
 grid_num = 225
 
 

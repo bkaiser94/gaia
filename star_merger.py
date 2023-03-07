@@ -21,9 +21,9 @@ import scipy.stats as scistats
 import astropy
 import csv
 
-import gaia_extinction
+#import gaia_extinction
 #import wdatmos
-import plotting_dicts as pod
+#import plotting_dicts as pod
 
 #merged_file='WISEA0615m1247.csv'
 
@@ -88,8 +88,10 @@ extrap_dist2=extrap_dist
 
 #star1_input= 'test_WD.csv'
 #star1_input= 'mystery_red_object.csv'
-star1_input='2MASSJ1458p2839_gaia.csv'
+#star1_input='2MASSJ1458p2839_gaia.csv'
 #star1_input='WDJ2317p1830_gaia.csv'
+star1_input='Josh_object_SDSSJ1252.csv'
+
 
 #star1_input='2MASSJ1055p0808_gaia.csv'
 #star1_input= '2MASSIJ0821p4532_gaia.csv'
@@ -98,16 +100,19 @@ star1_input='2MASSJ1458p2839_gaia.csv'
 #star1_input='two_low_reds_gaia.csv'
 #star2_input= '20190218_test_ultcool.csv'
 #star2_input='sdssj1330p6435_gaia.csv'
+star2_input='2MASSJ1458p2839_gaia.csv'
 #star2_input= 'gaiaj1644m0449_gaia.csv'
-star2_input='WDJ2317p1830_gaia.csv'
+#star2_input='WDJ2317p1830_gaia.csv'
+#star2_input='Josh_object_SDSSJ1252.csv'
 #star1_input= 'CE40_gaia.csv'
 #merged_star_input= 'WISEA0615m1247.csv'
 #merged_star_input='Josh_object.csv'
-merged_star_input='WISEA0615m1247.csv'
+#merged_star_input='WISEA0615m1247.csv'
 #merged_star_input='20190616_TIC294.csv'
 #merged_star_input='LP178m49_gaia.csv' 
 #merged_star_input= 'WD1133p358_gaia.csv'
 #merged_star_input='WISEA0238p3617.csv'
+merged_star_input='ar_sco_gaia.csv'
 
 #star1_input='sdssj1246p3608_gaia.csv'
 #star1_input='sdssj1408p2021_gaia.csv'
@@ -425,7 +430,7 @@ def find_star2(star1_table, merged_star_table, bounded=False, bounds=[], halfrea
         merged_rp_flux= mag_to_flux(merged_absmag_dict['rp']['absmag'],'rp')
         g_rp_subvals=[]
         m_g_subvals=[]
-        plt.errorbar(merged_absmag_dict['g']['absmag']- merged_absmag_dict['rp']['absmag'], merged_absmag_dict['g']['absmag'], yerr = merged_absmag_dict['g']['absmag_error'],  xerr = get_errors(merged_absmag_dict['g']['absmag_dist']-merged_absmag_dict['rp']['absmag_dist']), marker = 'o', markersize = 6, color =merged_color, capsize = 4, label = 'merged', linestyle ='none')
+        plt.errorbar(merged_absmag_dict['g']['absmag']- merged_absmag_dict['rp']['absmag'], merged_absmag_dict['g']['absmag'], yerr = merged_absmag_dict['g']['absmag_error'],  xerr = get_errors(merged_absmag_dict['g']['absmag_dist']-merged_absmag_dict['rp']['absmag_dist']), marker = 'o', markersize = 6, color =merged_color, capsize = 4, label = 'target for merge', linestyle ='none')
         star_track1_mg=[]
         star_track1_g_rp=[]
         for star1 in star_track1:
@@ -444,8 +449,8 @@ def find_star2(star1_table, merged_star_table, bounded=False, bounds=[], halfrea
             m_g_vals.append(star2_g_absmag)
             #plt.plot(g_rp_subvals, m_g_subvals, color='magenta', linestyle= None, marker='o', markersize= 6)
         number_list=[]
-        plt.plot(g_rp_subvals, m_g_subvals, color=star2_color, linestyle= None, marker='o', markersize= 6)
-        plt.plot(star_track1_g_rp, star_track1_mg, color=star1_color, linestyle= None, marker='o', markersize= 6)
+        plt.plot(g_rp_subvals, m_g_subvals, color=star2_color, linestyle= None, marker='o', markersize= 6, label='valid secondaries for inputs')
+        plt.plot(star_track1_g_rp, star_track1_mg, color=star1_color, linestyle= None, marker='o', markersize= 6,label='input sim stars')
         
         #plt.annotate(str(),xy=(np.copy(target_colour_dif), np.copy(target_absmag)), xycoords='data', xytext=(np.copy(target_colour_dif+0.01),np.copy(target_absmag-0.1)), textcoords= 'data' , fontsize=8, color =list_color)
         return m_g_vals, g_rp_vals, star_track1_mg, star_track1_g_rp
@@ -741,7 +746,7 @@ def plot_bkg_cmd(generic_table= generic_table, absmag='g', colours=['bp','rp']):
                 print("Can't use the simplified file with alternative colours or absolute magnitudes; it only works with M_G and BP-RP")
         generic_absmag= generic_table['mg']
         generic_colour_dif= generic_table['bp_rp']
-    polything = plt.hexbin(generic_colour_dif, generic_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
+    polything = plt.hexbin(generic_colour_dif, generic_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1)
     counts = polything.get_array()
     print(counts.shape)
     counts= np.sqrt(counts)
@@ -793,23 +798,27 @@ def plot_bkg_cmd(generic_table= generic_table, absmag='g', colours=['bp','rp']):
 #plot_bkg_cmd(colours=['g','rp'])
 #plt.show()
 
-star2_dict= find_star2(star2_table, merged_star_table, halfreal=True)
-print('star2_dict', star2_dict)
-star2_output_table= Table(star2_dict, names=('star2_m_g', 'star2_g_rp', 'star1_m_g', 'star1_g_rp'))
-if save_output:
-    star2_output_table.pprint()
-    print('Saving output')
-    #csvwriter= csv.writer(open(output_name, 'w'))
-    #for key, val in star2_dict.items():
-        #csvwriter.writerow([key, val])
-    star2_output_table.write(output_name, overwrite=True)
-else:
-    pass
-        
-plot_bkg_cmd(colours=['g','rp'])
-plt.show()
+if __name__ == '__main__':
 
-star2_dict= find_star2(star2_table, merged_star_table, plot_all=True)
-plot_bkg_cmd(colours=['g','rp'])
-#plot_bkg_cmd()
-plt.show()
+    star2_dict= find_star2(star1_table, merged_star_table, halfreal=True)
+    print('star2_dict', star2_dict)
+    star2_output_table= Table(star2_dict, names=('star2_m_g', 'star2_g_rp', 'star1_m_g', 'star1_g_rp'))
+    if save_output:
+        star2_output_table.pprint()
+        print('Saving output')
+        #csvwriter= csv.writer(open(output_name, 'w'))
+        #for key, val in star2_dict.items():
+            #csvwriter.writerow([key, val])
+        star2_output_table.write(output_name, overwrite=True)
+    else:
+        pass
+            
+    plot_bkg_cmd(colours=['g','rp'])
+    plt.legend()
+    plt.show()
+
+    star2_dict= find_star2(star1_table, merged_star_table, plot_all=True)
+    plot_bkg_cmd(colours=['g','rp'])
+    plt.legend()
+    #plot_bkg_cmd()
+    plt.show()

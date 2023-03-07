@@ -29,7 +29,8 @@ import gaia_extinction
 import plotting_dicts as pod
 
 
-plt.rc('font', size =18)
+#plt.rc('font', size =18)
+plt.rc('font', size =12)
 #plt.rc('lines', markersize=12)
 #plt.rc('font', size = 11)
 plt.rc('lines', markersize = 5)
@@ -55,7 +56,7 @@ x_fill= axes_x[0]
 list_color = '#1ca1f2'
 single_list=False#turns off the original for-loop method for plotting from a single list
 error_bar=True #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
-annotate= True #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
+annotate= False #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
 parallax_correction = 0.029 #from Lindgren et al 2018
 
 #bcolor='g'
@@ -65,10 +66,12 @@ markersize=6
 
 bcolor='purple'
 ncolor= 'red'
+flag_color='#1ca1f2'
 
 #######3error distribution variables
 mc_number = 10000
-percent_off = 34. #1-sigma equivalent
+#percent_off = 34. #1-sigma equivalent
+percent_off = 99.7/2. #3-sigma equivalent
 #############
 
 #target_input='20190107_chris_merge_gaia.csv'
@@ -97,7 +100,7 @@ percent_off = 34. #1-sigma equivalent
 #target_input='GaiaJ1453m2258_andnearones.csv'
 #target_input= 'gaiaj1644m0449_gaia.csv'
 #target_input='20190829_alkaliWD_targeted_gaia_scbd.csv'
-#target_input='20190829_DZNas.csv'
+target_input='20190829_DZNas.csv'
 #target_input= 'BU1941m1919_gaia.csv'
 #target_input='BU1941m1919_gaia_edr3.csv'
 #target_input='20210305_DZs_wBe_and_J1113_gaia.csv'
@@ -117,11 +120,12 @@ percent_off = 34. #1-sigma equivalent
 #target_input= 'psrj1048p2339_gaia.csv'
 #target_input='20190516B_retargeted_purple_search_gaia_scbd_20220804_update.csv'
 #target_input='BPSCS29528m0028_CEMPs_gaiaDR2.csv'
-target_input='CEMPs_Narich_gaiaDR2.csv'
+#target_input='CEMPs_Narich_gaiaDR2.csv'
+#target_input='ar_sco_gaia.csv'
 
 #other_target_input='20220929_reallydim_WD_search_gaia_scbd.csv'
 
-other_target_input= 'mdwarf_spTs_gaia_sc.csv'
+#other_target_input= 'mdwarf_spTs_gaia_sc.csv'
 #other_target_input='DESJ2147m4035_Appsweirdcool28pc_dr2.csv'
 #other_target_input='20190516B_retargeted_purple_search_gaia_scbd_20220804_update.csv'
 #other_target_input= 'SDSSJ1150p2403_gaia.csv'
@@ -135,6 +139,8 @@ other_target_input= 'mdwarf_spTs_gaia_sc.csv'
 #other_target_input='wd2251m070_gaia.csv'
 #other_target_input= 'sdssj1330_similar_subset_observed.csv'
 #other_target_input='20190616_obs.csv'
+other_target_input='20190829_alkaliWD_targeted_gaia_scbd.csv'
+
 
 target_label= ''
 
@@ -142,8 +148,8 @@ num_targs = 'all'
 #num_targs = '47Tuc'
 #num_targs= 'Lindegren'
 selection_letter= 'C'
-distance = 100
-#distance=200
+#distance = 100
+distance=200
 grid_num = 225
 
 
@@ -204,7 +210,7 @@ def plot_ben_cuts():
     x4vals= np.ones(y4vals.shape)*0.97
     y5vals= np.linspace(15.7, 18, 100)
     x5vals= np.ones(y5vals.shape)*1.52
-    plt.plot(x1vals,y1vals, color= bcolor, label="Purple Object Survey")
+    plt.plot(x1vals,y1vals, color= bcolor, label="MORDOR Survey cuts")
     plt.plot(x2vals, y2vals, color= bcolor)
     plt.plot(x3vals, y3vals, color= bcolor)
     plt.plot(x4vals, y4vals, color= bcolor)
@@ -219,14 +225,25 @@ def plot_nicola_cuts():
     y2vals= 5.93+5.047*x2vals
     x3vals= np.linspace(np.max(x2vals), 1.7, 300)
     y3vals = 6*x3vals**3.-21.77*x3vals**2.+27.91*x3vals+0.897
-    y4vals= np.linspace(14.9067,16,300)
+    #y4vals= np.linspace(14.9067,16,300)
+    y4vals= np.linspace(14.9067,17,300)
     x4vals= np.ones(y4vals.shape)*1.7
     #plt.plot(x1vals,y1vals, color= ncolor, label="Nicola's cut")
-    plt.plot(x1vals,y1vals, color= ncolor, label="Gentile Fusillo et al. 2019")
+    #plt.plot(x1vals,y1vals, color= ncolor, label="Gentile Fusillo et al. (2019)")
+    plt.plot(x1vals,y1vals, color= ncolor, label="Gentile Fusillo et al. (2019) cuts")
     plt.plot(x2vals, y2vals, color= ncolor)
     plt.plot(x3vals, y3vals, color= ncolor)
     plt.plot(x4vals, y4vals, color= ncolor)
     plt.legend()
+    return
+
+def plot_nicola_flag():
+    x1vals=np.linspace(-0.796528,-0.7025, 300)
+    x2vals=np.linspace(-0.7025, 1.7, 300)
+    y1vals=x1vals*68.42+59.50 #equation 14 of Gentile Fusillo et al. 2019
+    y2vals=x2vals**5 * 0.25 - x2vals**4 * 1.3 + x2vals**3 * 2.14 - x2vals**2*0.98 + x2vals * 1.37+13.98 #equation 15 of Gentile Fusillo et al. 2019
+    plt.plot(x1vals,y1vals, color=flag_color, label=r'$P_{WD}$'+'_FLAG boundary')
+    plt.plot(x2vals,y2vals, color=flag_color)
     return
 
 
@@ -474,10 +491,14 @@ def plot_bkg_cmd(generic_table= generic_table, absmag='g', colours=['bp','rp'], 
     polything.autoscale()
     plt.ylim(axes_y)
     plt.gca().invert_yaxis()
-    #plt.xlabel(r'$G_{BP} - G_{RP}$')
+    #if colours==['bp','rp']:
+        #plt.xlabel(r'$G_{BP} - G_{RP}$')
+    #else:
+        #pass
     #plt.ylabel(r'$M_G$')
-    plt.ylabel('M_'+absmag)
-    plt.subplots_adjust(wspace = 0, hspace = 0, top = 0.90, bottom = 0.10, left = 0.10, right = 0.90)
+    #plt.ylabel('M_'+absmag)
+    #plt.ylabel(r'$G_{\text{abs}}$')
+    #plt.subplots_adjust(wspace = 0, hspace = 0, top = 0.90, bottom = 0.10, left = 0.10, right = 0.90)
     
     
     return
@@ -631,14 +652,28 @@ if __name__ == '__main__':
     #plt.show()
     #plot_abs_v_abs()
     #make_cmd(target_table=other_target_table, generic_table= generic_table)
+    
+    plot_bkg_cmd(generic_table=generic_table, colours=['bp','rp'])
+    plot_nicola_cuts()
+    plot_nicola_flag()
+    plt.legend()
+    plt.show()
+    
 
     plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
     #plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=True)
     plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=annotate)
-    plot_target_table(target_table, colours=['g','rp'])
+    plot_target_table(target_table, colours=['g','rp'],annotate=True)
     plot_ben_cuts()
     plt.show()
 
+
+    plot_bkg_cmd(generic_table=generic_table, colours=['bp','rp'])
+    #plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=True)
+    plot_target_table(other_target_table, colours=['bp','rp'], list_color='r', annotate=annotate)
+    plot_target_table(target_table, colours=['bp','rp'],annotate=True)
+    #plot_ben_cuts()
+    plt.show()
 
     plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'], absmag='rp')
     plot_target_table(other_target_table, colours=['g','rp'], absmag='rp', list_color='r', annotate=True)

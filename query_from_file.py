@@ -37,7 +37,7 @@ filter_dense= True#filter to remove crowded fields; didn't use 'crowded' because
  
 bright_search_radius = 15.
 bright_star_limit= 15 #faintest G mag of what's considered a bright star for purposes of filtering
-dense_number= 6 #corresponds to >11,008 stars per square degree for 15" search radius, so should be greater than or equal to this number to qualify as 'dense' or 'crowded'
+dense_number= 6 #corresponds to >11,008 stars per square degree for 15" search radius, so should be greater than or equal to this number to qualify as 'dense' or 'crowded'. This is the correct math for 6 stars in the 15" radius to be 11,008... no wait... I missed a zero all those years ago...yikes. this is actually 110,008...So a factor of 10 greater than Gentile Fusillo et al. 2019's "Density" cut... No wait, his equation 9 does use 100,000 stars per square degree.
 
 name_index=0
 ra_index=1
