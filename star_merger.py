@@ -73,7 +73,8 @@ num_stars = 20 #number of stars in the track to use for merging
 #num_stars = 5 #number of stars in the track to use for merging
 
 extrap_dist = 0.0 #magnitude distance to go outside the line ends for the hypothetical star mergers
-extrap_dist1= 0.1
+#extrap_dist1= 0.1
+extrap_dist1=0.0
 extrap_dist2=extrap_dist
 #############3
 
@@ -90,14 +91,14 @@ extrap_dist2=extrap_dist
 #star1_input= 'mystery_red_object.csv'
 #star1_input='2MASSJ1458p2839_gaia.csv'
 #star1_input='WDJ2317p1830_gaia.csv'
-star1_input='Josh_object_SDSSJ1252.csv'
+#star1_input='Josh_object_SDSSJ1252.csv'
 
 
 #star1_input='2MASSJ1055p0808_gaia.csv'
 #star1_input= '2MASSIJ0821p4532_gaia.csv'
 #star1_input='sdssj1408p2021_gaia.csv'
 
-#star1_input='two_low_reds_gaia.csv'
+star1_input='two_low_reds_gaia.csv'
 #star2_input= '20190218_test_ultcool.csv'
 #star2_input='sdssj1330p6435_gaia.csv'
 star2_input='2MASSJ1458p2839_gaia.csv'
@@ -568,7 +569,7 @@ def find_star2(star1_table, merged_star_table, bounded=False, bounds=[], halfrea
         return star2_dict
 
 
-def merge_stars(star1_table=[], star2_table=[], real_stars=False, bounded=False, bounds=[], num_points=num_stars, halfreal=False):
+def merge_stars(star1_table=[], star2_table=[], real_stars=False, bounded=False, bounds=[], num_points=num_stars, halfreal=False, star_track1_coords=[[0.1605, 12.53], [0.3866,13.5]],star_track2_coords=[[1.22, 11.],[1.56,15.226]], color1='r',color2='#1ca1f2',merge_color='magenta'):
     """
    Take 2 stars and combine their fluxes to plot a new star on the CMD. This should be flexible enough to work
    with cooling sequences... although I guess I could just loop through it a bunch of times. Yeah, I guess
@@ -671,21 +672,26 @@ def merge_stars(star1_table=[], star2_table=[], real_stars=False, bounded=False,
         
         #star_track2= generate_star_track([-0.127, 11.05], [0.8,15.5],num_points=num_points, extrap_dist=0.1) #approximate WD track
         #star_track2= generate_star_track([-0.16, 16.44], [0.84,15.61],num_points=num_points, extrap_dist=0.1) #approximate ultracool WD track
-        star_track2= generate_star_track([1.22, 11.],[1.56,15.226], num_points= num_points, extrap_dist=extrap_dist1) #approximate Mstars
-        star_track1= generate_star_track([1.22, 11.],[1.56,15.226], num_points= num_points, extrap_dist=extrap_dist1) #approximate Mstars
+        #star_track2= generate_star_track([0.1605, 12.53], [0.3866,13.5],num_points=num_points, extrap_dist=0.1) #approximate WD track
+        #star_track2= generate_star_track([1.22, 11.],[1.56,15.226], num_points= num_points, extrap_dist=extrap_dist1) #approximate Mstars
+        #star_track1= generate_star_track([1.22, 11.],[1.56,15.226], num_points= num_points, extrap_dist=extrap_dist1) #approximate Mstars
         #star_track1= generate_star_track([0.524, 5.178],[0.949,8.104], num_points= num_points, extrap_dist=extrap_dist2) #approximate main-sequence A-G
         #star_track2= generate_star_track([0.527, 5.28],[0.89,7.75], num_points= num_points) #approximate Mstars
-
+        #star_track2= generate_star_track([1.22, 11.],[1.56,15.226], num_points= num_points, extrap_dist=extrap_dist1) #approximate Mstars
+        #star_track1= generate_star_track([0.1605, 12.53], [0.3866,13.5],num_points=num_points, extrap_dist=0.1) #approximate WD track
+        
+        star_track1=generate_star_track(star_track1_coords[0],star_track1_coords[1], num_points= num_points, extrap_dist=extrap_dist1) #approximate Mstars
+        star_track2=generate_star_track(star_track2_coords[0],star_track2_coords[1], num_points= num_points, extrap_dist=extrap_dist1) #approximate Mstars
         g_rp_vals= []
         m_g_vals=[]
         for star1 in star_track1:
-            plt.plot(star1['g']['absmag']-star1['rp']['absmag'], star1['g']['absmag'],color='r', linestyle=None, marker='o', markersize= 6)
+            plt.plot(star1['g']['absmag']-star1['rp']['absmag'], star1['g']['absmag'],color=color1, linestyle=None, marker='o', markersize= 6)
             star1_g_flux= mag_to_flux(star1['g']['absmag'],'g')
             star1_rp_flux= mag_to_flux(star1['rp']['absmag'],'rp')
             g_rp_subvals=[]
             m_g_subvals=[]
             for star2 in star_track2:
-                plt.plot(star2['g']['absmag']-star2['rp']['absmag'], star2['g']['absmag'], color= '#1ca1f2', linestyle= None, marker='o', markersize= 6)
+                plt.plot(star2['g']['absmag']-star2['rp']['absmag'], star2['g']['absmag'], color= color2, linestyle= None, marker='o', markersize= 6)
                 star2_g_flux= mag_to_flux(star2['g']['absmag'],'g')
                 star2_rp_flux= mag_to_flux(star2['rp']['absmag'],'rp')
                 merged_g_flux = star1_g_flux+star2_g_flux
@@ -696,7 +702,7 @@ def merge_stars(star1_table=[], star2_table=[], real_stars=False, bounded=False,
                 m_g_vals.append(merged_g_absmag)
                 g_rp_subvals.append(merged_g_absmag-merged_rp_absmag)
                 m_g_subvals.append(merged_g_absmag)
-                plt.plot(g_rp_subvals, m_g_subvals, color='magenta', linestyle= None, marker='o', markersize= 6)
+                plt.plot(g_rp_subvals, m_g_subvals, color=merge_color, linestyle= None, marker='o', markersize= 6)
         #plt.plot(g_rp_vals, m_g_vals, color='magenta', linestyle= None, marker='o', markersize= 6)
         return g_rp_vals, m_g_vals
 
@@ -799,6 +805,18 @@ def plot_bkg_cmd(generic_table= generic_table, absmag='g', colours=['bp','rp']):
 #plt.show()
 
 if __name__ == '__main__':
+    
+    print('\n\ntrying first set\n\n')
+    merge_stars(star1_table= input_table[0], star2_table=input_table[1],real_stars=False,color1='blue',merge_color='purple')
+    print('\n\nfirst set plotted\n\n')
+    #merge_stars(star1_table= input_table[0], star2_table=input_table[1],real_stars=False,star_track1_coords=[[-0.127, 11.05], [0.8,15.5]],star_track2_coords=[[1.22, 11.],[1.56,15.226]],color1='blue',merge_color='purple')
+    merge_stars(star1_table= input_table[0], star2_table=input_table[1],real_stars=False,star_track1_coords=[[0.3866,13.5], [0.8,15.5]],star_track2_coords=[[1.22, 11.],[1.56,15.226]],color1='green',merge_color='magenta')
+    print('\n\nsecond set plotted\n\n')
+    #merge_stars(star1_table= input_table[0], star2_table=input_table[1],real_stars=False)
+    #plot_target_table(input_table, colours= ['g','rp'])
+    plot_bkg_cmd(colours=['g','rp'])
+    plt.title('first plot')
+    plt.show()
 
     star2_dict= find_star2(star1_table, merged_star_table, halfreal=True)
     print('star2_dict', star2_dict)

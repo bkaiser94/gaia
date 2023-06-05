@@ -96,9 +96,11 @@ elif num_targs== '47Tuc':
 elif num_targs== 'Lindegren':
     generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
     #generic_input='rand_astrometric_primaries1.csv'
-    #generic_input= '20190516B_retargeted_purple_search_gaia_scbd.csv'
+    generic_input= '20190516B_retargeted_purple_search_gaia_scbd.csv'
     #generic_input='20190516B_retargeted_purple_search_gaia_scbd_20210117_update_colors.csv'
-    generic_input='20220929_reallydim_WD_search_gaia_scbd.csv'
+    #generic_input='20220929_reallydim_WD_search_gaia_scbd.csv'
+    #generic_input='20230601_WD_DZLi_GaiaDR2.csv'
+    #generic_input='20230601_sky_coverage_check_GaiaDR2.csv'
     #generic_input='20190703_obs_objects.csv'
     #generic_input='20190516_targeted_purple_search_gaia_scnb.csv'
     #generic_input='20190829_DCs.csv'
