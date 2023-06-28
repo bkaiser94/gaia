@@ -658,6 +658,7 @@ if __name__ == '__main__':
     plot_target_table(target_table, colours=['g','rp'],num="1")
     plot_target_table(other_target_table, colours=['g','rp'], list_color='purple', annotate=True)
     #plot_ben_cuts()
+    plt.plot([1.55,-0.03],[16.75,4.58])
     plt.show()
     
     plot_bkg_cmd(generic_table=generic_table, colours=['bp','rp'])

@@ -23,7 +23,7 @@ from astropy.table import Table, QTable
 import matplotlib.pyplot as plt
 import scipy.stats as scistats
 #import seaborn as sns
-import astropy
+#import astropy
 import gaiaxpy as xpy
 import pandas as pd
 
