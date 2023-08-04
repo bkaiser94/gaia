@@ -69,8 +69,8 @@ distance = 200
 grid_num = 225
 selection_letter= 'B'
 
-num_stars = 20 #number of stars in the track to use for merging
-#num_stars = 5 #number of stars in the track to use for merging
+#num_stars = 20 #number of stars in the track to use for merging
+num_stars = 50 #number of stars in the track to use for merging
 
 extrap_dist = 0.0 #magnitude distance to go outside the line ends for the hypothetical star mergers
 #extrap_dist1= 0.1
@@ -113,7 +113,8 @@ star2_input='2MASSJ1458p2839_gaia.csv'
 #merged_star_input='LP178m49_gaia.csv' 
 #merged_star_input= 'WD1133p358_gaia.csv'
 #merged_star_input='WISEA0238p3617.csv'
-merged_star_input='ar_sco_gaia.csv'
+#merged_star_input='ar_sco_gaia.csv'
+merged_star_input='SDSSJ0303p0054_DAHedM_gaiaDR2.csv'
 
 #star1_input='sdssj1246p3608_gaia.csv'
 #star1_input='sdssj1408p2021_gaia.csv'
@@ -805,7 +806,10 @@ def plot_bkg_cmd(generic_table= generic_table, absmag='g', colours=['bp','rp']):
 #plt.show()
 
 if __name__ == '__main__':
-    
+    star2_dict= find_star2(star1_table, merged_star_table, halfreal=True)
+    #plot_target_table(input_table, colours= ['g','rp'])
+    plot_bkg_cmd(colours=['g','rp'])
+    plt.show()
     print('\n\ntrying first set\n\n')
     merge_stars(star1_table= input_table[0], star2_table=input_table[1],real_stars=False,color1='blue',merge_color='purple')
     print('\n\nfirst set plotted\n\n')
