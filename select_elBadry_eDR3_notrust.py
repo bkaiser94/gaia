@@ -46,8 +46,8 @@ wd_g_rp_cut=1.3
 
 primary_max_bright=10. #brightest that the primary is allowed to be in apparent magnitude.
 
-min_separation=4.08 #in arcseconds
-min_separation=min_separation/3600. #converted to degrees as is used in the pairdistance column of the table.
+#min_separation=4.08 #in arcseconds
+#min_separation=min_separation/3600. #converted to degrees as is used in the pairdistance column of the table.
 
 ms_line_points=[
     [1.55,16.75],
@@ -61,6 +61,24 @@ ms_val=np.int_(2) #integer values to be able to indicate what the overall binary
 unclassified_val=-5 #default value to fill the column with to ensure any binary with an unclassified component does not mistakenly make it through
 wdms_val=wd_val+ms_val #Technically this will really be evaluating if the star is or isn't a white dwarf I suppose because it will be whether the white dwarf is above or below the line that cuts along the H-R diagram
 elBadry_file=elBadry_dir+elBadry_file
+
+
+#################### binary separation function values#########
+
+close_mag_diff=-3. #constant value inside the closest radius (these are basically completely incapable of being disentangled in the reduction (or rather removing the contaminant flux so the contaminant flux needs to be much less than the target. Hence the negative value
+close_mag_radius=3. #in arcseconds
+mid_mag_diff=4.6 
+mid_mag_out_radius=13. #in arcseconds
+
+mag_coeff=-9.8
+mag_center=7.
+mag_spread=15.
+mag_offset=14.6
+
+
+
+
+#################################################
 
 
 elBadry_full_table=Table.read(elBadry_file)
@@ -130,11 +148,12 @@ good_bothtable=do_quality_cuts(good_comp1_table,num=2)
 good_bothtable.pprint()
 
 #want a minimum separation distance
-good_dists=np.where(good_bothtable['pairdistance']>min_separation)
-good_bothtable=good_bothtable[good_dists]
+#I'm removing this because it's not a minimum separation distance we need (in a sense) it is a minimum magnitude difference for various separations
+#good_dists=np.where(good_bothtable['pairdistance']>min_separation)
+#good_bothtable=good_bothtable[good_dists]
 
-print('new table with min separations>',min_separation*3600.,'"')
-good_bothtable.pprint()
+#print('new table with min separations>',min_separation*3600.,'"')
+#good_bothtable.pprint()
 
 #sys.exit()
 
@@ -214,7 +233,14 @@ print(new_wdms_table['wd_comp'])
 
 #limit the table to those with white dwarf components that are in the relevant parameter range.
 new_wdms_table.add_column(np.int_(np.zeros(len(new_wdms_table))),name='dimwd')
+new_wdms_table.add_column(np.float_(np.zeros(len(new_wdms_table))),name='mag_diff')
 for row in new_wdms_table:
+    if row['wd_comp']==1:
+        other_comp=2
+    else:
+        other_comp=1
+    mag_diff=row['phot_g_mean_mag'+str(row['wd_comp'])]-row['phot_g_mean_mag'+str(other_comp)]
+    row['mag_diff']=mag_diff
     if ((row['g_rp'+str(row['wd_comp'])]<wd_g_rp_cut) and (row['abs_g_mag'+str(row['wd_comp'])]>wd_abs_g_cut)):
         #print('dim white dwarf')
         row['dimwd']=1
@@ -244,7 +270,63 @@ Up to now there are 388 results that get returned.
 I'll probably need to finally do a requery in Gaia to check for crowded fields and unrelated nearby contaminants that could be screwing up colors.
 I suspect I'm going to lose a ton of these objects in the coming days.
 """
+distance_arcseconds=new_wdms_table['pairdistance']*3600.
+close_pairs=np.where(distance_arcseconds<close_mag_radius)
+close_good_inds=np.where(new_wdms_table[close_pairs]['mag_diff']<close_mag_diff)
+close_good_pairs=new_wdms_table[close_pairs][close_good_inds]
 
+mid_pairs=np.where((distance_arcseconds>= close_mag_radius) & (distance_arcseconds<=mid_mag_out_radius))
+mid_good_inds=np.where(new_wdms_table[mid_pairs]['mag_diff']<mid_mag_diff)
+mid_good_pairs=new_wdms_table[mid_pairs][mid_good_inds]
+
+def far_mag_func(dist_column):
+    mag_boundary=mag_coeff*np.exp(-1.*(dist_column-mag_center)**2./(2*mag_spread**2.))+mag_offset
+    return mag_boundary
+
+far_pairs=np.where(distance_arcseconds>mid_mag_out_radius)
+far_good_inds=np.where(new_wdms_table[far_pairs]['mag_diff']<far_mag_func(distance_arcseconds[far_pairs]))
+far_good_pairs=new_wdms_table[far_pairs][far_good_inds]
+
+print('close_good_pairs')
+close_good_pairs.pprint()
+
+print('\n\nmid_good_pairs')
+mid_good_pairs.pprint()
+
+print('\n\nfar_good_pairs')
+far_good_pairs.pprint()
+
+markersize=6
+plt.scatter(new_wdms_table['pairdistance']*3600., new_wdms_table['mag_diff'], label='full WDMS table before magdiff cuts',s=markersize)
+plt.scatter(close_good_pairs['pairdistance']*3600., close_good_pairs['mag_diff'],label='close pairs',s=markersize)
+plt.scatter(mid_good_pairs['pairdistance']*3600., mid_good_pairs['mag_diff'],label='mid pairs',s=markersize)
+plt.scatter(far_good_pairs['pairdistance']*3600., far_good_pairs['mag_diff'], label='far pairs',s=markersize)
+
+close_test=np.linspace(0,close_mag_radius,100)
+plt.plot(close_test, np.ones(close_test.shape)*close_mag_diff)
+mid_test=np.linspace(close_mag_radius,mid_mag_out_radius,100)
+mid_vals=np.ones(mid_test.shape)*mid_mag_diff
+plt.plot(mid_test,mid_vals)
+far_test=np.linspace(mid_mag_out_radius,400.,1000)
+far_vals=far_mag_func(far_test)
+plt.plot(far_test,far_vals)
+
+plt.xlabel('Separation (arcseconds)')
+plt.ylabel('G Mag difference (WD - Companion)')
+plt.title('Attempt at Magnitude Difference Cut based on Separation of the Binary Components')
+plt.legend()
+plt.show()
+
+plt.scatter(new_wdms_table['l1'],new_wdms_table['b1'],label='new_wdms_table',s=markersize)
+plt.scatter(close_good_pairs['l1'],close_good_pairs['b1'],label='close_good_pairs',s=markersize)
+plt.scatter(mid_good_pairs['l1'],mid_good_pairs['b1'],label='mid_good_pairs',s=markersize)
+plt.scatter(far_good_pairs['l1'],far_good_pairs['b1'],label='far_good_pairs',s=markersize)
+
+plt.title('Galactic Coords of Selected Targets')
+plt.xlabel('Galactic Longitude')
+plt.ylabel('Galactic Latitude')
+plt.legend()
+plt.show()
 
 ###############################
 sys.exit()
