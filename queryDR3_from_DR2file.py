@@ -31,16 +31,18 @@ Gaia.MAIN_GAIA_TABLE = "gaiadr3.gaia_source"
 #tables=Gaia.load_tables(only_names=True)
 #for table in tables:
     #print(table.get_qualified_name())
- 
+
+
 filter_confused_sources= False
 #search_radius=1.
 search_radius = 4.08 #in arcseconds
 #search_radius =  10.
 
 filter_bright_contam= False
-filter_dense= False#filter to remove crowded fields; didn't use 'crowded' because it has a 'c' like confusion
+filter_dense= True#filter to remove crowded fields; didn't use 'crowded' because it has a 'c' like confusion
  
- 
+filter_sepbright_func=True
+sepbright_radius=70. #radius in arcseconds out to which the query should retrieve objects. This is going to be slow.
  
 #filter_confused_sources= False
 #search_radius=1.
@@ -49,14 +51,41 @@ filter_dense= False#filter to remove crowded fields; didn't use 'crowded' becaus
 
 #filter_bright_contam= False
 #filter_dense= False#filter to remove crowded fields; didn't use 'crowded' because it has a 'c' like confusion
+
+max_stellar_density=110000. #number of stars per square degree above which a field is considered to crowded if filter_dense=True
  
 bright_search_radius = 15.
 bright_star_limit= 15 #faintest G mag of what's considered a bright star for purposes of filtering
-dense_number= 6 #corresponds to >11,008 stars per square degree for 15" search radius, so should be greater than or equal to this number to qualify as 'dense' or 'crowded'
+dense_number= 6 #corresponds to >110,008 stars per square degree for 15" search radius, so should be greater than or equal to this number to qualify as 'dense' or 'crowded'
 
-name_index=0
-ra_index=1
-dec_index=2
+
+
+#################### binary separation function values#########
+
+close_mag_diff=-4.5 #constant value inside the closest radius (these are basically completely incapable of being disentangled in the reduction (or rather removing the contaminant flux so the contaminant flux needs to be much less than the target. Hence the negative value
+close_mag_radius=4. #in arcseconds
+mid_mag_diff=4.6 
+mid_mag_out_radius=13. #in arcseconds
+
+mag_coeff=-9.8
+mag_center=7.
+mag_spread=15.
+mag_offset=14.6
+
+
+
+
+#################################################
+
+
+#name_index=0
+#ra_index=1
+#dec_index=2
+
+name_index=2
+ra_index=0
+dec_index=1
+
 
 
  
@@ -66,7 +95,8 @@ dec_index=2
 #input_file='Kilic_velocities_tabsupp_2_rand50.csv'
 #input_file='20210305B_ultracool_switchback_gaia.csv'
 #input_file='20220929_reallydim_WD_search.csv'
-input_file='20210201_DZs_for_J1636paper_gaia.csv'
+#input_file='20210201_DZs_for_J1636paper_gaia.csv'
+input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWDradec_first10.csv'
 
 #input_file='20191024_DZNa_and_redder_search.csv'
 #input_file='Torres_50_cat_original.csv'
@@ -125,18 +155,34 @@ if filter_bright_contam:
     additional_suffixes= additional_suffixes+'b'
 if filter_dense:
     additional_suffixes= additional_suffixes+'d'
+if filter_sepbright_func:
+    additional_suffixes=additional_suffixes+'_sbf'
+else:
+    pass
+    
+if Gaia.MAIN_GAIA_TABLE=='gaiadr3.gaia_source':
+    gaia_string='gaiaDR3'
+elif Gaia.MAIN_GAIA_TABLE=='gaiaedr3.gaia_source':
+    gaia_string='gaiaeDR3'
+elif Gaia.MAIN_GAIA_TABLE=='gaiadr2.gaia_source':
+    gaia_string='gaiaDR2'
+else:
+    pass
 
 if filter_confused_sources:
     output_name_parts = input_file.split('.')
     #output_file= output_name_parts[0]+ '_gaia_sc.' + output_name_parts[1]
-    output_file= output_name_parts[0]+ '_gaiaDR3_sc' + additional_suffixes+'.'+output_name_parts[1]
+    #output_file= output_name_parts[0]+ '_gaiaDR3_sc' + additional_suffixes+'.'+output_name_parts
+    output_file= output_name_parts[0]+ '_'+ gaia_string+ '_sc' + additional_suffixes+'.'+output_name_parts[1]
 else:
     output_name_parts = input_file.split('.')
     if output_name_parts[1]=='txt':
         output_name_parts[1]= 'csv'
     else:
         pass
-    output_file= output_name_parts[0]+ '_gaiaDR3.' + output_name_parts[1]
+    #output_file= output_name_parts[0]+ '_gaiaDR3.' + output_name_parts[1]
+    output_file= output_name_parts[0]+ '_'+gaia_string+'.' + output_name_parts[1]
+
 #output_file='l-0.3bp_g_gaia_corr_full.csv'
 credentials_file= 'Gaia_credentials.txt'
 print("Logging in.")
@@ -220,6 +266,22 @@ def cone_search(ra, dec, search_radius= search_radius):
     r.pprint()
     return r
 
+
+def find_star_limit(radius):
+    """
+    radius: search radius in arc seconds.
+    
+    will use max_stellar_density value to obtain the maximum number of stars that can be inside the search radius too.
+    returned value is the first number of stars for which the field is too crowded. i.e. >= star_limit means too crowded.
+    
+    """
+    radius_deg = (radius*u.arcsecond).to(u.deg).value
+    radius_rad=radius_deg*np.pi/180.
+    solid_angle=4*np.pi*np.sin(radius_rad/2.)**2. #solid angle in steradians
+    solid_angle_sqdeg=solid_angle*((180./np.pi)**2.) #solid angle in square degrees
+    star_limit=max_stellar_density*solid_angle_sqdeg
+    return star_limit
+
 #def get_panstarrs(source_id):
     #gaiadr2.panstarrs1_best_neighbour
 
@@ -229,11 +291,19 @@ def cone_search(ra, dec, search_radius= search_radius):
 #ps_table=Gaia.load_table('gaiadr2.panstarrs1_best_neighbour')
 #print(ps_table)
 #sys.exit()
+print('\n\nMax number of stars in ',bright_search_radius, '" radius:', find_star_limit(bright_search_radius))
+print('\n\nMax number of stars in ',sepbright_radius, '" radius:', find_star_limit(sepbright_radius))
+
+
 target_num = 1
 for ra,dec,name in zip(ra_array, dec_array,name_array):
     begin_time = time.time()
     print("\n\ntarget ", str(target_num) + '/' + str(num_targets),'\n\n')
     results= cone_search(ra,dec)
+    results['dist']=results['dist']*3600. #converting the distances into arcseconds
+    print('\n\ndist in arcseconds:')
+    print(results['dist'])
+    #print(results['dist']*3600.)
     #print(results.shape)
     #new_col= Column(name, name='name')
     #print(results[0])
@@ -296,8 +366,18 @@ for ra,dec,name in zip(ra_array, dec_array,name_array):
     except TypeError as error:
         print(error)
         pass
+    if filter_sepbright_func:
+        print('\n\nGetting ',sepbright_radius,'arc second cone search')
+        big_results=cone_search(ra,dec,search_radius=sepbright_radius)
+        print('Cone Search completed.\n\n')
+        big_results['dist']=big_results['dist']*3600.
+        print('dist in arcseconds')
+        print(big_results['dist'])
+    else:
+        pass
     target_num += 1
     end_time= time.time()
+    print("\n\ntarget ", str(target_num) + '/' + str(num_targets),'\n\n')
     print('Target search time: ', find_time_difference(begin_time, end_time))
     print('\nTotal elapsed time', find_time_difference(start, end_time))
     print('\n\n\n===============')
@@ -306,7 +386,7 @@ for ra,dec,name in zip(ra_array, dec_array,name_array):
 stacked_results= vstack(collected_results)
 stacked_results.pprint()
 
-stacked_results.write(output_file, format='ascii.csv', overwrite=True)
+#stacked_results.write(output_file, format='ascii.csv', overwrite=True)
 
 end_overall= time.time()
 print('\n\n')

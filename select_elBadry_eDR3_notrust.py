@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 from astropy.table import Table, Column
 from astropy.table import join as ATjoin
 from astropy.table import hstack as AThstack
+from astropy.table import vstack as ATvstack
 from astropy import units as u
 from astropy import constants as const
 import sys
@@ -36,7 +37,11 @@ elBadry_dir='/Users/BenKaiser/Desktop/elBadry_catalogue/'
 #output_filename='dimWDMS_eDR3.fits'
 #output_filename='dimWDMS_eDR3_radec.csv'
 #output_filename='dimWDMS_F0toK7_eDR3_highconf.fits'
-output_filename='dimWDMS_allMS_minsep4p08_eDR3_highconf.fits'
+#output_filename='dimWDMS_allMS_minsep4p08_eDR3_highconf.fits'
+#output_filename='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust.fits'
+output_filename='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWDradec.csv'
+#output_filename='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD.fits'
+
 
 output_filename=elBadry_dir+output_filename
 
@@ -44,7 +49,7 @@ wd_abs_g_cut= 14.8
 #wd_g_rp_cut=1.5#old one as of 2023-06-28
 wd_g_rp_cut=1.3
 
-primary_max_bright=10. #brightest that the primary is allowed to be in apparent magnitude.
+#primary_max_bright=10. #brightest that the primary is allowed to be in apparent magnitude.
 
 #min_separation=4.08 #in arcseconds
 #min_separation=min_separation/3600. #converted to degrees as is used in the pairdistance column of the table.
@@ -65,8 +70,8 @@ elBadry_file=elBadry_dir+elBadry_file
 
 #################### binary separation function values#########
 
-close_mag_diff=-3. #constant value inside the closest radius (these are basically completely incapable of being disentangled in the reduction (or rather removing the contaminant flux so the contaminant flux needs to be much less than the target. Hence the negative value
-close_mag_radius=3. #in arcseconds
+close_mag_diff=-4.5 #constant value inside the closest radius (these are basically completely incapable of being disentangled in the reduction (or rather removing the contaminant flux so the contaminant flux needs to be much less than the target. Hence the negative value
+close_mag_radius=4. #in arcseconds
 mid_mag_diff=4.6 
 mid_mag_out_radius=13. #in arcseconds
 
@@ -329,8 +334,72 @@ plt.legend()
 plt.show()
 
 ###############################
-sys.exit()
+#sys.exit()
 
+output_fulltable=ATvstack([close_good_pairs,mid_good_pairs,far_good_pairs])
+
+"""
+Now we need to make a table to output to use for future efforts. This table should presumably only include the
+white dwarf component... but maybe it would be helpful to retain the full table for plotting purposes. I suppose I could have two different outputs
+but I only run it with one active at a time to prevent shenanigans and mistakes.
+
+So first I guess I'll get the version that doesn't trim down to just the white dwarfs running.
+
+"""
+
+print('\n\noutput_fulltable')
+output_fulltable.pprint()
+#output_fulltable.write(output_filename)
+
+
+"""
+Ok now I need to get the version that only contains the white dwarfs running... 
+
+so I'll probably have to do this row-by-row and have it check the wd_comp column each time for what values it should retain. I guess I need to make 
+a table in advance to have this populate though... But that could just be a copy of the original table. But that actually won't work because that is too 
+many columns. I need to make a version of the table to populate that doesn't have double the columns (while still retaining the joint binary 
+information maybe...)
+
+I actually only want to have this output the WD RA and DEC because the point of only retaining the white dwarfs is to be able to construct the target 
+list and more importantly requery into Gaia DR3 to make sure it is still consistent with the minimum separation and magnitude function we used for 
+the binary companions. Also probably going to use the stellar density cut still because I doubt other observers will be able to target efficiently in 
+crowded fields. Oh limitations...
+
+"""
+#full_colnames=output_fulltable.colnames()
+#print('colnames:',full_colnames)
+#new_colnames=[]
+#for col in full_colnames:
+    #if col[-1]=='1':
+        #new_colnames.append(col[:-1])
+        ##this method works because there is no DR1 indicator. Had I used the secondary component's columns this would have accidentally picked up all of the DR2 columns. I also had it exclude the last character because that is usually the number itself.
+    #else:
+        #pass
+
+
+
+#output_copy=output_fulltable.copy()
+#print('\nTable copied\n')
+
+new_colnames=['ra','dec']
+print('new_colnames',new_colnames)
+
+
+table_initialized=False
+for row in output_fulltable:
+    wd_num=row['wd_comp']
+    if table_initialized:
+        sub_row=row[['ra'+str(wd_num),'dec'+str(wd_num)]]
+        wd_output_table.add_row(sub_row)
+    else:
+        sub_row=row[['ra'+str(wd_num),'dec'+str(wd_num)]]
+        wd_output_table=Table(names=new_colnames,rows=sub_row)
+        table_initialized=True
+
+wd_output_table.add_column('',name='name')
+wd_output_table.write(output_filename,delimiter=',')
+
+##########################################
 
 
 #blue_wds=np.where(cool_wdms_table['g_rp2']<wd_g_rp_cut)
