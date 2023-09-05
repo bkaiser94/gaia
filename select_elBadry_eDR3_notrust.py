@@ -349,9 +349,9 @@ So first I guess I'll get the version that doesn't trim down to just the white d
 
 print('\n\noutput_fulltable')
 output_fulltable.pprint()
-#output_fulltable.write(output_filename)
+#output_fulltable.write(output_filename,overwrite=True)
 
-
+#sys.exit()
 """
 Ok now I need to get the version that only contains the white dwarfs running... 
 
@@ -397,7 +397,7 @@ for row in output_fulltable:
         table_initialized=True
 
 wd_output_table.add_column('',name='name')
-wd_output_table.write(output_filename,delimiter=',')
+wd_output_table.write(output_filename,delimiter=',',overwrite=True)
 
 ##########################################
 

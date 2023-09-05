@@ -127,7 +127,8 @@ percent_off = 99.7/2. #3-sigma equivalent
 #target_input='CEMPs_Narich_gaiaDR2.csv'
 #target_input='dimWDMS_elBadry_eDR3.fits'
 #target_input='dimWDMS_F0toK7_eDR3.fits'
-target_input='dimWDMS_F0toK7_eDR3_highconf.fits'
+#target_input='dimWDMS_F0toK7_eDR3_highconf.fits'
+target_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
 
 
 #other_target_input='20220929_reallydim_WD_search_gaia_scbd.csv'
@@ -649,6 +650,27 @@ if __name__ == '__main__':
     #plt.show()
     #plot_abs_v_abs()
     #make_cmd(target_table=other_target_table, generic_table= generic_table)
+    
+    plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+    #plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=True)
+    #plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=annotate)
+    #plot_target_table(target_table, colours=['g','rp'],num="2",list_color='g')
+    plot_target_table(target_table, colours=['g','rp'],num="")
+    plot_target_table(other_target_table, colours=['g','rp'], list_color='purple', annotate=True)
+    #plot_ben_cuts()
+    plt.plot([1.55,-0.03],[16.75,4.58])
+    plt.show()
+    
+    plot_bkg_cmd(generic_table=generic_table, colours=['bp','rp'])
+    #plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=True)
+    #plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=annotate)
+    #plot_target_table(target_table, colours=['g','rp'],num="2",list_color='g')
+    plot_target_table(target_table, colours=['bp','rp'],num="")
+    plot_target_table(other_target_table, colours=['bp','rp'], list_color='purple', annotate=True)
+    #plot_ben_cuts()
+    plt.plot([1.55,-0.03],[16.75,4.58])
+    plt.show()
+
 
     plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
     #plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=True)

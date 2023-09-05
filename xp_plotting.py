@@ -34,10 +34,12 @@ import pandas as pd
 import plotting_dicts as pod
 
 output_dir='GaiaDR3_XP_spectra/'
-input_file='20210201_DZs_for_J1636paper_gaia_gaiaDR3.csv'
+#input_file='20210201_DZs_for_J1636paper_gaia_gaiaDR3.csv'
+input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
 #input_file='LTT3218_GaiaDR3.csv'
 credentials_file= 'Gaia_credentials.txt'
-output_file='LHS2534_GaiaDR3_XPspectrum.csv'
+#output_file='LHS2534_GaiaDR3_XPspectrum.csv'
+output_file='wdbinary_GaiaDR3_XPspectrum.csv'
 save_file=False
 single_index=3
 
@@ -58,6 +60,7 @@ for row in sub_table:
         source=row['designation'].split(' ')[-1]
     source_list.append(source)
     name_list.append(row['name'])
+    
 
 #if len(sub_table)>1:
     #for row in sub_table:
@@ -72,15 +75,13 @@ for row in sub_table:
 
 print(source_list)
 print(credentials_frame.shape)
-print(credentials_frame[0])
-print(credentials_frame[1])
 print('about to retrieve and calibrate spectra')
 calibrated_spectra, sampling=xpy.calibrate(source_list,username=credentials_frame[0],password=credentials_frame[1],truncation=True)
 print('spectra retrieved and calibrated')
 
 print(calibrated_spectra)
 
-print(sampling)
+print('sampling',sampling)
 
 conversion_factor=1e18 #multiple by which you have to multiply the flux in W/m^2/nm/s to get to erg/cm^2/Anstrom/s *10^-16 as used in my Goodman spectra
 #for row, name in zip(calibrated_spectra,name_list):
@@ -89,8 +90,19 @@ calibrated_spectra['source_id']=name_list
 #print(calibrated_spectra['flux'].units)
 #plt.plot(sampling,calibrated_spectra)
 calibrated_spectra['flux']=calibrated_spectra['flux']*conversion_factor
-xpy.plot_spectra(calibrated_spectra,sampling=sampling,multi=True)
-plt.show()
+#xpy.plot_spectra(calibrated_spectra,sampling=sampling,multi=True) #this plots all of the spectra at one time.
+#plt.show()
+print('type(calibrated_spectra)',type(calibrated_spectra))
+for index,calibrated_spectrum in calibrated_spectra.iterrows():
+    print('calibrated_spectrum', calibrated_spectrum)
+    ra_dec=coord.SkyCoord(ra=sub_table[index]['ra'], dec=sub_table[index]['dec'], unit=(u.deg,u.deg),frame='icrs')
+    #plt.title(name_list[index]+' '+calibrated_spectra['source_id']+', '+ra_dec.to_string(style='hmsdms')+', ' +'G='+str(sub_table[index]['phot_g_mean_mag'])[:5])
+    plt.title('index:'+str(index)+', '+name_list[index]+' '+str(sub_table[index]['source_id'])+', '+ra_dec.to_string(style='hmsdms')+', ' +'G='+str(sub_table[index]['phot_g_mean_mag'])[:5])
+    if sub_table[index]['phot_g_mean_mag']<18.:
+        plt.plot(sampling, calibrated_spectra['flux'][index])
+    #xpy.plot_spectra(calibrated_spectrum,sampling=sampling,multi=False)
+        plt.show() 
+
 
 print(calibrated_spectra['flux'][0])
 

@@ -18,6 +18,8 @@ from astroquery.gaia import Gaia
 import astropy.units as u
 import astropy.coordinates as coord
 from astropy.table import Table, vstack, Column
+import matplotlib.pyplot as plt
+
 import time
 import sys
 start = time.time()
@@ -56,7 +58,7 @@ max_stellar_density=110000. #number of stars per square degree above which a fie
  
 bright_search_radius = 15.
 bright_star_limit= 15 #faintest G mag of what's considered a bright star for purposes of filtering
-dense_number= 6 #corresponds to >110,008 stars per square degree for 15" search radius, so should be greater than or equal to this number to qualify as 'dense' or 'crowded'
+#dense_number= 6 #corresponds to >110,008 stars per square degree for 15" search radius, so should be greater than or equal to this number to qualify as 'dense' or 'crowded'#This is now calculated in the code using find_star_limit(bright_search_radius), using the max_stellar_density as the filtering method.
 
 
 
@@ -96,7 +98,7 @@ dec_index=1
 #input_file='20210305B_ultracool_switchback_gaia.csv'
 #input_file='20220929_reallydim_WD_search.csv'
 #input_file='20210201_DZs_for_J1636paper_gaia.csv'
-input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWDradec_first10.csv'
+input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWDradec.csv'
 
 #input_file='20191024_DZNa_and_redder_search.csv'
 #input_file='Torres_50_cat_original.csv'
@@ -151,6 +153,8 @@ input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWDradec_first10.c
 
 additional_suffixes= ''
 
+if filter_confused_sources:
+    additional_suffixes='sc'
 if filter_bright_contam:
     additional_suffixes= additional_suffixes+'b'
 if filter_dense:
@@ -169,19 +173,25 @@ elif Gaia.MAIN_GAIA_TABLE=='gaiadr2.gaia_source':
 else:
     pass
 
-if filter_confused_sources:
-    output_name_parts = input_file.split('.')
-    #output_file= output_name_parts[0]+ '_gaia_sc.' + output_name_parts[1]
-    #output_file= output_name_parts[0]+ '_gaiaDR3_sc' + additional_suffixes+'.'+output_name_parts
-    output_file= output_name_parts[0]+ '_'+ gaia_string+ '_sc' + additional_suffixes+'.'+output_name_parts[1]
-else:
-    output_name_parts = input_file.split('.')
-    if output_name_parts[1]=='txt':
-        output_name_parts[1]= 'csv'
-    else:
-        pass
-    #output_file= output_name_parts[0]+ '_gaiaDR3.' + output_name_parts[1]
-    output_file= output_name_parts[0]+ '_'+gaia_string+'.' + output_name_parts[1]
+#if filter_confused_sources:
+    #output_name_parts = input_file.split('.')
+    ##output_file= output_name_parts[0]+ '_gaia_sc.' + output_name_parts[1]
+    ##output_file= output_name_parts[0]+ '_gaiaDR3_sc' + additional_suffixes+'.'+output_name_parts
+    #output_file= output_name_parts[0]+ '_'+ gaia_string+ '_sc' + additional_suffixes+'.'+output_name_parts[1]
+#else:
+    #output_name_parts = input_file.split('.')
+    #if output_name_parts[1]=='txt':
+        #output_name_parts[1]= 'csv'
+    #else:
+        #pass
+    ##output_file= output_name_parts[0]+ '_gaiaDR3.' + output_name_parts[1]
+    #output_file= output_name_parts[0]+ '_'+gaia_string+'.' + output_name_parts[1]
+
+output_name_parts = input_file.split('.')
+if output_name_parts[1]=='txt':
+    output_name_parts[1]= 'csv'
+output_file= output_name_parts[0]+ '_'+ gaia_string+'_'+ additional_suffixes+'.'+output_name_parts[1]
+print('\n\noutput_file:',output_file,'\n\n')
 
 #output_file='l-0.3bp_g_gaia_corr_full.csv'
 credentials_file= 'Gaia_credentials.txt'
@@ -282,6 +292,60 @@ def find_star_limit(radius):
     star_limit=max_stellar_density*solid_angle_sqdeg
     return star_limit
 
+def far_mag_func(dist_column):
+    #print('dist_column',dist_column)
+    mag_boundary=mag_coeff*np.exp(-1.*(dist_column-mag_center)**2./(2*mag_spread**2.))+mag_offset
+    #print('mag_boundary calculated.')
+    return mag_boundary
+
+
+def check_distance_mag(results):
+    """
+    results: the results from a cone search, so this contains all of the stars in a field.
+    
+    
+    Needs to check the relative magnitude and distance for each of the 3 layers of the 
+    """
+    good_field=True #this boolean is what will be returned by the function and should be used as an escape method at the end.
+    target_row=results[0]
+    other_results=results[1:]
+    mag_diff=target_row['phot_g_mean_mag']-other_results['phot_g_mean_mag']
+    close_pairs=np.where(other_results['dist']<close_mag_radius)
+    close_bad_inds=np.where(mag_diff[close_pairs]>close_mag_diff)
+    #plt.scatter(other_results[close_pairs]['dist'],np.ones(other_results[close_pairs]['dist'].shape)*mid_mag_diff,label='close boundary')
+    print('close_bad_inds',close_bad_inds)
+    if close_bad_inds[0].shape[0]>0:
+        print('bad close stars')
+        good_field=False
+    if good_field:
+        mid_pairs=np.where((other_results['dist']>=close_mag_radius) & (other_results['dist'] <= mid_mag_out_radius))
+        mid_bad_inds=np.where(mag_diff[mid_pairs]>mid_mag_diff)
+        #plt.scatter(other_results[mid_pairs]['dist'],np.ones(other_results[mid_pairs]['dist'].shape)*mid_mag_diff,label='mid boundary')
+        print('mid_bad_inds',mid_bad_inds)
+        if mid_bad_inds[0].shape[0]>0:
+            print('bad mid stars')
+            good_field=False
+    if good_field:
+        far_pairs=np.where(other_results['dist']>mid_mag_out_radius)
+        #print('far_pairs',far_pairs)
+        #print("other_results[far_pairs]['dist']",other_results[far_pairs]['dist'])
+        print('checking far pairs')
+        far_bad_inds=np.where(mag_diff[far_pairs]>far_mag_func(other_results[far_pairs]['dist']))
+        print('far pairs checked')
+        print('far_bad_inds',far_bad_inds)
+        #plt.scatter(other_results[far_pairs]['dist'],far_mag_func(other_results[far_pairs]['dist']),label='far boundary')
+        if far_bad_inds[0].shape[0]>0:
+            print('bad far stars')
+            good_field=False
+    #plt.scatter(other_results['dist'],mag_diff,label='field stars')
+    #plt.legend()
+    #plt.xlabel('distance (arcseconds)')
+    #plt.ylabel('mag diff')
+    #plt.show()
+    if good_field:
+        print('No magnitude issue stars in field based on separation-brightness functions')
+    return good_field
+
 #def get_panstarrs(source_id):
     #gaiadr2.panstarrs1_best_neighbour
 
@@ -293,7 +357,7 @@ def find_star_limit(radius):
 #sys.exit()
 print('\n\nMax number of stars in ',bright_search_radius, '" radius:', find_star_limit(bright_search_radius))
 print('\n\nMax number of stars in ',sepbright_radius, '" radius:', find_star_limit(sepbright_radius))
-
+dense_number=find_star_limit(bright_search_radius)
 
 target_num = 1
 for ra,dec,name in zip(ra_array, dec_array,name_array):
@@ -313,80 +377,92 @@ for ra,dec,name in zip(ra_array, dec_array,name_array):
     #name='SDSS'+name
     print(name)
     print(type(name))
+    good_field=True #this will be the boolean used to determine if we keep the results after this.
     try:
         table_length = len(results['dist'])
         print(table_length)
         if (filter_confused_sources and table_length>1):
             print("Too many sources in aperture")
+            good_field=False
+        #the rest of the checks only run if prior checks haven't ascertained that the field is bad.
         else:
-            if (filter_bright_contam or filter_dense):
+            #print('checking other things')
+            if ((filter_bright_contam or filter_dense) and (good_field)):
                 bright_results= cone_search(ra,dec, search_radius=bright_search_radius)
                 if (filter_bright_contam and np.nanmin(bright_results['phot_g_mean_mag']) < bright_star_limit):
                     print("Star brighter than G=" + str(bright_star_limit) + " , so likely contamination, thus excluding.")
+                    good_field=False
                 elif (filter_dense and len(bright_results['dist']) >= dense_number):
                     print("Stellar density greater than 100,000 deg^-2, there are ", len(bright_results['dist']), " stars")
+                    good_field=False
                 else:
-                    #new_array = np.full(table_length, name, dtype=str)
-                    #new_array= np.empty(table_length, dtype=str)
-                    #new_array[:]=name
-                    #print(new_array)
-                    new_array=[]
-                    for i in range(0,table_length):
-                        new_array.append(name)
-                    print(new_array)
-                    name_col= Column(new_array, name='name',dtype=str) #yeah that's a confusing series of 'names'
-                    #output_row.add_column(name_col)
-                    results.add_column(name_col)
-                    try:
-                        collected_results.append(results[0])
-                        #collected_results.append(output_row)
-                        #collected_results.append(results)
-                    except IndexError:
-                        print("index error")
-                        pass
-            else:
-                #new_array = np.full(table_length, name, dtype=str)
-                #new_array= np.empty(table_length, dtype=str)
-                #new_array[:]=name
-                #print(new_array)
-                new_array=[]
-                for i in range(0,table_length):
-                    new_array.append(name)
-                print(new_array)
-                name_col= Column(new_array, name='name',dtype=str) #yeah that's a confusing series of 'names'
-                #output_row.add_column(name_col)
-                results.add_column(name_col)
-                try:
-                    collected_results.append(results[0])
-                    #collected_results.append(output_row)
-                    #collected_results.append(results)
-                except IndexError:
-                    print("index error")
                     pass
+            if (filter_sepbright_func and good_field):
+                print('\n\nGetting ',sepbright_radius,'arc second cone search')
+                big_results=cone_search(ra,dec,search_radius=sepbright_radius)
+                print('Cone Search completed.\n\n')
+                big_results['dist']=big_results['dist']*3600.
+                print('dist in arcseconds')
+                print(big_results['dist'])
+                good_field=check_distance_mag(big_results)
+        if good_field:
+            #new_array = np.full(table_length, name, dtype=str)
+            #new_array= np.empty(table_length, dtype=str)
+            #new_array[:]=name
+            #print(new_array)
+            new_array=[]
+            for i in range(0,table_length):
+                new_array.append(name)
+            print(new_array)
+            name_col= Column(new_array, name='name',dtype=str) #yeah that's a confusing series of 'names'
+            #output_row.add_column(name_col)
+            results.add_column(name_col)
+            try:
+                print('adding results to output table because field is good apparently...')
+                collected_results.append(results[0])
+                #collected_results.append(output_row)
+                #collected_results.append(results)
+            except IndexError:
+                print("index error")
+                pass
+            
+            #else:
+                ##new_array = np.full(table_length, name, dtype=str)
+                ##new_array= np.empty(table_length, dtype=str)
+                ##new_array[:]=name
+                ##print(new_array)
+                #new_array=[]
+                #for i in range(0,table_length):
+                    #new_array.append(name)
+                #print(new_array)
+                #name_col= Column(new_array, name='name',dtype=str) #yeah that's a confusing series of 'names'
+                ##output_row.add_column(name_col)
+                #results.add_column(name_col)
+                #try:
+                    #collected_results.append(results[0])
+                    ##collected_results.append(output_row)
+                    ##collected_results.append(results)
+                #except IndexError:
+                    #print("index error")
+                    #pass
     except TypeError as error:
         print(error)
         pass
-    if filter_sepbright_func:
-        print('\n\nGetting ',sepbright_radius,'arc second cone search')
-        big_results=cone_search(ra,dec,search_radius=sepbright_radius)
-        print('Cone Search completed.\n\n')
-        big_results['dist']=big_results['dist']*3600.
-        print('dist in arcseconds')
-        print(big_results['dist'])
+
     else:
         pass
-    target_num += 1
     end_time= time.time()
     print("\n\ntarget ", str(target_num) + '/' + str(num_targets),'\n\n')
     print('Target search time: ', find_time_difference(begin_time, end_time))
     print('\nTotal elapsed time', find_time_difference(start, end_time))
     print('\n\n\n===============')
+    target_num += 1
     
     
 stacked_results= vstack(collected_results)
 stacked_results.pprint()
 
-#stacked_results.write(output_file, format='ascii.csv', overwrite=True)
+stacked_results.write(output_file, format='ascii.csv', overwrite=True)
 
 end_overall= time.time()
 print('\n\n')
