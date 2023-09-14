@@ -83,6 +83,10 @@ grid_num = 200
 v1bp=-0.78013779
 v1rp=-0.625607727
 
+
+###################################
+
+
 #################################################################3
 ########## End of things that should be edited for a given run######################
 #######################################################################
@@ -152,6 +156,8 @@ zeropoint_dict={"g": [25.6883657251, 0.0017850023],
 
 ################################
 #Reading in the tables for the background and target files
+generic_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
+
 generic_table = Table.read(generic_input)
 #original_table = Table.read(generic_input)
 
@@ -162,17 +168,17 @@ col_pairs=[
     ['g_rp', 'phot_bp_rp_excess_factor'],
     ['parallax','astrometric_excess_noise'],
     ['phot_g_mean_mag','astrometric_pseudo_colour_error'],
-    ['phot_bp_rp_excess_factor', 'mg'],
-    ['bp_rp','mg'],
+    #['phot_bp_rp_excess_factor', 'mg'],
+    #['bp_rp','mg'],
     ['pmra','pmdec'],
-    ['g_rp','mg'],
-    ['astrometric_pseudo_colour','mg'],
+    #['g_rp','mg'],
+    #['astrometric_pseudo_colour','mg'],
     ['astrometric_excess_noise', 'astrometric_excess_noise_sig'],
     ['astrometric_excess_noise', 'astrometric_sigma5d_max'],
     ['astrometric_excess_noise', 'astrometric_gof_al'],
     ['phot_g_mean_mag', 'astrometric_gof_al'],
     ['bp_rp', 'phot_bp_rp_excess_factor'],
-    ['mg','mean_varpi_factor_al'],
+    #['mg','mean_varpi_factor_al'],
     ['phot_bp_rp_excess_factor','mean_varpi_factor_al'],
     ['astrometric_excess_noise','mean_varpi_factor_al'],
     ['l','b'],

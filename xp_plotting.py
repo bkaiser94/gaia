@@ -15,6 +15,12 @@ aren't included with the general retrieval by default and have to be retrieved v
 """
 
 from __future__ import print_function
+
+
+import matplotlib
+matplotlib.use('pdf')
+
+
 import numpy as np
 #from astroquery.gaia import Gaia
 import astropy.units as u
@@ -33,14 +39,16 @@ import pandas as pd
 #import wdatmos
 import plotting_dicts as pod
 
-output_dir='GaiaDR3_XP_spectra/'
+output_dir='GaiaDR3_XP_spectra/WDMS_wide_binaries/'
 #input_file='20210201_DZs_for_J1636paper_gaia_gaiaDR3.csv'
 input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
 #input_file='LTT3218_GaiaDR3.csv'
 credentials_file= 'Gaia_credentials.txt'
+
 #output_file='LHS2534_GaiaDR3_XPspectrum.csv'
 output_file='wdbinary_GaiaDR3_XPspectrum.csv'
 save_file=False
+save_plots=True
 single_index=3
 
 credentials_frame=np.genfromtxt(credentials_file,dtype=str)
@@ -90,18 +98,64 @@ calibrated_spectra['source_id']=name_list
 #print(calibrated_spectra['flux'].units)
 #plt.plot(sampling,calibrated_spectra)
 calibrated_spectra['flux']=calibrated_spectra['flux']*conversion_factor
+calibrated_spectra['flux_error']=calibrated_spectra['flux_error']*conversion_factor
 #xpy.plot_spectra(calibrated_spectra,sampling=sampling,multi=True) #this plots all of the spectra at one time.
 #plt.show()
 print('type(calibrated_spectra)',type(calibrated_spectra))
+sampling=sampling*10.
 for index,calibrated_spectrum in calibrated_spectra.iterrows():
     print('calibrated_spectrum', calibrated_spectrum)
     ra_dec=coord.SkyCoord(ra=sub_table[index]['ra'], dec=sub_table[index]['dec'], unit=(u.deg,u.deg),frame='icrs')
+    ra_dec_string=ra_dec.to_string(style='hmsdms')
+    full_radec=ra_dec.to_string(style='hmsdms')
+    replace_chars=['h','m','d']
+    for char in replace_chars:
+        full_radec=full_radec.replace(char,':')
+    full_radec=full_radec.replace('s','')
+    ra_dec_list=full_radec.split(' ')
+    ra_string=ra_dec_list[0][:5]
+    dec_string=ra_dec_list[1][:6]
+    ra_string=ra_string.replace(':','')
+    dec_string=dec_string.replace(':','')
+    #ra_string.replace('s','')
+    #dec_string.replace('s','')
+    #dec_string=dec_string.replace('-','m')
+    #dec_string=dec_string.replace('+','p')
+
     #plt.title(name_list[index]+' '+calibrated_spectra['source_id']+', '+ra_dec.to_string(style='hmsdms')+', ' +'G='+str(sub_table[index]['phot_g_mean_mag'])[:5])
-    plt.title('index:'+str(index)+', '+name_list[index]+' '+str(sub_table[index]['source_id'])+', '+ra_dec.to_string(style='hmsdms')+', ' +'G='+str(sub_table[index]['phot_g_mean_mag'])[:5])
-    if sub_table[index]['phot_g_mean_mag']<18.:
-        plt.plot(sampling, calibrated_spectra['flux'][index])
+    if save_plots:
+        plt.figure(figsize=(1036./540*6.,6.))
+    else:
+        pass
+    #plt.title('index:'+str(index)+', '+name_list[index]+' '+str(sub_table[index]['source_id'])+', '+ra_dec.to_string(style='hmsdms')+', ' +'G='+str(sub_table[index]['phot_g_mean_mag'])[:5])
+    plt.title('index:'+str(index)+', '+'J'+ra_string+dec_string+', '+str(sub_table[index]['source_id'])+', '+full_radec+', ' +'G='+str(sub_table[index]['phot_g_mean_mag'])[:5])
+    plt.plot(sampling, calibrated_spectra['flux'][index])
+    plt.xlabel('Wavelength (Angstroms)')
+    plt.ylabel('Flux (cgs units)')
+    #if sub_table[index]['phot_g_mean_mag']<18.:
+        #plt.plot(sampling, calibrated_spectra['flux'][index])
+        #plt.xlabel('Wavelength (Angstroms')
+        #plt.ylabel('Flux (cgs units)')
+        #plt.errorbar(sampling, calibrated_spectra['flux'][index],yerr=calibrated_spectra['flux_error'][index])
     #xpy.plot_spectra(calibrated_spectrum,sampling=sampling,multi=False)
-        plt.show() 
+        #plt.show() 
+    
+    if save_plots:
+        print('saving plot')
+        for char in replace_chars:
+            ra_dec_string=ra_dec_string.replace(char,'')
+        ra_dec_list=ra_dec_string.split(' ')
+        ra_string=ra_dec_list[0][:4]
+        dec_string=ra_dec_list[1][:5]
+        ra_string.replace('s','')
+        dec_string.replace('s','')
+        dec_string=dec_string.replace('-','m')
+        dec_string=dec_string.replace('+','p')
+        plt.savefig(output_dir+'J'+ra_string+dec_string+'_spec'+str(index)+'_wide_binary_DR3XP.pdf')
+        plt.clf()
+    else:
+        print('showing plot')
+        plt.show()
 
 
 print(calibrated_spectra['flux'][0])

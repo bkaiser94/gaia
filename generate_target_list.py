@@ -31,20 +31,24 @@ from astropy.table import Table, vstack, Column
 #input_file='20190516B_retargeted_purple_search_gaia_scbd_20210707_update_neededobs.csv'
 #input_file='20190516B_retargeted_purple_search_gaia_scbd_20211117_update.csv'
 #input_file='20190516B_retargeted_purple_search_gaia_scbd_20211205_update.csv'
-input_file='dimWDMS_F0toK7_eDR3.fits'
+#input_file='dimWDMS_F0toK7_eDR3.fits'
 #input_file='20190917_alkaliWD_attempt2_gaia_scbd.csv'
+input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
 #input_file= 'josh_object.csv'
 #input_file='20190516B_retargeted_purple_subset.csv'
 #comment_string='retarg_purple'
 comment_string=''
-num='2'
-start_target_num=100
+num=''
+start_target_num=500
 
-#output_file= input_file.split('.')[0]+'_targlist.txt'
-output_file= input_file.split('.')[0]+'_400M1needed_targlist.txt'
+output_file= input_file.split('.')[0]+'_targlist.txt'
+#output_file= input_file.split('.')[0]+'_400M1needed_targlist.txt'
 #input_table= Table.read(input_file, format= 'ascii.csv')
 input_table=Table.read(input_file)
 delimiter='\t'
+
+name_base='WDJ'
+#name_base='GaiaJ'
 
 sort_by_ra= True
 list_length=input_table['ra'+num].shape[0]
@@ -95,14 +99,23 @@ for thing, name, mag, target_num  in zip(string_coords, name_array, input_table[
     dec= split_string[1][:12] #limiting precision of the decimal, need the additional index for sign
     small_ra= ra.replace(':', '')[:4]
     small_dec=dec.replace(':','')[:5] #need additional index for + or -
-    if name=='.':
-        name='GaiaJ'+small_ra+small_dec
+    if name=='':
+        name=name_base+small_ra+small_dec
+        print('new name:',name)
+    if name=='--':
+        name=name_base+small_ra+small_dec
+        print('new name:',name)
+    elif name=='.':
+        #name='GaiaJ'+small_ra+small_dec
+        name=name_base+small_ra+small_dec
         print('new name:', name)
     elif name=='none':
-        name='GaiaJ'+small_ra+small_dec
+        #name='GaiaJ'+small_ra+small_dec
+        name=name_base+small_ra+small_dec
         print('new name:', name)
     elif name == '0':
-        name='GaiaJ'+small_ra+small_dec
+        #name='GaiaJ'+small_ra+small_dec
+        name=name_base+small_ra+small_dec
         print('new name:', name)
     print(thing)
     
