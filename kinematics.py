@@ -71,11 +71,11 @@ list_color = '#1ca1f2'
 mc_number = 100000
 percent_off = 34 #1-sigma equivalent
 #############
-#rv_zero=0.
-#rv_sigma=100.
+rv_zero=0.
+rv_sigma=100.
 
-rv_zero=100.
-rv_sigma=25.
+#rv_zero=100.
+#rv_sigma=25.
 
 #HD113083 RV from Navarrete et al. 2015
 #rv_zero=227.91 
@@ -93,10 +93,11 @@ rv_sigma=25.
 #target_input='20210201_DZs_for_J1636paper_gaia.csv'
 #target_input='20210301_DZs_with_Be_included_gaia.csv'
 #target_input='DESJ2147m4035_Appsweirdcool28pc_dr2.csv'
-target_input='20210201_DZs_for_J1636paper_gaia_gaiaDR3.csv'
+#target_input='20210201_DZs_for_J1636paper_gaia_gaiaDR3.csv'
 #target_input='20210305_DZs_wBe_and_J1113_gaia.csv'
 #target_input='WDJ0850p1956_gaia_LiWDcand.csv'
 #target_input='HD113083_omegacen_gaiadr2.csv'
+target_input='WDJ1948m1011_gaiaDR3.csv'
 
 #target_input='20210305B_ultracool_switchback_gaia_gaia_scbd.csv'
 
@@ -369,7 +370,7 @@ def plot_values(target_table, plot_vals=['V', 'UW'], do_mc=True, vary_rv=False, 
 
 #plt.show()
 
-plot_values(target_table, plot_vals=['V','UW'], color='r', vary_rv=True)
+#plot_values(target_table, plot_vals=['V','UW'], color='r', vary_rv=True)
 plot_values(target_table, plot_vals=['V','UW'], color=list_color)
 generate_toomre_diagram()
 

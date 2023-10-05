@@ -129,15 +129,17 @@ percent_off = 99.7/2. #3-sigma equivalent
 #target_input='dimWDMS_F0toK7_eDR3.fits'
 #target_input='dimWDMS_F0toK7_eDR3_highconf.fits'
 #target_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
-target_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf_Vincent2023bClass.csv'
+#target_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf_Vincent2023bClass.csv'
+target_input='WDJ1948m1011_gaiaDR3.csv'
 
 
 #other_target_input='20220929_reallydim_WD_search_gaia_scbd.csv'
 
 #other_target_input= 'mdwarf_spTs_gaia_sc.csv'
+other_target_input='20210201_DZs_for_J1636paper_gaia_gaiaDR3.csv'
 #other_target_input='gaiaeDR3_spectral_type_objects.csv'
 #other_target_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
-other_target_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf_Vincent2023bClass.csv'
+#other_target_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf_Vincent2023bClass.csv'
 
 #other_target_input='DESJ2147m4035_Appsweirdcool28pc_dr2.csv'
 #other_target_input='20190516B_retargeted_purple_search_gaia_scbd_20220804_update.csv'
@@ -211,16 +213,16 @@ other_target_table=Table.read(other_target_input)
 ####################################
 
 #Added this part to be able to make plots to indicate which objects have continuous spectra and which don't.
-xp_cont_inds=np.where(target_table['has_xp_continuous']=="True")
-xp_nocont_inds=np.where(other_target_table['has_xp_continuous']=="False")
+#xp_cont_inds=np.where(target_table['has_xp_continuous']=="True")
+#xp_nocont_inds=np.where(other_target_table['has_xp_continuous']=="False")
 
-print('\n\n==== xp_cont_inds')
-print(xp_cont_inds)
-print(xp_nocont_inds)
-print('\n\n=====+++++====')
+#print('\n\n==== xp_cont_inds')
+#print(xp_cont_inds)
+#print(xp_nocont_inds)
+#print('\n\n=====+++++====')
 
-target_table=target_table[xp_cont_inds]
-other_target_table=other_target_table[xp_nocont_inds]
+#target_table=target_table[xp_cont_inds]
+#other_target_table=other_target_table[xp_nocont_inds]
 
 
 
@@ -675,14 +677,15 @@ if __name__ == '__main__':
     #make_cmd(target_table=other_target_table, generic_table= generic_table)
     
     plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
-    #plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=True)
+    plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=True)
     #plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=annotate)
-    #plot_target_table(target_table, colours=['g','rp'],num="2",list_color='g')
-    plot_target_table(target_table, colours=['g','rp'],num="",label='has XP')
-    plot_target_table(other_target_table, colours=['g','rp'], list_color='purple', annotate=False,label='No XP')
-    plt.title("WD components of WD+MS wide binaries from Ben's 2023-09-05\ndown-select of El-Badry using the brightness-separation function")
+    plot_target_table(target_table, colours=['g','rp'],num="",annotate=True)
+    #plot_target_table(target_table, colours=['g','rp'],num="",label='has XP')
+    #plot_target_table(other_target_table, colours=['g','rp'], list_color='purple', annotate=False,label='No XP')
+    plt.title("DZ we discovered on 2023-09-14 and its MS companion")
     #plot_ben_cuts()
     plt.plot([1.55,-0.03],[16.75,4.58])
+    plt.plot([0,1.3,1.3],[14.8,14.8,18])
     plt.legend()
     plt.show()
     

@@ -17,8 +17,8 @@ aren't included with the general retrieval by default and have to be retrieved v
 from __future__ import print_function
 
 
-import matplotlib
-matplotlib.use('pdf')
+#import matplotlib
+#matplotlib.use('pdf')
 
 
 import numpy as np
@@ -32,6 +32,7 @@ import scipy.stats as scistats
 #import astropy
 import gaiaxpy as xpy
 import pandas as pd
+import sys
 
 
 #import passband_model_convolution as pmc
@@ -41,14 +42,15 @@ import plotting_dicts as pod
 
 output_dir='GaiaDR3_XP_spectra/WDMS_wide_binaries/'
 #input_file='20210201_DZs_for_J1636paper_gaia_gaiaDR3.csv'
-input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
+#input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
+input_file='WDJ1948m1011_gaiaDR3.csv'
 #input_file='LTT3218_GaiaDR3.csv'
 credentials_file= 'Gaia_credentials.txt'
 
 #output_file='LHS2534_GaiaDR3_XPspectrum.csv'
 output_file='wdbinary_GaiaDR3_XPspectrum.csv'
 save_file=False
-save_plots=True
+save_plots=False
 single_index=3
 
 credentials_frame=np.genfromtxt(credentials_file,dtype=str)
@@ -95,14 +97,22 @@ conversion_factor=1e18 #multiple by which you have to multiply the flux in W/m^2
 #for row, name in zip(calibrated_spectra,name_list):
     #row['source_id']=name
 calibrated_spectra['source_id']=name_list
+xpy.plot_spectra(calibrated_spectra,sampling=sampling,multi=True) #this plots all of the spectra at one time.
+
 #print(calibrated_spectra['flux'].units)
 #plt.plot(sampling,calibrated_spectra)
 calibrated_spectra['flux']=calibrated_spectra['flux']*conversion_factor
 calibrated_spectra['flux_error']=calibrated_spectra['flux_error']*conversion_factor
-#xpy.plot_spectra(calibrated_spectra,sampling=sampling,multi=True) #this plots all of the spectra at one time.
-#plt.show()
-print('type(calibrated_spectra)',type(calibrated_spectra))
 sampling=sampling*10.
+xpy.plot_spectra(calibrated_spectra,sampling=sampling,multi=True) #this plots all of the spectra at one time.
+print(sampling.shape)
+print(calibrated_spectra['flux'].shape)
+plt.xlabel('Wavelength (Angstroms')
+plt.ylabel('Flux (cgs units)')
+plt.show()
+
+#sys.exit()
+print('type(calibrated_spectra)',type(calibrated_spectra))
 for index,calibrated_spectrum in calibrated_spectra.iterrows():
     print('calibrated_spectrum', calibrated_spectrum)
     ra_dec=coord.SkyCoord(ra=sub_table[index]['ra'], dec=sub_table[index]['dec'], unit=(u.deg,u.deg),frame='icrs')
@@ -128,7 +138,8 @@ for index,calibrated_spectrum in calibrated_spectra.iterrows():
     else:
         pass
     #plt.title('index:'+str(index)+', '+name_list[index]+' '+str(sub_table[index]['source_id'])+', '+ra_dec.to_string(style='hmsdms')+', ' +'G='+str(sub_table[index]['phot_g_mean_mag'])[:5])
-    plt.title('index:'+str(index)+', '+'J'+ra_string+dec_string+', '+str(sub_table[index]['source_id'])+', '+full_radec+', ' +'G='+str(sub_table[index]['phot_g_mean_mag'])[:5])
+    #plt.title('index:'+str(index)+', '+'J'+ra_string+dec_string+', '+str(sub_table[index]['source_id'])+', '+full_radec+', ' +'G='+str(sub_table[index]['phot_g_mean_mag'])[:5])
+    plt.title(calibrated_spectrum['source_id'])
     plt.plot(sampling, calibrated_spectra['flux'][index])
     plt.xlabel('Wavelength (Angstroms)')
     plt.ylabel('Flux (cgs units)')

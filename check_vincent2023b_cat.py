@@ -25,7 +25,8 @@ start = time.time()
 
 vincent_file='GSPCWD_catalogue.csv'
 
-input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
+#input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
+input_file='20210201_DZs_for_J1636paper_gaia_gaiaDR3_gaiaDR3_.csv'
 
 output_file=input_file.split('.')[0]+'_Vincent2023bClass.csv'
 
@@ -40,7 +41,7 @@ vincent_table=Table.read(vincent_file)
 joined_table=join(input_table,vincent_table,keys='source_id',join_type='left')
 joined_table.pprint()
 
-#joined_table.write(output_file,overwrite=True)
+joined_table.write(output_file,overwrite=True)
 sys.exit()
 
 """
@@ -146,7 +147,7 @@ for row in input_table:
 
 print('total rows:',count)
 
-#input_table.write(output_file)
+input_table.write(output_file)
 
 
 

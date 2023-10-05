@@ -39,7 +39,7 @@ input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.
 #comment_string='retarg_purple'
 comment_string=''
 num=''
-start_target_num=500
+start_target_num=50
 
 output_file= input_file.split('.')[0]+'_targlist.txt'
 #output_file= input_file.split('.')[0]+'_400M1needed_targlist.txt'
@@ -47,8 +47,8 @@ output_file= input_file.split('.')[0]+'_targlist.txt'
 input_table=Table.read(input_file)
 delimiter='\t'
 
-name_base='WDJ'
-#name_base='GaiaJ'
+#name_base='WDJ'
+name_base='GaiaJ'
 
 sort_by_ra= True
 list_length=input_table['ra'+num].shape[0]

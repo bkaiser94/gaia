@@ -41,9 +41,9 @@ search_radius = 4.08 #in arcseconds
 #search_radius =  10.
 
 filter_bright_contam= False
-filter_dense= True#filter to remove crowded fields; didn't use 'crowded' because it has a 'c' like confusion
+filter_dense= False#filter to remove crowded fields; didn't use 'crowded' because it has a 'c' like confusion
  
-filter_sepbright_func=True
+filter_sepbright_func=False
 sepbright_radius=70. #radius in arcseconds out to which the query should retrieve objects. This is going to be slow.
  
 #filter_confused_sources= False
@@ -98,7 +98,8 @@ dec_index=1
 #input_file='20210305B_ultracool_switchback_gaia.csv'
 #input_file='20220929_reallydim_WD_search.csv'
 #input_file='20210201_DZs_for_J1636paper_gaia.csv'
-input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWDradec.csv'
+#input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWDradec.csv'
+input_file='20210201_DZs_for_J1636paper_gaia_gaiaDR3.csv'
 
 #input_file='20191024_DZNa_and_redder_search.csv'
 #input_file='Torres_50_cat_original.csv'
