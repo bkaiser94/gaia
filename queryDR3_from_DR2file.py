@@ -99,7 +99,7 @@ dec_index=1
 #input_file='20220929_reallydim_WD_search.csv'
 #input_file='20210201_DZs_for_J1636paper_gaia.csv'
 #input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWDradec.csv'
-input_file='20210201_DZs_for_J1636paper_gaia_gaiaDR3.csv'
+#input_file='20210201_DZs_for_J1636paper_gaia_gaiaDR3.csv'
 
 #input_file='20191024_DZNa_and_redder_search.csv'
 #input_file='Torres_50_cat_original.csv'
@@ -150,7 +150,8 @@ input_file='20210201_DZs_for_J1636paper_gaia_gaiaDR3.csv'
 #input_file='Eriks_disk_candidates.csv'
 #input_file='all_l-0.3bp_g_gaia_corr.csv'
 #input_file= '20190516_targeted_purple_search.csv'
-
+#input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_loosecutsonly_justWDradec.csv'
+input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_MSmatches.csv'
 
 additional_suffixes= ''
 
@@ -235,7 +236,7 @@ coord_list= []
 all_table=Table.read(input_file, delimiter=',')
 ra_array=all_table['ra']
 dec_array=all_table['dec']
-name_array=all_table['name']
+#name_array=all_table['name']
 
 
 collected_results=[]
@@ -461,6 +462,11 @@ for ra,dec,name in zip(ra_array, dec_array,name_array):
     
     
 stacked_results= vstack(collected_results)
+stacked_results.pprint()
+
+added_colnames=['pairdistance','sep_AU','R_chance_align','ra_wd','dec_wd','phot_g_mean_mag_wd']
+
+stacked_results.add_columns(all_table[added_colnames])
 stacked_results.pprint()
 
 stacked_results.write(output_file, format='ascii.csv', overwrite=True)

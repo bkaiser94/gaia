@@ -60,9 +60,10 @@ x_fill= axes_x[0]
 
 list_color = '#1ca1f2'
 single_list=False#turns off the original for-loop method for plotting from a single list
-error_bar=False #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
-annotate= False #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
-parallax_correction = 0.029 #from Lindgren et al 2018
+error_bar=True #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
+annotate= True #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
+#parallax_correction = 0.029 #from Lindgren et al 2018
+parallax_correction=0.
 
 #bcolor='g'
 #ncolor= 'cyan'
@@ -75,7 +76,7 @@ ncolor= 'red'
 #######3error distribution variables
 mc_number = 10000
 percent_off = 34. #1-sigma equivalent
-percent_off = 99.7/2. #3-sigma equivalent
+#percent_off = 99.7/2. #3-sigma equivalent
 #############
 
 #target_input='20190107_chris_merge_gaia.csv'
@@ -130,13 +131,25 @@ percent_off = 99.7/2. #3-sigma equivalent
 #target_input='dimWDMS_F0toK7_eDR3_highconf.fits'
 #target_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
 #target_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf_Vincent2023bClass.csv'
-target_input='WDJ1948m1011_gaiaDR3.csv'
+#target_input='2MASSJ0916m4215_DZLi_Vennes_gaiadr2.csv'
+#target_input='2MASSJ0916m4215_DZLi_Vennes_gaiaedr3.csv'
+#target_input='WDJ0212m5522_coolDZ_gaiaDR3.csv'
+#target_input='sdss_kstars_fehlm05_xmatch_gaiadr3.csv'
+#target_input='WDs_mistaken_for_Kstars_by_SDSS_gaiaDR3names.csv'
+#target_input='WDs_mistaken_for_Kstars_nofehlimit_by_SDSS_gaiaDR3.csv'
+#target_input='sdss_kstars_nofehlimit_xmatch_gaiadr3.csv'
+target_input='SDSSJ0804p5130_gaiadr3.csv'
+#target_input='20240116_1105_K5FeHLm05_15arcsecradgaiaDR3.csv'
+#target_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf_Vincent2023bClass_20240125update.csv'
+#target_input='WDJ1948m1011_gaiaDR3.csv'
+#target_input='WDJ1515p1911_gaiaDR3.csv'
 
 
 #other_target_input='20220929_reallydim_WD_search_gaia_scbd.csv'
 
-#other_target_input= 'mdwarf_spTs_gaia_sc.csv'
-other_target_input='20210201_DZs_for_J1636paper_gaia_gaiaDR3.csv'
+other_target_input= 'mdwarf_spTs_gaia_sc.csv'
+#other_target_input='WDJ1203m0012_gaiaDR3.csv'
+#other_target_input='20210201_DZs_for_J1636paper_gaia_gaiaDR3.csv'
 #other_target_input='gaiaeDR3_spectral_type_objects.csv'
 #other_target_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
 #other_target_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf_Vincent2023bClass.csv'
@@ -679,10 +692,16 @@ if __name__ == '__main__':
     plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
     plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=True)
     #plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=annotate)
-    plot_target_table(target_table, colours=['g','rp'],num="",annotate=True)
-    #plot_target_table(target_table, colours=['g','rp'],num="",label='has XP')
+    #plot_target_table(target_table, colours=['g','rp'],num="",annotate=True)
+    
+    #down_mags=distance_modulus(target_table['phot_g_mean_mag'],1./(1e-3*target_table['parallax']))
+    #down_inds=np.where(down_mags>12)
+    #plot_target_table(target_table[down_inds], colours=['g','rp'],num="",annotate=True)
+    plot_target_table(target_table, colours=['g','rp'],num="")
     #plot_target_table(other_target_table, colours=['g','rp'], list_color='purple', annotate=False,label='No XP')
-    plt.title("DZ we discovered on 2023-09-14 and its MS companion")
+    #plt.title("WD+MS wide binary survey White Dwarfs")
+    #plt.title('Vennes et al. 2023 new Li-polluted DZAH')
+    #plt.title('WD J0212-5522 and its main-sequence companion')
     #plot_ben_cuts()
     plt.plot([1.55,-0.03],[16.75,4.58])
     plt.plot([0,1.3,1.3],[14.8,14.8,18])

@@ -17,8 +17,8 @@ aren't included with the general retrieval by default and have to be retrieved v
 from __future__ import print_function
 
 
-#import matplotlib
-#matplotlib.use('pdf')
+import matplotlib
+matplotlib.use('pdf')
 
 
 import numpy as np
@@ -40,18 +40,22 @@ import sys
 #import wdatmos
 import plotting_dicts as pod
 
-output_dir='GaiaDR3_XP_spectra/WDMS_wide_binaries/'
+#output_dir='GaiaDR3_XP_spectra/WDMS_wide_binaries/'
+output_dir='GaiaDR3_XP_spectra/WDMS_wide_binaries_3300to7000A_truncfalse_PDFs/'
+
 #input_file='20210201_DZs_for_J1636paper_gaia_gaiaDR3.csv'
-#input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
-input_file='WDJ1948m1011_gaiaDR3.csv'
+input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
+#input_file='WDJ1948m1011_gaiaDR3.csv'
 #input_file='LTT3218_GaiaDR3.csv'
 credentials_file= 'Gaia_credentials.txt'
 
 #output_file='LHS2534_GaiaDR3_XPspectrum.csv'
 output_file='wdbinary_GaiaDR3_XPspectrum.csv'
 save_file=False
-save_plots=False
+save_plots=True
 single_index=3
+
+
 
 credentials_frame=np.genfromtxt(credentials_file,dtype=str)
 input_table=Table.read(input_file)
@@ -86,30 +90,37 @@ for row in sub_table:
 print(source_list)
 print(credentials_frame.shape)
 print('about to retrieve and calibrate spectra')
-calibrated_spectra, sampling=xpy.calibrate(source_list,username=credentials_frame[0],password=credentials_frame[1],truncation=True)
+#calibrated_spectra, sampling=xpy.calibrate(source_list,username=credentials_frame[0],password=credentials_frame[1],truncation=True)
+
+new_sampling=np.arange(330.,700.,2.)
+calibrated_spectra, sampling=xpy.calibrate(source_list,username=credentials_frame[0],password=credentials_frame[1],truncation=False,sampling=new_sampling)
+
 print('spectra retrieved and calibrated')
 
 print(calibrated_spectra)
 
 print('sampling',sampling)
 
+
+#sampling=new_sampling
+
 conversion_factor=1e18 #multiple by which you have to multiply the flux in W/m^2/nm/s to get to erg/cm^2/Anstrom/s *10^-16 as used in my Goodman spectra
 #for row, name in zip(calibrated_spectra,name_list):
     #row['source_id']=name
-calibrated_spectra['source_id']=name_list
-xpy.plot_spectra(calibrated_spectra,sampling=sampling,multi=True) #this plots all of the spectra at one time.
+#calibrated_spectra['source_id']=name_list
+#xpy.plot_spectra(calibrated_spectra,sampling=sampling,multi=True) #this plots all of the spectra at one time.
 
-#print(calibrated_spectra['flux'].units)
-#plt.plot(sampling,calibrated_spectra)
-calibrated_spectra['flux']=calibrated_spectra['flux']*conversion_factor
-calibrated_spectra['flux_error']=calibrated_spectra['flux_error']*conversion_factor
-sampling=sampling*10.
-xpy.plot_spectra(calibrated_spectra,sampling=sampling,multi=True) #this plots all of the spectra at one time.
-print(sampling.shape)
-print(calibrated_spectra['flux'].shape)
-plt.xlabel('Wavelength (Angstroms')
-plt.ylabel('Flux (cgs units)')
-plt.show()
+##print(calibrated_spectra['flux'].units)
+##plt.plot(sampling,calibrated_spectra)
+#calibrated_spectra['flux']=calibrated_spectra['flux']*conversion_factor
+#calibrated_spectra['flux_error']=calibrated_spectra['flux_error']*conversion_factor
+#sampling=sampling*10.
+#xpy.plot_spectra(calibrated_spectra,sampling=sampling,multi=True) #this plots all of the spectra at one time.
+#print(sampling.shape)
+#print(calibrated_spectra['flux'].shape)
+#plt.xlabel('Wavelength (Angstroms')
+#plt.ylabel('Flux (cgs units)')
+#plt.show()
 
 #sys.exit()
 print('type(calibrated_spectra)',type(calibrated_spectra))
@@ -138,8 +149,8 @@ for index,calibrated_spectrum in calibrated_spectra.iterrows():
     else:
         pass
     #plt.title('index:'+str(index)+', '+name_list[index]+' '+str(sub_table[index]['source_id'])+', '+ra_dec.to_string(style='hmsdms')+', ' +'G='+str(sub_table[index]['phot_g_mean_mag'])[:5])
-    #plt.title('index:'+str(index)+', '+'J'+ra_string+dec_string+', '+str(sub_table[index]['source_id'])+', '+full_radec+', ' +'G='+str(sub_table[index]['phot_g_mean_mag'])[:5])
-    plt.title(calibrated_spectrum['source_id'])
+    plt.title('index:'+str(index)+', '+'J'+ra_string+dec_string+', '+str(sub_table[index]['source_id'])+', '+full_radec+', ' +'G='+str(sub_table[index]['phot_g_mean_mag'])[:5])
+    #plt.title(calibrated_spectrum['source_id'])
     plt.plot(sampling, calibrated_spectra['flux'][index])
     plt.xlabel('Wavelength (Angstroms)')
     plt.ylabel('Flux (cgs units)')
@@ -162,7 +173,7 @@ for index,calibrated_spectrum in calibrated_spectra.iterrows():
         dec_string.replace('s','')
         dec_string=dec_string.replace('-','m')
         dec_string=dec_string.replace('+','p')
-        plt.savefig(output_dir+'J'+ra_string+dec_string+'_spec'+str(index)+'_wide_binary_DR3XP.pdf')
+        plt.savefig(output_dir+'J'+ra_string+dec_string+'_spec'+str(index)+'_wide_binary_truncfalse_DR3XP.pdf')
         plt.clf()
     else:
         print('showing plot')

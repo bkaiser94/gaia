@@ -1,17 +1,7 @@
 """
 Created by Ben Kaiser (UNC-Chapel Hill) 2022-10-18. Spun-off from select_elBadry_eDR3.py 
-on 2023-06-28. 
+on 2023-06-28. And actually spun off from select_elBadry_eDR3_notrust.py on 2024-02-29 to do the selecting of the white dwarfs that are mistakenly identified as K stars in SDSS's automated classification pipeline.
 
-Take in the el-Badry eDR3 binary catalogue and all of its assorted data and output whatever 
-subset of that data with the added info (probably M_G especially).
-
-As is the custom now, this whole thing should be written for Python3 if that wasn't obvious.
-
-The spin-off was done with the intention of implementing quality cuts in the process and 
-ignoring elBadry's own classifications of the binaries since he used BP-RP and I intend to use 
-G-RP. 
-
-The plan will be to first do a filter on chance alignment probabilities to cut this down to size quite quickly and save myself a headache tryign to have this run on a bunch of binaries that don't matter.
 
 """
 
@@ -30,9 +20,13 @@ import sys
 
 
 
-elBadry_file='all_columns_catalog.fits'
+#elBadry_file='all_columns_catalog.fits'
 
-elBadry_dir='/Users/BenKaiser/Desktop/elBadry_catalogue/'
+#elBadry_dir='/Users/BenKaiser/Desktop/elBadry_catalogue/'
+
+#input_file='sdss_kstars_nofehlimit_xmatch_gaiadr3.csv'
+input_file='sdss_kstars_nofehlimit_xmatch_gaiadr3.csv'
+
 
 #output_filename='dimWDMS_eDR3.fits'
 #output_filename='dimWDMS_eDR3_radec.csv'
@@ -42,10 +36,12 @@ elBadry_dir='/Users/BenKaiser/Desktop/elBadry_catalogue/'
 #output_filename='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWDradec.csv'
 #output_filename='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWDradec.csv'
 #output_filename='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD.fits'
-output_filename='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_loosecuts.fits'
+#output_filename='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_loosecuts.fits'
+
+output_filename='WDs_mistaken_for_Kstars_nofehlimit_by_SDSS_gaiaDR3.csv'
 
 
-output_filename=elBadry_dir+output_filename
+#output_filename=elBadry_dir+output_filename
 
 wd_abs_g_cut= 14.8
 #wd_g_rp_cut=1.5#old one as of 2023-06-28
@@ -62,12 +58,11 @@ ms_line_points=[
     ]
 
 ms_F0K7_abs_g_cut=[3.0,7.4] #inner bounds of the 3 test F0 and K7. Assuming the most extreme of each set of 3 is adequate to keep out the objects outside the range... a bit presumptuous, but such is life.
-chance_align_cut=0.1 #the limit set by el-Badry for "high-confidence" binaries. So R<0.1 is high-confidence
 wd_val=np.int_(1)
 ms_val=np.int_(2) #integer values to be able to indicate what the overall binary is comprised of when summed. I.e. WD+MS binary is 3, WD+WD is 2, MS+MS is 4.
 unclassified_val=-5 #default value to fill the column with to ensure any binary with an unclassified component does not mistakenly make it through
 wdms_val=wd_val+ms_val #Technically this will really be evaluating if the star is or isn't a white dwarf I suppose because it will be whether the white dwarf is above or below the line that cuts along the H-R diagram
-elBadry_file=elBadry_dir+elBadry_file
+#elBadry_file=elBadry_dir+elBadry_file
 
 
 #################### binary separation function values#########
@@ -88,11 +83,12 @@ mag_offset=14.6
 #################################################
 
 
-elBadry_full_table=Table.read(elBadry_file)
+full_table=Table.read(input_file)
 
-highconf=np.where(elBadry_full_table['R_chance_align']<chance_align_cut)
-wdms_table=elBadry_full_table[highconf]
-print('\n\n\nR<',chance_align_cut)
+#highconf=np.where(elBadry_full_table['R_chance_align']<chance_align_cut)
+#wdms_table=elBadry_full_table[highconf]
+wdms_table=full_table
+#print('\n\n\nR<',chance_align_cut)
 wdms_table.pprint()
 
 #wdms_indices=np.where(elBadry_full_table['binary_type']=='WDMS') #don't want to use his classifiers
@@ -102,39 +98,58 @@ wdms_table.pprint()
 #wdms_table.pprint()
 print(len(wdms_table))
 
-def get_abs_mag(band='g',comp=1):
+def get_abs_mag(band='g'):
     #abs_mag=wdms_table['phot_'+band+'_mean_mag'+str(comp)]+5*np.log10(wdms_table['parallax'+str(comp)])-10
-    abs_mag=wdms_table['phot_'+band+'_mean_mag'+str(comp)]+5*np.log10(wdms_table['parallax'+'1'])-10 #El Badry uses the parallax of the primary to get the absolute magnitude of the secondary because it usually has better precision I'm pretty sure...
+    abs_mag=wdms_table['phot_'+band+'_mean_mag']+5*np.log10(wdms_table['parallax'])-10
     return abs_mag
 
-abs_g_mag1=get_abs_mag(comp=1)
-abs_g_mag2=get_abs_mag(comp=2)
+abs_g_mag=get_abs_mag()
 
-wdms_table.add_column(abs_g_mag1,name='abs_g_mag1')
-wdms_table.add_column(abs_g_mag2,name='abs_g_mag2')
+
+wdms_table.add_column(abs_g_mag,name='abs_g_mag')
 
 wdms_table.pprint()
 
 #priming the class integer identifiers
 
-class1_array=np.int_(np.ones(len(wdms_table))*unclassified_val)
-class2_array=np.int_(np.ones(len(wdms_table))*unclassified_val)
+class_array=np.int_(np.ones(len(wdms_table))*unclassified_val)
+#class2_array=np.int_(np.ones(len(wdms_table))*unclassified_val)
 
-print('class1_array')
-print(class1_array)
+print('class_array')
+print(class_array)
 
-wdms_table.add_column(class1_array,name='class1')
-wdms_table.add_column(class2_array,name='class2')
+wdms_table.add_column(class_array,name='class')
+#wdms_table.add_column(class2_array,name='class2')
 
-def do_quality_cuts(input_table,num=1):
+print('wdms_table["parallax_over_error"] max:', np.nanmax(wdms_table["parallax_over_error"]))
+
+print('wdms_table["phot_g_mean_flux_over_error"] max:', np.nanmax(wdms_table["phot_g_mean_flux_over_error"]))
+
+print('wdms_table["phot_rp_mean_flux_over_error"] max:', np.nanmax(wdms_table["phot_rp_mean_flux_over_error"]))
+
+print('wdms_table["duplicated_source"] sum:', wdms_table["duplicated_source"])
+print(type(wdms_table[0]['duplicated_source']))
+
+
+plt.hist(wdms_table['parallax_over_error'],bins=np.arange(0,2000,100))
+plt.title('parallax_over_error')
+plt.show()
+
+
+plt.hist(wdms_table['phot_g_mean_flux_over_error'])
+plt.title('phot_g_mean_flux_over_error')
+plt.show()
+
+def do_quality_cuts(input_table,num=''):
     #good_comp=np.where((input_table['parallax_over_error'+str(num)]>10) & (input_table['phot_g_mean_flux_over_error'+str(num)]>10) & (input_table['phot_rp_mean_flux_over_error'+str(num)]>10) & (input_table['g_rp'+str(num)]<1e15) & (input_table['duplicated_source'+str(num)]==False)) #original cuts
-    good_comp=np.where((input_table['parallax_over_error'+str(num)]>5) & (input_table['phot_g_mean_flux_over_error'+str(num)]>5) & (input_table['phot_rp_mean_flux_over_error'+str(num)]>5) & (input_table['g_rp'+str(num)]<1e15) & (input_table['duplicated_source'+str(num)]==False)) #loose cuts to be able to recover analogues to WDJ0356-2255 and SDSS J1330+6435 with their broad Na I D features and poorer signal to noise. Implemented 2023-10-05
+    #good_comp=np.where((input_table['parallax_over_error'+str(num)]>5) & (input_table['phot_g_mean_flux_over_error'+str(num)]>5) & (input_table['phot_rp_mean_flux_over_error'+str(num)]>5) & (input_table['g_rp'+str(num)]<1e15) & (input_table['duplicated_source'+str(num)]==False)) #loose cuts to be able to recover analogues to WDJ0356-2255 and SDSS J1330+6435 with their broad Na I D features and poorer signal to noise. Implemented 2023-10-05
+    good_comp=np.where((input_table['parallax_over_error']>5) & (input_table['phot_g_mean_flux_over_error']>5) & (input_table['phot_rp_mean_flux_over_error']>5) & (input_table['g_rp']<1e15) & (input_table['duplicated_source']=="false")) #loose cuts to be able to recover analogues to WDJ0356-2255 and SDSS J1330+6435 with their broad Na I D features and poorer signal to noise. Implemented 2023-10-05
     good_table_part=input_table[good_comp]
     
     
     return good_table_part
 
-def classify_targets(input_table, num=1):
+def classify_targets(input_table, num=''):
     slope=(ms_line_points[1][1]-ms_line_points[0][1])/(ms_line_points[1][0]-ms_line_points[0][0])
     calc_val=slope*(input_table['g_rp'+str(num)]-ms_line_points[0][0])+ms_line_points[0][1]
     print('calc_val',calc_val)
@@ -148,12 +163,14 @@ def classify_targets(input_table, num=1):
     input_table.pprint()
     return input_table
 
-good_comp1_table=do_quality_cuts(wdms_table,num=1)
-print('good_comp1_table')
-good_comp1_table.pprint()
-print('good_bothtable')
-good_bothtable=do_quality_cuts(good_comp1_table,num=2)
-good_bothtable.pprint()
+good_comp_table=do_quality_cuts(wdms_table)
+print('good_comp_table')
+good_comp_table.pprint()
+#print('good_bothtable')
+#good_bothtable=do_quality_cuts(good_comp1_table,num=2)
+#good_bothtable.pprint()
+
+good_bothtable=good_comp_table
 
 #want a minimum separation distance
 #I'm removing this because it's not a minimum separation distance we need (in a sense) it is a minimum magnitude difference for various separations
@@ -166,21 +183,17 @@ good_bothtable.pprint()
 #sys.exit()
 
 
-plt.scatter(good_bothtable['g_rp1'],good_bothtable['abs_g_mag1'],s=4)
-plt.scatter(good_bothtable['g_rp2'],good_bothtable['abs_g_mag2'],s=4)
+plt.scatter(good_bothtable['g_rp'],good_bothtable['abs_g_mag'],s=4)
+#plt.scatter(good_bothtable['g_rp2'],good_bothtable['abs_g_mag2'],s=4)
 plt.plot([ms_line_points[0][0],ms_line_points[1][0]], [ms_line_points[0][1],ms_line_points[1][1]])
 plt.ylim(20,0)
 plt.show()
 
-plt.scatter(good_bothtable['pairdistance']*3600.,good_bothtable['phot_g_mean_mag2']-good_bothtable['phot_g_mean_mag1'],s=4)
-plt.xlabel('separation in arcseconds')
-plt.ylabel('gmag2 - gmag1')
-plt.show()
 
 #No longer Going to assume the secondary is the white dwarf for our binaries of interest
 #assigning integer values to both of the 
-good_bothtable=classify_targets(good_bothtable,num=1)
-good_bothtable=classify_targets(good_bothtable,num=2)
+good_bothtable=classify_targets(good_bothtable,num='')
+#good_bothtable=classify_targets(good_bothtable,num=2)
 
 print('table after the functions run')
 good_bothtable.pprint()
@@ -190,19 +203,31 @@ good_bothtable.pprint()
 
 #cool_wdms_table.pprint()
 
-#Now we need to find the overall classification of the binaries
-whole_class=good_bothtable['class1']+good_bothtable['class2']
+##Now we need to find the overall classification of the binaries
+#whole_class=good_bothtable['class1']+good_bothtable['class2']
 
 
-plt.hist(whole_class, bins=np.arange(-6,5,0.5))
-plt.show()
+#plt.hist(whole_class, bins=np.arange(-6,5,0.5))
+#plt.show()
+
+whole_class=good_bothtable['class']
 
 
-wdms_indices=np.where((whole_class>(np.ones(len(good_bothtable))*(wdms_val-0.5)))&(whole_class<(np.ones(len(good_bothtable))*(wdms_val+0.5))))
-new_wdms_table=good_bothtable[wdms_indices]
+#wdms_indices=np.where((whole_class>(np.ones(len(good_bothtable))*(wdms_val-0.5)))&(whole_class<(np.ones(len(good_bothtable))*(wdms_val+0.5))))
 
-new_wdms_table.pprint()
-print(new_wdms_table['binary_type'])
+wd_indices=np.where(whole_class<(np.ones(len(good_bothtable))*(wd_val+0.5)))
+new_wd_table=good_bothtable[wd_indices]
+
+new_wd_table.pprint()
+print(new_wd_table['class'])
+print(len(new_wd_table))
+
+#sys.exit()
+
+new_wd_table.write(output_filename,overwrite=True)
+
+sys.exit()
+
 
 wdsec_ind=np.where(new_wdms_table['class2']==1)
 wdsec=new_wdms_table[wdsec_ind]

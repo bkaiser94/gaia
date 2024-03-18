@@ -71,15 +71,21 @@ list_color = '#1ca1f2'
 mc_number = 100000
 percent_off = 34 #1-sigma equivalent
 #############
-rv_zero=0.
-rv_sigma=100.
+#rv_zero=0.
+#rv_sigma=100.
 
-#rv_zero=100.
-#rv_sigma=25.
+rv_zero=100.
+rv_sigma=10.
 
 #HD113083 RV from Navarrete et al. 2015
 #rv_zero=227.91 
 #rv_sigma=0.46
+
+##J0212m5522A GaiaDR3 radial velocity
+#rv_zero=57.356037
+#rv_sigma=1.5245636
+
+
 ######
 
 
@@ -93,11 +99,14 @@ rv_sigma=100.
 #target_input='20210201_DZs_for_J1636paper_gaia.csv'
 #target_input='20210301_DZs_with_Be_included_gaia.csv'
 #target_input='DESJ2147m4035_Appsweirdcool28pc_dr2.csv'
-#target_input='20210201_DZs_for_J1636paper_gaia_gaiaDR3.csv'
+target_input='20210201_DZs_for_J1636paper_gaia_gaiaDR3.csv'
 #target_input='20210305_DZs_wBe_and_J1113_gaia.csv'
 #target_input='WDJ0850p1956_gaia_LiWDcand.csv'
 #target_input='HD113083_omegacen_gaiadr2.csv'
-target_input='WDJ1948m1011_gaiaDR3.csv'
+#target_input='WDJ1948m1011_gaiaDR3.csv'
+#target_input='WDJ1515p1911_gaiaDR3.csv'
+#target_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf_Vincent2023bClass.csv'
+#target_input='WDJ0212m5522_coolDZ_gaiaDR3.csv'
 
 #target_input='20210305B_ultracool_switchback_gaia_gaia_scbd.csv'
 
@@ -186,7 +195,7 @@ def test_errorbars(group_vel, group_disp, label):
     return [group_vel[1], group_disp[1]], [uw_mean, uw_std]
 
 
-def generate_toomre_diagram():
+def generate_toomre_diagram(show_retro_line=True, show_halo_ellipses=True):
     #fig= plt.figure()
     def plot_kinematic_group(group_vel, group_disp, label):
         group_v, group_uw= test_errorbars(group_vel, group_disp, label)
@@ -203,6 +212,15 @@ def generate_toomre_diagram():
     ax=plt.axes()
     ax.add_patch(sig3_ellipse)
     ax.add_patch(sig5_ellipse)
+    if show_retro_line:
+        plt.axvline(x=-1*circular_v_at_sun.value,color='r',linestyle=':')
+        plt.text(-1*circular_v_at_sun.value-5.,50,'Retrograde Orbits Left of This Line', rotation=90)
+    if show_halo_ellipses:
+        halo_v,halo_uw=test_errorbars(halo_vel,halo_disp,'halo')
+        halo_sig3_ellipse= mp.Ellipse((halo_v[0], halo_uw[0]), halo_v[1]*3*2, halo_uw[1]*3*2, fill=False, edgecolor='k', linestyle='--')
+        halo_sig5_ellipse= mp.Ellipse((halo_v[0], halo_uw[0]), halo_v[1]*5*2, halo_uw[1]*5*2, fill=False, edgecolor='k', linestyle='--')
+        ax.add_patch(halo_sig3_ellipse)
+        ax.add_patch(halo_sig5_ellipse)
     plt.xlabel('V (km/s)')
     plt.ylabel(r'$(U^2+W^2)^{1/2}$ (km/s)')
     plt.legend(loc='best')
@@ -236,6 +254,8 @@ def get_galLSR_coords(row, do_mc=False, vary_rv=False):
     star_coord= coord.SkyCoord(row['ra']*u.deg, row['dec']*u.deg, pm_ra_cosdec= row['pmra']*u.mas/u.yr, pm_dec= row['pmdec']*u.mas/u.yr, radial_velocity=0. *u.km/u.s, distance= 1000./row['parallax'] *u.pc , frame='icrs')
     #star_coord= coord.SkyCoord(row['ra']*u.deg, row['dec']*u.deg, pm_ra_cosdec= row['pmra']/np.cos(row['dec']/180*np.pi)*u.mas/u.yr, pm_dec= row['pmdec']*u.mas/u.yr, radial_velocity=0. *u.km/u.s, distance= (1000./row['parallax']) *u.pc, frame='icrs')
     #galLSR_coords= star_coord.transform_to(coord.GalacticLSR)
+    
+    #star_coord= coord.SkyCoord(row['ra']*u.deg, row['dec']*u.deg, pm_ra_cosdec= row['pmra']*u.mas/u.yr, pm_dec= row['pmdec']*u.mas/u.yr, radial_velocity=row['radial_velocity'] *u.km/u.s, distance= 1000./row['parallax'] *u.pc , frame='icrs')
     galLSR_coords= star_coord.transform_to(galLSR_base)
 
     if (do_mc and (not vary_rv)) :
@@ -247,11 +267,14 @@ def get_galLSR_coords(row, do_mc=False, vary_rv=False):
         pmdec_dist, parallax_dist=match_sizes(pmdec_dist, parallax_dist)
         pmra_dist, parallax_dist= match_sizes(pmra_dist, parallax_dist)
         dist_coord=coord.SkyCoord(row['ra']*u.deg, row['dec']*u.deg, pm_ra_cosdec=pmra_dist*u.mas/u.yr, pm_dec= pmdec_dist*u.mas/u.yr, radial_velocity=0. *u.km/u.s, distance= 1000./parallax_dist *u.pc , frame='icrs')
+        #dist_coord=coord.SkyCoord(row['ra']*u.deg, row['dec']*u.deg, pm_ra_cosdec=pmra_dist*u.mas/u.yr, pm_dec= pmdec_dist*u.mas/u.yr, radial_velocity=row['radial_velocity'] *u.km/u.s, distance= 1000./parallax_dist *u.pc , frame='icrs')
         #dist_coord=dist_coord.transform_to(coord.GalacticLSR)
         dist_coord=dist_coord.transform_to(galLSR_base)
         #print(np.sum(pmdec_dist-dist_coord.pm_dec.value))
         return galLSR_coords, dist_coord
-    elif (do_mc and vary_rv) :
+    elif (do_mc and vary_rv):
+        star_coord= coord.SkyCoord(row['ra']*u.deg, row['dec']*u.deg, pm_ra_cosdec= row['pmra']*u.mas/u.yr, pm_dec= row['pmdec']*u.mas/u.yr, radial_velocity=rv_zero *u.km/u.s, distance= 1000./row['parallax'] *u.pc , frame='icrs')
+        galLSR_coords= star_coord.transform_to(galLSR_base)
         pmra_dist=get_mc_distribution(row['pmra'], row['pmra_error'])
         pmdec_dist=get_mc_distribution(row['pmdec'], row['pmdec_error'])
         parallax_dist= get_mc_distribution(row['parallax'],row['parallax_error'])
@@ -314,6 +337,7 @@ def plot_values(target_table, plot_vals=['V', 'UW'], do_mc=True, vary_rv=False, 
         print('\n')
         print(row['name'], U, V, W)
         print('+/-', get_errors(U_dist), get_errors(V_dist),get_errors(W_dist))
+        print('sqrt(U**2+W**2):',UW)
         #plt.hist(UW_dist.value)
         #plt.show()
         if plot_vals[0]=='V':
@@ -370,15 +394,17 @@ def plot_values(target_table, plot_vals=['V', 'UW'], do_mc=True, vary_rv=False, 
 
 #plt.show()
 
-#plot_values(target_table, plot_vals=['V','UW'], color='r', vary_rv=True)
+print('line 376')
+plot_values(target_table, plot_vals=['V','UW'], color='r', vary_rv=True)
 plot_values(target_table, plot_vals=['V','UW'], color=list_color)
-generate_toomre_diagram()
+generate_toomre_diagram(show_halo_ellipses=False)
 
 plt.show()
 
+print('line 383')
 plot_values(target_table, plot_vals=['V','U'], color='r', vary_rv=True)
 plot_values(target_table, plot_vals=['V','U'], color=list_color)
-#generate_toomre_diagram()
+generate_toomre_diagram()
 
 plt.show()
 

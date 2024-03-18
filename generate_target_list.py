@@ -33,13 +33,14 @@ from astropy.table import Table, vstack, Column
 #input_file='20190516B_retargeted_purple_search_gaia_scbd_20211205_update.csv'
 #input_file='dimWDMS_F0toK7_eDR3.fits'
 #input_file='20190917_alkaliWD_attempt2_gaia_scbd.csv'
-input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
+#input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
+input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_loosecutsonly_justWDradec_gaiaDR3_d_sbf.csv'
 #input_file= 'josh_object.csv'
 #input_file='20190516B_retargeted_purple_subset.csv'
 #comment_string='retarg_purple'
 comment_string=''
 num=''
-start_target_num=50
+start_target_num=800
 
 output_file= input_file.split('.')[0]+'_targlist.txt'
 #output_file= input_file.split('.')[0]+'_400M1needed_targlist.txt'
@@ -47,8 +48,8 @@ output_file= input_file.split('.')[0]+'_targlist.txt'
 input_table=Table.read(input_file)
 delimiter='\t'
 
-#name_base='WDJ'
-name_base='GaiaJ'
+name_base='WDJ'
+#name_base='GaiaJ'
 
 sort_by_ra= True
 list_length=input_table['ra'+num].shape[0]
