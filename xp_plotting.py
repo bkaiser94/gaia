@@ -18,7 +18,7 @@ from __future__ import print_function
 
 
 import matplotlib
-matplotlib.use('pdf')
+#matplotlib.use('pdf')
 
 
 import numpy as np
@@ -44,7 +44,8 @@ import plotting_dicts as pod
 output_dir='GaiaDR3_XP_spectra/WDMS_wide_binaries_3300to7000A_truncfalse_PDFs/'
 
 #input_file='20210201_DZs_for_J1636paper_gaia_gaiaDR3.csv'
-input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
+#input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
+input_file='SDSSJ1018p4439nearby_gaiaDR3.csv'
 #input_file='WDJ1948m1011_gaiaDR3.csv'
 #input_file='LTT3218_GaiaDR3.csv'
 credentials_file= 'Gaia_credentials.txt'
@@ -52,7 +53,7 @@ credentials_file= 'Gaia_credentials.txt'
 #output_file='LHS2534_GaiaDR3_XPspectrum.csv'
 output_file='wdbinary_GaiaDR3_XPspectrum.csv'
 save_file=False
-save_plots=True
+save_plots=False
 single_index=3
 
 

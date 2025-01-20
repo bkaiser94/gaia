@@ -30,7 +30,7 @@ Gaia.MAIN_GAIA_TABLE = "gaiadr3.gaia_source"
 input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust.fits'
 wd_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf_Vincent2023bClass_20240125update.csv'
 
-output_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_MSmatches.csv'
+output_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_MSmatchesIDs.csv'
     
 if Gaia.MAIN_GAIA_TABLE=='gaiadr3.gaia_source':
     gaia_string='gaiaDR3'
@@ -74,6 +74,8 @@ table_initialized=False
         #table_initialized=True
 count=0
 new_colnames=['ra','dec','phot_g_mean_mag','pairdistance','sep_AU','R_chance_align','ra_wd','dec_wd','phot_g_mean_mag_wd']
+new_colnames=['source_id','ra','dec','phot_g_mean_mag','pairdistance','sep_AU','R_chance_align','source_id_wd','ra_wd','dec_wd','phot_g_mean_mag_wd']
+
 for row in all_table:
     wd_ra=row['ra'+str(row['wd_comp'])]
     wd_dec=row['dec'+str(row['wd_comp'])]
@@ -89,15 +91,25 @@ for row in all_table:
     if matched_index[0].shape[0]>0:
         wd_row=wd_table[matched_index[0]]
         print('matched_index', matched_index)
+        sub_row=row[['source_id'+str(ms_comp),
+            'ra'+str(ms_comp),'dec'+str(ms_comp),'phot_g_mean_mag'+str(ms_comp),
+                'pairdistance','sep_AU','R_chance_align',
+                'source_id'+str(wd_num),
+                'ra'+str(wd_num),'dec'+str(wd_num),'phot_g_mean_mag'+str(wd_num)]]
         if table_initialized:
-            sub_row=row[['ra'+str(ms_comp),'dec'+str(ms_comp),'phot_g_mean_mag'+str(ms_comp),
-                         'pairdistance','sep_AU','R_chance_align',
-                         'ra'+str(wd_num),'dec'+str(wd_num),'phot_g_mean_mag'+str(wd_num)]]
+            #sub_row=row[['ra'+str(ms_comp),'dec'+str(ms_comp),'phot_g_mean_mag'+str(ms_comp),
+                         #'pairdistance','sep_AU','R_chance_align',
+                         #'ra'+str(wd_num),'dec'+str(wd_num),'phot_g_mean_mag'+str(wd_num)]]
+             #sub_row=row[['source_id'+str(ms_comp)
+                 #,'ra'+str(ms_comp),'dec'+str(ms_comp),'phot_g_mean_mag'+str(ms_comp),
+                         #'pairdistance','sep_AU','R_chance_align',
+                         #'source_id'+str(wd_num)
+                         #'ra'+str(wd_num),'dec'+str(wd_num),'phot_g_mean_mag'+str(wd_num)]]
             output_table.add_row(sub_row)
         else:
-            sub_row=row[['ra'+str(ms_comp),'dec'+str(ms_comp),'phot_g_mean_mag'+str(ms_comp),
-                         'pairdistance','sep_AU','R_chance_align',
-                         'ra'+str(wd_num),'dec'+str(wd_num),'phot_g_mean_mag'+str(wd_num)]]
+            #sub_row=row[['ra'+str(ms_comp),'dec'+str(ms_comp),'phot_g_mean_mag'+str(ms_comp),
+                         #'pairdistance','sep_AU','R_chance_align',
+                         #'ra'+str(wd_num),'dec'+str(wd_num),'phot_g_mean_mag'+str(wd_num)]]
             output_table=Table(names=new_colnames,rows=sub_row)
             table_initialized=True
         print('\ndif RA before',output_table[count]['ra_wd']-wd_row['ra'])

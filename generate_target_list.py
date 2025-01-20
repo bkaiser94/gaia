@@ -34,13 +34,15 @@ from astropy.table import Table, vstack, Column
 #input_file='dimWDMS_F0toK7_eDR3.fits'
 #input_file='20190917_alkaliWD_attempt2_gaia_scbd.csv'
 #input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
-input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_loosecutsonly_justWDradec_gaiaDR3_d_sbf.csv'
+#input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_loosecutsonly_justWDradec_gaiaDR3_d_sbf.csv'
+#input_file='WDs_mistaken_for_Kstars_nofehlimit_by_SDSS_gaiaDR3_wnames_andlabels.csv'
 #input_file= 'josh_object.csv'
+input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf_Vincent2023bClass_20241216update.csv'
 #input_file='20190516B_retargeted_purple_subset.csv'
 #comment_string='retarg_purple'
 comment_string=''
 num=''
-start_target_num=800
+start_target_num=500
 
 output_file= input_file.split('.')[0]+'_targlist.txt'
 #output_file= input_file.split('.')[0]+'_400M1needed_targlist.txt'
@@ -88,6 +90,7 @@ full_mag_string= 'phot_'+mag_string+'_mean_mag'+num
     
 
 for thing, name, mag, target_num  in zip(string_coords, name_array, input_table[full_mag_string], target_num_array):
+#for thing, name, mag, target_num  in zip(string_coords, name_array, input_table['app_sp_type'], target_num_array):
 
 
     print(name)
@@ -128,6 +131,7 @@ for thing, name, mag, target_num  in zip(string_coords, name_array, input_table[
     epoch_list.append('2000.0')
     #mag_list.append(mag_string.upper()+'='+str(mag)[:4])
     mag_list.append(mag_string.upper()+'='+str(mag)[:4]+','+comment_string)
+    #mag_list.append(mag)
     #for other in thing:
         #print(other.replace(['d','h','m','s'], ':'))
 print(name_array)
@@ -138,7 +142,8 @@ output_array= np.vstack([name_list, ra_list, dec_list, epoch_list, mag_list]).T
 #priority_good= np.where((input_table['400m1_need_bool']!= 0) and  (input_table['400m2_need_bool']!=0))
 #priority_good= np.where(input_table['400m1_need_bool']== 1)
 #priority_good= np.where((input_table['400m1_need_bool']== 1) or (input_table['400m2_need_bool']==1))
-#output_array=output_array[priority_good]
+priority_good= np.where((input_table['obs_need_bool']== 1))
+output_array=output_array[priority_good]
 output_array=output_array.T
 #if sort_by_ra:
     #sorted_order= np.argsort(output_array[1])

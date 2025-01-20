@@ -156,7 +156,8 @@ zeropoint_dict={"g": [25.6883657251, 0.0017850023],
 
 ################################
 #Reading in the tables for the background and target files
-generic_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
+#generic_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf.csv'
+generic_input='WDs_mistaken_for_Kstars_nofehlimit_by_SDSS_gaiaDR3_wnames_andlabels.csv'
 
 generic_table = Table.read(generic_input)
 #original_table = Table.read(generic_input)
@@ -287,6 +288,8 @@ def scatter_plot(string_pair):
     plt.xlabel(string_pair[0])
     plt.ylabel(string_pair[1])
     #plt.title(string_pair[1] + ' vs. ' + string_pair[0])
+    if string_pair[1]=='astrometric_excess_noise_sig':
+        plt.yscale('log')
     plt.title(generic_input)
     plt.show()
     return
@@ -372,6 +375,17 @@ def plot_cut_lines(string_pair):
         #plt.plot(xvals,yvals, linestyle='--', color='g', label= "Ben's cut")
         plt.plot(xvals, y2vals, linestyle = '--', color='cyan', label = "Nicola's cut")
         plt.axhline(y=1.8,linestyle='--', color='blue', label='1.8 flat cut')
+        #New corrected BP/RP flux excess polynomial from Riello et al. 2021 (not technically a cut, but is the polynomial to put them on the same footing)
+        y1=1.154360+0.033772*xvals+0.032277*xvals**2
+        y2=1.162004+0.011464*xvals+0.049255*xvals**2-0.005879*xvals**3
+        y3=1.057572+0.140537*xvals
+        
+        plt.plot(xvals,y1,linestyle='--',color='g', label='C* from Riello et al. 2021')
+        plt.plot(xvals,y2,linestyle='--',color='pink')
+        plt.plot(xvals,y3,linestyle='--',color='orange')
+        plt.axvline(x=0.5)
+        plt.axvline(x=4.0)
+        
         plt.legend()
     if ((string_pair[0]== 'bp_rp') and (string_pair[1]=='mg')):
         x1vals= np.linspace(-1,-0.184268, 300)

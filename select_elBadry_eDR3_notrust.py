@@ -319,6 +319,8 @@ far_test=np.linspace(mid_mag_out_radius,400.,1000)
 far_vals=far_mag_func(far_test)
 plt.plot(far_test,far_vals)
 
+plt.plot(31.,9.41,marker='*',color='k',label='SDSS J1312-0229 and its companion',markersize=10)
+
 plt.xlabel('Separation (arcseconds)')
 plt.ylabel('G Mag difference (WD - Companion)')
 plt.title('Attempt at Magnitude Difference Cut based on Separation of the Binary Components')

@@ -35,10 +35,10 @@ import gaia_extinction
 import plotting_dicts as pod
 
 
-plt.rc('font', size =18)
-#plt.rc('lines', markersize=12)
+#plt.rc('font', size =18)
+plt.rc('lines', markersize=12)
 #plt.rc('font', size = 11)
-plt.rc('lines', markersize = 5)
+plt.rc('lines', markersize = 7)
 
 absmag_band= 'g'
 colours= ['g','rp']
@@ -55,8 +55,11 @@ axes_y = [-4,18]
 #axes_x= [-3, 6]
 #axes_y = [-5,25]
 
-y_fill= axes_y[1]
-x_fill= axes_x[0]
+#y_fill= axes_y[1]
+#x_fill= axes_x[0]
+
+x_fill=-2.5
+y_fill=-4.
 
 list_color = '#1ca1f2'
 single_list=False#turns off the original for-loop method for plotting from a single list
@@ -75,8 +78,10 @@ ncolor= 'red'
 
 #######3error distribution variables
 mc_number = 10000
+#mc_number=int(1e7) #have to use this for 5-sigma to have enough points
 percent_off = 34. #1-sigma equivalent
 #percent_off = 99.7/2. #3-sigma equivalent
+#percent_off=99.999943/2. #5-sigma equivalent
 #############
 
 #target_input='20190107_chris_merge_gaia.csv'
@@ -138,16 +143,32 @@ percent_off = 34. #1-sigma equivalent
 #target_input='WDs_mistaken_for_Kstars_by_SDSS_gaiaDR3names.csv'
 #target_input='WDs_mistaken_for_Kstars_nofehlimit_by_SDSS_gaiaDR3.csv'
 #target_input='sdss_kstars_nofehlimit_xmatch_gaiadr3.csv'
-target_input='SDSSJ0804p5130_gaiadr3.csv'
+#target_input='SDSSJ0804p5130_gaiadr3.csv'
+#target_input='WDs_mistaken_for_Kstars_nofehlimit_by_SDSS_gaiaDR3_wnames_andlabels.csv'
+#target_input='bestchance_potential_WDs_mistaken_for_Kstars.csv'
+#target_input='shapiro_supernova_remnant_central_objects_gaiadr3.csv'
 #target_input='20240116_1105_K5FeHLm05_15arcsecradgaiaDR3.csv'
 #target_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf_Vincent2023bClass_20240125update.csv'
 #target_input='WDJ1948m1011_gaiaDR3.csv'
 #target_input='WDJ1515p1911_gaiaDR3.csv'
+#target_input= 'mdwarf_spTs_gaia_sc_gaiaDR3.csv'
+#target_input='broadNaD_sdMs_gaiaDR3.csv'
+#target_input='Kesseli_2019_subdwarfs_spectypes_fix_gaiaDR3.csv'
+#target_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf_Vincent2023bClass_20241030update.csv'
+target_input='WDJ0523m1623_wdpec_gaiaDR3.csv'
 
 
+other_target_input='Kesseli_2019_subdwarfs_spectypes_fix_gaiaDR3.csv'
 #other_target_input='20220929_reallydim_WD_search_gaia_scbd.csv'
-
-other_target_input= 'mdwarf_spTs_gaia_sc.csv'
+#other_target_input='WISEAJ0615m1247_DZdMbroadNaD_gaiaDR3.csv'
+#other_target_input= 'mdwarf_spTs_gaia_sc_gaiaDR3.csv'
+#other_target_input='mainsequence_spTs_gaia_sc_gaiaDR3.csv'
+#other_target_input='WDpec_gaia_gaiaDR3.csv'
+#other_target_input='J1312brightnearby_gaiaDR3.csv'
+#other_target_input= 'mdwarf_spTs_gaia_sc.csv'
+#other_target_input='WDJ0212m5522_coolDZ_gaiaDR3.csv'
+#other_target_input='SDSSJ0738p4114_camel_gaiaDR2.csv'
+#other_target_input='SDSSJ2348p2116_andcompanion_potentialfakeK_gaiadr3.csv'
 #other_target_input='WDJ1203m0012_gaiaDR3.csv'
 #other_target_input='20210201_DZs_for_J1636paper_gaia_gaiaDR3.csv'
 #other_target_input='gaiaeDR3_spectral_type_objects.csv'
@@ -181,26 +202,38 @@ grid_num = 225
 
 #################################################################3
 ########## End of things that should be edited for a given run######################
-#######################################################################
-#Selecting the csv file to use to generate the background CMD
-if num_targs == 'all':
-    print('Distance-limited Sample like Figure 6 from DR2HRD')
-    generic_input = 'all_'+str(distance)+'pc_gaia_corr.csv'
-    title_suffix = ' in the ' + str(distance)+ 'pc Gaia DR2 CMD'
-elif num_targs== '47Tuc':
-    generic_input= "47Tuc_10arcmin.csv"
-elif num_targs== 'Lindegren':
-    generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
-    #generic_input='rand_astrometric_primaries1.csv'
-    #generic_input = 'Lindegren_appC_sel'+selection_letter + '_200pc.csv'
-    #generic_input='Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
-    #generic_input='Lindegren_appC_altC_noBDLMC.csv'
-    #generic_input= 'Lindegren_appC_selB_antiC_cut2.csv'
-    #generic_input= 'Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
-else:
-    num_targs = int(num_targs)
-    generic_input = 'top'+str(num_targs) + '_nearby_gaia.csv'
-    title_suffix = 'in the ' +str(num_targs)+ ' star sample following DR2HRD Figure 1'
+########################################################################
+
+home_path='/Users/BenKaiser/Desktop/gaia/' #need this to be able to call this in subfolders of the gaia directory, or rather to be able to plot the generic_input files without having to move them around.
+##Selecting the csv file to use to generate the background CMD
+#if num_targs == 'all':
+    #print('Distance-limited Sample like Figure 6 from DR2HRD')
+    #generic_input = 'all_'+str(distance)+'pc_gaia_corr.csv'
+    #title_suffix = ' in the ' + str(distance)+ 'pc Gaia DR2 CMD'
+#elif num_targs== '47Tuc':
+    #generic_input= "47Tuc_10arcmin.csv"
+#elif num_targs== 'Lindegren':
+    #generic_input = 'Lindegren_appC_sel'+selection_letter + '.csv'
+    ##generic_input='rand_astrometric_primaries1.csv'
+    ##generic_input = 'Lindegren_appC_sel'+selection_letter + '_200pc.csv'
+    ##generic_input='Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
+    ##generic_input='Lindegren_appC_altC_noBDLMC.csv'
+    ##generic_input= 'Lindegren_appC_selB_antiC_cut2.csv'
+    ##generic_input= 'Lindegren_appC_selB_antiC_cut2_gaia_sc.csv'
+#else:
+    #num_targs = int(num_targs)
+    #generic_input = 'top'+str(num_targs) + '_nearby_gaia.csv'
+    #title_suffix = 'in the ' +str(num_targs)+ ' star sample following DR2HRD Figure 1'
+    
+##I'm going to just set this file now. The old way was dumb, but maybe made sense when I wanted to plot a ton of different subsets without remembering the shorthand.
+
+#generic_input='GaiaDR3_100pc_sample.csv'
+generic_input='GaiaDR3_200pc_sample.csv'
+
+
+generic_input=home_path+generic_input #this should allow me to import this script other places and still open then generic_input file
+target_input=home_path+target_input
+other_target_input=home_path+other_target_input
     
 ############################
 
@@ -212,8 +245,10 @@ zeropoint_dict={"g": [25.6883657251, 0.0017850023],
 ################################
 #Reading in the tables for the background and target files
 generic_table = Table.read(generic_input)
+
 target_table = Table.read(target_input)
 other_target_table=Table.read(other_target_input)
+
 #target_table=target_table[np.where(target_table['repeat'] == 'False')]
 #target_table=target_table[np.where(target_table['priority'] <= 4.5)]
 #target_table=target_table[np.where(target_table['priority']> 98)]
@@ -437,7 +472,7 @@ def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = Tr
     return abs_mag, abs_mag_error, abs_mag_dist
 
 
-def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color=list_color, pseudo_colour=False, annotate=annotate, label='', markersize=markersize,num="",use_primary_parallax=False):
+def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color=list_color, pseudo_colour=False, annotate=annotate, label='', markersize=markersize,num="",use_primary_parallax=False, error_bar=error_bar):
     for row in input_table:
         if pseudo_colour:
             target_absmag, target_absmag_err, target_absmag_dist= get_pass_abs_mag(row, plot_all = False, passband_string= absmag)
@@ -459,8 +494,14 @@ def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color
             #print(row)
             target_absmag, target_absmag_err, target_absmag_dist= get_pass_abs_mag(row, plot_all = False, passband_string= absmag,num=num,use_primary_parallax=use_primary_parallax)
             target_colour_dif, target_colour_dif_err = get_colour_dif(row, plot_all = False, colours=colours,num=num)
+            print('type(target_colour_dif)',type(target_colour_dif))
+            print('target_colour_dif value comparison', target_colour_dif>0, target_colour_dif<0, target_colour_dif==0)
+            print('target_colour_dif-5',target_colour_dif-5)
+            #print('target_colour_dif',target_colour_dif,np.isnan(target_colour_dif))
+            #target_colour_dif.filled(np.nan)
             if row['phot_'+colours[0]+ '_mean_mag'+num]>1e18:
                 target_colour_dif= x_fill
+                print('x_fill used for colour_diff:', x_fill,target_colour_dif)
                 target_colour_dif_err= 0
             if row['parallax'+num]>1e18:
                 target_absmag=y_fill
@@ -663,6 +704,182 @@ def plot_abs_v_abs(generic_table= generic_table, colours=['g','rp']):
     #longfig.savefig(dest_dir+target_dir+'long_spectrum_'+ str(wave_limits[0])+','+str(wave_limits[1]) + '.pdf')
 
 if __name__ == '__main__':
+    plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+    plot_target_table(other_target_table, colours=['g','rp'],num="",list_color='magenta')
+    spec_targ_ind=np.where(target_table['name']=='WD J0523-1623')
+    plot_target_table(target_table,colours=['g','rp'],num='', list_color=list_color,error_bar=True, annotate=True)
+    plt.legend()
+    plt.title("White Dwarfs in Wide Binaries") 
+    plt.show()
+    
+    
+    plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+    plot_target_table(other_target_table, colours=['g','rp'],num="",list_color='magenta',label='WDPec')
+    spec_targ_ind=np.where(target_table['name']=='WD J0523-1623')
+    plot_target_table(target_table[spec_targ_ind],colours=['g','rp'],num='', list_color=list_color,label='WD J0523-1623',error_bar=True, annotate=True)
+    plt.legend()
+    plt.title("White Dwarfs in Wide Binaries") 
+    plt.show()
+    
+    plot_bkg_cmd(generic_table=generic_table, colours=['bp','rp'])
+    #plot_target_table(target_table, colours=['g','rp'],num="",list_color='magenta')
+    spec_targ_ind=np.where(target_table['name']=='WD J0523-1623')
+    plot_target_table(target_table[spec_targ_ind],colours=['bp','rp'],num='', list_color=list_color,label='WD J0523-1623',error_bar=True, annotate=True)
+    plt.legend()
+    plt.title("White Dwarfs in Wide Binaries") 
+    plt.show()
+    
+    plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+    plot_target_table(target_table, colours=['g','rp'],num="",list_color=list_color,label='Kesseli subdwarfs')
+    plot_target_table(other_target_table, colours=['g','rp'],num="",list_color='red',label='other ref spectypes')
+    ms_line_points=[
+    [1.55,16.75],
+    [-0.03,4.58]
+    ]
+    plt.plot([ms_line_points[0][0],ms_line_points[1][0]], [ms_line_points[0][1],ms_line_points[1][1]],label='WD cut line from WD+MS wide binary survey')
+    plt.legend()
+    plt.title("Kesseli 2019 Subdwarfs (and regular dwarfs)") 
+    plt.show()
+    
+    #plot_bkg_cmd(generic_table=generic_table, colours=['bp','rp'])
+    #plot_target_table(target_table, colours=['bp','rp'],num="",list_color=list_color,label='Kesseli subdwarfs')
+    #plot_target_table(other_target_table, colours=['bp','rp'],num="",list_color='red',label='other ref spectypes')
+    #plt.legend()
+    #plt.title("Kesseli 2019 Subdwarfs (and regular dwarfs)") 
+    #plt.show()
+    
+    subdwarf_table=Table.read('Kesseli_2019_subdwarfs_spectypes_fix_gaiaDR3.csv')
+    imposter_table=Table.read('bestchance_potential_WDs_mistaken_for_Kstars.csv')
+    plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+    plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=True,label='MS SpT')
+    #plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=annotate)
+    #plot_target_table(other_target_table, colours=['g','rp'], list_color='magenta', annotate=annotate,label='WD+dM close binary broad NaD')
+    plot_target_table(subdwarf_table, colours=['g','rp'], list_color=list_color, annotate=annotate,label='Kesseli subdwarfs')
+    plot_target_table(imposter_table, colours=['g','rp'], list_color='g', annotate=True,label="WDs in sheep's clothing")
+
+    plot_target_table(target_table, colours=['g','rp'],num="",annotate=True, label='')
+    plt.legend()
+    plt.show()
+    
+    #iterate_first_band='g'
+    iterate_second_band='rp'
+    iterate_first_band='bp'
+    for num in range(0,8):
+        inbounds_sub=np.char.find(subdwarf_table['name'],str(num)) #Checks each row for the string (in this case a number) and if it is there, it provides the index within that entry that corresponds to the string. If it is not present it returns -1
+        inbounds_sub=np.where(inbounds_sub!=-1) #keeping only the rows that actually have the searched for number string
+        print(inbounds_sub)
+        print('\n\n'+str(num)+'\n\n')
+        print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+        inbounds_ms=np.char.find(other_target_table['name'],str(num))
+        inbounds_ms=np.where(inbounds_ms!=-1)
+        plot_bkg_cmd(generic_table=generic_table, colours=[iterate_first_band,iterate_second_band])
+        plot_target_table(other_target_table[inbounds_ms], colours=[iterate_first_band,iterate_second_band], list_color='r', annotate=True,label='MS SpT')
+        #plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=annotate)
+        #plot_target_table(other_target_table, colours=['g','rp'], list_color='magenta', annotate=annotate,label='WD+dM close binary broad NaD')
+        plot_target_table(subdwarf_table[inbounds_sub], colours=[iterate_first_band,iterate_second_band], list_color=list_color, annotate=annotate,label='Kesseli subdwarfs')
+        plot_target_table(imposter_table, colours=[iterate_first_band,iterate_second_band], list_color='g', annotate=True,label="WDs in sheep's clothing")
+        plt.title('M'+str(num)+' spectral types')
+        #plot_target_table(target_table, colours=['g','rp'],num="",annotate=True, label='')
+        plt.legend()
+        plt.show()
+    
+    
+    #imposter_table=Table.read('bestchance_potential_WDs_mistaken_for_Kstars.csv')
+    #weirdK_table=Table.read('WISEJ1227m4541_superduperlowmetalKallegedly_gaiaDR3.csv')
+    #WISEAJ0615_table=Table.read('WISEAJ0615m1247_DZdMbroadNaD_gaiaDR3.csv')
+    #plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+    #plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=True,label='MS SpT')
+    ##plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=annotate)
+    ##plot_target_table(other_target_table, colours=['g','rp'], list_color='magenta', annotate=annotate,label='WD+dM close binary broad NaD')
+    #plot_target_table(WISEAJ0615_table, colours=['g','rp'], list_color='magenta', annotate=annotate,label='WD+dM close binary broad NaD')
+    #plot_target_table(target_table, colours=['g','rp'],num="",annotate=True, label='broad Na D dMs')
+    #plot_target_table(imposter_table, colours=['g','rp'], list_color='g', annotate=True,label="WDs in sheep's clothing")
+    #plot_target_table(weirdK_table, colours=['g','rp'], list_color='purple', annotate=True,label="super low metallicity K allegedly")
+    #plt.legend()
+    #plt.show()
+    
+    
+    
+    plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+    plot_target_table(target_table, colours=['g','rp'],num="")
+    plot_target_table(other_target_table, colours=['g','rp'],num="",list_color='purple')
+    plt.legend()
+    #plt.title("Best Chance Potentially Fake K stars in the H-R Diagram") 
+    plt.show()
+    
+    plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+    plot_target_table(target_table, colours=['g','rp'],num="",list_color=list_color)
+    plot_target_table(other_target_table, colours=['g','rp'],num="",list_color='blue')
+    ms_line_points=[
+    [1.55,16.75],
+    [-0.03,4.58]
+    ]
+    plt.plot([ms_line_points[0][0],ms_line_points[1][0]], [ms_line_points[0][1],ms_line_points[1][1]],label='WD cut line from WD+MS wide binary survey')
+    plt.legend()
+    plt.title("Best Chance Potentially Fake K stars in the H-R Diagram") 
+    plt.show()
+    
+    #plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+    
+    
+    #good_FakeK_inds=np.where((target_table['manual_xmatch_test']=='good')&(target_table['app_sp_type']=='FakeK'))
+    #good_FakeK_table=target_table[good_FakeK_inds]
+    
+    #good_Kdwarf_inds=np.where((target_table['manual_xmatch_test']=='good')&(target_table['app_sp_type']=='Kdwarf'))
+    #good_Kdwarf_table=target_table[good_Kdwarf_inds]
+    
+    #maybe_FakeK_inds=np.where((target_table['manual_xmatch_test']=='maybe')&(target_table['app_sp_type']=='FakeK'))
+    #maybe_FakeK_table=target_table[maybe_FakeK_inds]
+    
+    #maybe_Kdwarf_inds=np.where((target_table['manual_xmatch_test']=='maybe')&(target_table['app_sp_type']=='Kdwarf'))
+    #maybe_Kdwarf_table=target_table[maybe_Kdwarf_inds]
+    
+    
+    
+    #plot_target_table(good_FakeK_table, colours=['g','rp'],num='',label='good FakeK or Kdwarf',list_color='g')
+    #plot_target_table(good_Kdwarf_table, colours=['g','rp'],num='',list_color='g')
+    
+    #plot_target_table(maybe_FakeK_table, colours=['g','rp'],num='',label='maybe contaminated FakeK or Kdwarf',list_color='b')
+    #plot_target_table(maybe_Kdwarf_table, colours=['g','rp'],num='',list_color='b')
+    
+    #plt.legend()
+    #plt.show()
+    
+    
+    
+    plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+    #good_inds=np.where(target_table['manual_xmatch_test']=='good')
+    #target_table=target_table[good_inds]
+    DZ_inds=np.where(target_table['app_sp_type']=='DZ')
+    DZH_inds=np.where(target_table['app_sp_type']=='DZH')
+    Kdwarf_inds=np.where(target_table['app_sp_type']=='Kdwarf')
+    FakeK_inds=np.where(target_table['app_sp_type']=='FakeK')
+    eitheror_inds=np.where(target_table['app_sp_type']=='Kdwarf/FakeK')
+    DC_inds=np.where(target_table['app_sp_type']=='DC')
+    DA_inds=np.where(target_table['app_sp_type']=='DA')
+    camel_inds=np.where(target_table['app_sp_type']=='camel')
+    unknown_inds=np.where(target_table['app_sp_type']=='??')
+    print("\n\n num DZ's and DZH's:" ,DZ_inds[0].shape[0]+DZH_inds[0].shape[0],'\n\n')
+    print("\n\n num FakeK:" ,FakeK_inds[0].shape[0], '\n\n')
+    print("\n\n num Kdwarf:" ,Kdwarf_inds[0].shape[0], '\n\n')
+    print("\n\n num Kdwarf/FakeK:" ,eitheror_inds[0].shape[0], '\n\n')
+    print("\n\n num DC:" ,DC_inds[0].shape[0], '\n\n')
+    print("\n\n num DA:" ,DA_inds[0].shape[0], '\n\n')
+    print("\n\n num camel:" ,camel_inds[0].shape[0], '\n\n')
+    #plot_target_table(target_table, colours=['g','rp'],num="",label='all')
+    #plot_target_table(target_table[DC_inds], colours=['g','rp'],num="",label='DC',list_color='grey')
+    #plot_target_table(target_table[DA_inds], colours=['g','rp'],num="",label='DA',list_color='grey')
+    ##plot_target_table(target_table[DZ_inds], colours=['g','rp'],num="",label='DZ/DZH',list_color='g')
+    ##plot_target_table(target_table[DZH_inds], colours=['g','rp'],num="",list_color='g')
+    plot_target_table(target_table[Kdwarf_inds], colours=['g','rp'],num="",label='Kdwarf',list_color='r')
+    #plot_target_table(target_table[eitheror_inds], colours=['g','rp'],num="",label='Maybe Kdwarf or FakeK',list_color='magenta')
+    #plot_target_table(target_table[unknown_inds], colours=['g','rp'],num="",label='??',list_color='g')
+    plot_target_table(target_table[FakeK_inds], colours=['g','rp'],num="",label='FakeK',list_color='b')
+    plot_target_table(target_table[camel_inds], colours=['g','rp'],num="",label='camel',list_color='orange')
+    plot_target_table(other_target_table, colours=['g','rp'], list_color='purple', annotate=True)
+    plt.legend()
+    plt.title("Spectral Classifications of the Potentially Fake K stars in the H-R Diagram")
+    plt.show()
     #plot_bkg_cmd()
     #plt.title(generic_input)
     #plt.show()
@@ -672,7 +889,11 @@ if __name__ == '__main__':
     #plot_bkg_cmd(generic_table= generic_table, absmag= absmag_band, colours= ['bp','g'])
     #plt.title(generic_input)
     #plt.show()
-
+    plot_bkg_cmd(generic_table=generic_table, colours=['bp','rp'])
+    plot_target_table(target_table, colours=['bp','rp'],num="",label='all')
+    plt.legend()
+    plt.title("Spectral Classifications of the Potentially Fake K stars in the H-R Diagram") 
+    plt.show()
     #plot_bkg_cmd(absmag= 'bp', colours= ['bp','g'])
     #plt.title(generic_input)
     #plt.show()

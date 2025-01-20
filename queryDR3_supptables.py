@@ -26,7 +26,8 @@ start = time.time()
 
 #Setting which gaia table is being used for queries.
 
-Gaia.MAIN_GAIA_TABLE = "gaiadr3.gaia_source" 
+#Gaia.MAIN_GAIA_TABLE = "gaiadr3.gaia_source" 
+Gaia.MAIN_GAIA_TABLE = "gaiadr3.astrophysical_parameters" 
 #Gaia.MAIN_GAIA_TABLE = "gaiaedr3.gaia_source"
 #Gaia.MAIN_GAIA_TABLE = "gaiadr2.gaia_source"
 
@@ -154,8 +155,7 @@ dec_index=1
 #input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_MSmatches.csv'
 #input_file='mdwarf_spTs_gaia_sc.csv'
 #input_file='Kesseli_2019_subdwarfs_J2016coords_simbad.csv'
-#input_file='WDJ0212m5522_coolDZ_gaiaDR3.csv'
-input_file='WDpec_gaia.csv'
+input_file='WDJ0212m5522_coolDZ_gaiaDR3.csv'
 
 additional_suffixes= ''
 
