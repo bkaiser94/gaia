@@ -155,7 +155,8 @@ dec_index=1
 #input_file='mdwarf_spTs_gaia_sc.csv'
 #input_file='Kesseli_2019_subdwarfs_J2016coords_simbad.csv'
 #input_file='WDJ0212m5522_coolDZ_gaiaDR3.csv'
-input_file='WDpec_gaia.csv'
+#input_file='WDpec_gaia.csv'
+input_file='20250313_1125_hbetadipper_locus_500pcG18.csv'
 
 additional_suffixes= ''
 

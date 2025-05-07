@@ -99,14 +99,16 @@ rv_sigma=10.
 #target_input='20210201_DZs_for_J1636paper_gaia.csv'
 #target_input='20210301_DZs_with_Be_included_gaia.csv'
 #target_input='DESJ2147m4035_Appsweirdcool28pc_dr2.csv'
-target_input='20210201_DZs_for_J1636paper_gaia_gaiaDR3.csv'
+#target_input='20210201_DZs_for_J1636paper_gaia_gaiaDR3.csv'
 #target_input='20210305_DZs_wBe_and_J1113_gaia.csv'
 #target_input='WDJ0850p1956_gaia_LiWDcand.csv'
 #target_input='HD113083_omegacen_gaiadr2.csv'
 #target_input='WDJ1948m1011_gaiaDR3.csv'
 #target_input='WDJ1515p1911_gaiaDR3.csv'
 #target_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf_Vincent2023bClass.csv'
+#target_input='20190516B_retargeted_purple_search_gaia_scbd_20230301_update.csv'
 #target_input='WDJ0212m5522_coolDZ_gaiaDR3.csv'
+target_input='GaiaDR3_25pc_allstars.csv'
 
 #target_input='20210305B_ultracool_switchback_gaia_gaia_scbd.csv'
 
@@ -393,6 +395,16 @@ def plot_values(target_table, plot_vals=['V', 'UW'], do_mc=True, vary_rv=False, 
 #plot_values(target_table, plot_vals=['V','U'], color=list_color)
 
 #plt.show()
+
+
+def get_tanv(row):
+    return 4.74/row['parallax']*np.sqrt(row['pmra']**2+row['pmdec']**2)
+
+plt.scatter(get_tanv(target_table),target_table['dec'],s=8)
+plt.ylabel('Dec (degrees)')
+plt.xlabel('Tangential Velocity (km/s) = 4.74/parallax *sqrt(pmra**2+pmdec**2)')
+plt.title(target_input)
+plt.show()
 
 print('line 376')
 plot_values(target_table, plot_vals=['V','UW'], color='r', vary_rv=True)

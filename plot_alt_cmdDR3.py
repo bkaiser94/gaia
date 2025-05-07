@@ -75,6 +75,7 @@ markersize=4
 
 bcolor='purple'
 ncolor= 'red'
+dippercolor='red'
 
 #######3error distribution variables
 mc_number = 10000
@@ -155,10 +156,16 @@ percent_off = 34. #1-sigma equivalent
 #target_input='broadNaD_sdMs_gaiaDR3.csv'
 #target_input='Kesseli_2019_subdwarfs_spectypes_fix_gaiaDR3.csv'
 #target_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf_Vincent2023bClass_20241030update.csv'
-target_input='WDJ0523m1623_wdpec_gaiaDR3.csv'
+#target_input='WDJ0523m1623_wdpec_gaiaDR3.csv'
+#target_input='20250306_hbetadippers_WDMS_widebinaries.csv'
+#target_input='full_MORDOR_survey_1681141339.csv'
+#target_input='J2053p1302A_gaiaDR3.csv'
+target_input='J1202m0412A_gaiaDR3.csv'
 
 
 other_target_input='Kesseli_2019_subdwarfs_spectypes_fix_gaiaDR3.csv'
+#other_target_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf_Vincent2023bClass_20241030update.csv'
+#other_target_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf_Vincent2023bClass_20250306update.csv'
 #other_target_input='20220929_reallydim_WD_search_gaia_scbd.csv'
 #other_target_input='WISEAJ0615m1247_DZdMbroadNaD_gaiaDR3.csv'
 #other_target_input= 'mdwarf_spTs_gaia_sc_gaiaDR3.csv'
@@ -229,6 +236,8 @@ home_path='/Users/BenKaiser/Desktop/gaia/' #need this to be able to call this in
 
 #generic_input='GaiaDR3_100pc_sample.csv'
 generic_input='GaiaDR3_200pc_sample.csv'
+#generic_input='20250313_hbetadipper_locus_bright200pc.csv'
+#generic_input='20250313_hbetadipper_locus.csv'
 
 
 generic_input=home_path+generic_input #this should allow me to import this script other places and still open then generic_input file
@@ -313,6 +322,25 @@ def plot_nicola_cuts():
     plt.plot(x3vals, y3vals, color= ncolor)
     plt.plot(x4vals, y4vals, color= ncolor)
     plt.legend()
+    return
+
+def plot_hbetadipper_box():
+    x1vals=np.linspace(0.5420,0.5977,100)
+    def get_y_vals(m, xvals, b):
+        return m*xvals+b
+    y1vals=get_y_vals(-2.12, x1vals, 15.938)
+    x2vals=np.linspace(0.5977,0.6327,100)
+    y2vals=get_y_vals(5.2,x2vals,11.564)
+    x3vals=np.linspace(0.6327,0.5915,100)
+    y3vals=get_y_vals(-3.689, x3vals, 17.188)
+    x4vals=np.linspace(0.5915,0.5420,100)
+    y4vals=get_y_vals(4.364, x4vals, 12.425)
+    plt.plot(x1vals,y1vals, color= dippercolor, label="Hbeta dipper box")
+    plt.plot(x2vals, y2vals, color= dippercolor)
+    plt.plot(x3vals, y3vals, color= dippercolor)
+    plt.plot(x4vals, y4vals, color= dippercolor)
+    plt.legend()
+    
     return
 
 
@@ -702,8 +730,54 @@ def plot_abs_v_abs(generic_table= generic_table, colours=['g','rp']):
     #longax.set_ylabel('Flux (cgs units)')
     #longax.set_xlabel('Wavelength $(\AA)$')
     #longfig.savefig(dest_dir+target_dir+'long_spectrum_'+ str(wave_limits[0])+','+str(wave_limits[1]) + '.pdf')
+    
+
 
 if __name__ == '__main__':
+    
+    plot_target_table(target_table, colours=['g','rp'],num="")
+    plot_target_table(other_target_table, colours=['g','rp'],num="",list_color='green')
+    plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+    plot_ben_cuts()
+    plt.legend()
+    plt.show()
+    
+    
+    #plot_target_table(target_table, colours=['g','rp'],num="",label='all',list_color='red')
+    plot_target_table(target_table[np.where(target_table['sp_type']=='DC')], colours=['g','rp'],num="",label='DC',list_color='grey')
+    plot_target_table(target_table[np.where(target_table['sp_type']=='DQpec')], colours=['g','rp'],num="",label='DQpec')
+    plot_target_table(target_table[np.where(target_table['sp_type']=='DZ')], colours=['g','rp'],num="",label='DZ',list_color='g')
+    plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+    plot_ben_cuts()
+    plt.legend()
+    plt.show()
+    
+    
+    #plot_target_table(target_table, colours=['bp','rp'],num="",label='all',list_color='red')
+    plot_target_table(target_table[np.where(target_table['sp_type']=='DC')], colours=['bp','rp'],num="",label='DC',list_color='grey')
+    plot_target_table(target_table[np.where(target_table['sp_type']=='DQpec')], colours=['bp','rp'],num="",label='DQpec')
+    plot_target_table(target_table[np.where(target_table['sp_type']=='DZ')], colours=['bp','rp'],num="",label='DZ',list_color='g')
+    plot_bkg_cmd(generic_table=generic_table, colours=['bp','rp'])
+    plot_nicola_cuts()
+    plt.legend()
+    plt.show()
+    
+    #search_table=Table.read('20250313_1125_hbetadipper_locus_500pcG18_gaiaDR3.csv')
+    search_table=Table.read('20250313_1125_hbetadipper_locus_500pcG18.csv')
+    plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+    checked_inds=np.where(other_target_table['Hbeta_dip_check']==1)
+    plot_target_table(other_target_table, colours=['g','rp'],num="",list_color='blue', label='unchecked survey',annotate=False,error_bar=False)
+    plot_target_table(other_target_table[checked_inds], colours=['g','rp'],num="",list_color='magenta', label='checked survey',annotate=False,error_bar=False)
+    #spec_targ_ind=np.where(target_table['name']=='WD J0523-1623')
+    plot_target_table(target_table,colours=['g','rp'],num='', list_color=list_color,error_bar=True, annotate=False, label='Hbeta dippers')
+    #plot_target_table(search_table,colours=['g','rp'],num='', list_color='purple',error_bar=False, annotate=False, label='dipper search')
+    plt.scatter(search_table['g_rp'],search_table['mg'], color='purple',label='dipper search')
+    plot_hbetadipper_box()
+    plt.legend()
+    plt.title("White Dwarfs in Wide Binaries") 
+    plt.show()
+    
+    
     plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
     plot_target_table(other_target_table, colours=['g','rp'],num="",list_color='magenta')
     spec_targ_ind=np.where(target_table['name']=='WD J0523-1623')

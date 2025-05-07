@@ -16,14 +16,18 @@ print('\n\n\n\n##################\n\n\n\n\n##############')
 #newest_search= '20190405_purple_search_gaia_sc.csv'
 #newest_search= '20190516B_retargeted_purple_search_gaia_scbd.csv'
 #newest_search= '20190917_alkaliWD_attempt2_gaia_scbd.csv'
-newest_search='20220929_reallydim_WD_search_gaia_scbd.csv'
-check_searches=['20190107_chris_merge_gaia.csv',
-                'expanded_purple_search_gmaglimit_gaia_sc.csv',
-                'exc1_8_2_2_purple_search_gmaglimit_gaia_sc.csv',
-                'sdssj1330_similar_subset_gaia_sc.csv',
-                '20190405_purple_search_gaia_sc.csv',
-                '20190829_alkaliWD_targeted_gaia_scbd.csv',
-                '20190516B_retargeted_purple_search_gaia_scbd_20220804_update.csv']
+#newest_search='20220929_reallydim_WD_search_gaia_scbd.csv'
+newest_search='20250313_1125_hbetadipper_locus_500pcG18_gaiaDR3.csv'
+#check_searches=['20190107_chris_merge_gaia.csv',
+                #'expanded_purple_search_gmaglimit_gaia_sc.csv',
+                #'exc1_8_2_2_purple_search_gmaglimit_gaia_sc.csv',
+                #'sdssj1330_similar_subset_gaia_sc.csv',
+                #'20190405_purple_search_gaia_sc.csv',
+                #'20190829_alkaliWD_targeted_gaia_scbd.csv',
+                #'20190516B_retargeted_purple_search_gaia_scbd_20220804_update.csv']
+                
+check_searches=['20250313_hbetadipper_locus_bright200pc.csv'
+    ]
                # '20190516B_retargeted_purple_search_gaia_scbd.csv'] #old filenames that should be searched for duplicates
 
 comp_name= 'source_id' #column name that should be used to check if it's a repeat Probably should be 'source_id' since that's it's Gaia-assigned name. A long string of numbers unique to each object.
@@ -37,7 +41,8 @@ try:
     print('Test repeat column: ', newest_table['repeat'][0])
 except KeyError:
     print("Repeat column doesn't exist, so we're making it.")
-    new_length = len(newest_table['dist'])
+    #new_length = len(newest_table['dist'])
+    new_length = len(newest_table)
     false_array = np.full((new_length,), False, dtype=bool)
     false_column = Column(false_array, name='repeat',dtype=bool)
     newest_table.add_column(false_column)
@@ -46,7 +51,7 @@ try:
     print('Test prev_file column: ', newest_table['prev_file'][0])
 except KeyError:
     print("prev_file column doesn't exist, so we're making it.")
-    new_length = len(newest_table['dist'])
+    new_length = len(newest_table)
     file_array = np.full((new_length,),'',  dtype='S64')
     file_column = Column(file_array, name='prev_file',dtype='S64')
     newest_table.add_column(file_column)
