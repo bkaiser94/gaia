@@ -13,6 +13,8 @@ I have in there to do calculations of a single target.
 
 from __future__ import print_function
 import numpy as np
+
+import matplotlib.colors as colors
 #from astroquery.gaia import Gaia
 import astropy.units as u
 import astropy.coordinates as coord
@@ -21,6 +23,7 @@ import matplotlib.pyplot as plt
 import scipy.stats as scistats
 #import seaborn as sns
 #import astropy
+import os
 
 
 #import passband_model_convolution as pmc
@@ -39,7 +42,8 @@ absmag_band= 'g'
 colours= ['g','rp']
 
 
-
+home_dir='/Users/BenKaiser/Desktop/gaia/'
+os.chdir(home_dir)
 
 
 axes_x= [-1.5, 6]
@@ -55,7 +59,7 @@ x_fill= axes_x[0]
 
 list_color = '#1ca1f2'
 single_list=False#turns off the original for-loop method for plotting from a single list
-error_bar=True #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
+error_bar=False #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
 annotate= False #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
 parallax_correction = 0.029 #from Lindgren et al 2018
 
@@ -68,10 +72,14 @@ bcolor='purple'
 ncolor= 'red'
 flag_color='#1ca1f2'
 
+default_cmap='hot'
+default_cmap='gray'
+default_cmap='Greys'
+
 #######3error distribution variables
 mc_number = 10000
-#percent_off = 34. #1-sigma equivalent
-percent_off = 99.7/2. #3-sigma equivalent
+percent_off = 34. #1-sigma equivalent
+#percent_off = 99.7/2. #3-sigma equivalent
 #############
 
 #target_input='20190107_chris_merge_gaia.csv'
@@ -199,7 +207,11 @@ other_target_table=Table.read(other_target_input)
 #print('name',target_table[2]['name'])
 ####################################
 
-def plot_ben_cuts():
+def plot_ben_cuts(show_name=True):
+    if show_name:
+        label="MORDOR Survey"
+    else:
+        label=''
     x1vals= np.linspace(0.82, 0.97, 100)
     y1vals= 8.87*x1vals + 6.8
     x2vals= np.linspace(1.32, 1.52, 100)
@@ -210,12 +222,12 @@ def plot_ben_cuts():
     x4vals= np.ones(y4vals.shape)*0.97
     y5vals= np.linspace(15.7, 18, 100)
     x5vals= np.ones(y5vals.shape)*1.52
-    plt.plot(x1vals,y1vals, color= bcolor, label="MORDOR Survey cuts")
+    plt.plot(x1vals,y1vals, color= bcolor, label=label)
     plt.plot(x2vals, y2vals, color= bcolor)
     plt.plot(x3vals, y3vals, color= bcolor)
     plt.plot(x4vals, y4vals, color= bcolor)
     plt.plot(x5vals, y5vals, color= bcolor)
-    plt.legend()
+    #plt.legend()
     return
 
 def plot_nicola_cuts():
@@ -226,15 +238,15 @@ def plot_nicola_cuts():
     x3vals= np.linspace(np.max(x2vals), 1.7, 300)
     y3vals = 6*x3vals**3.-21.77*x3vals**2.+27.91*x3vals+0.897
     #y4vals= np.linspace(14.9067,16,300)
-    y4vals= np.linspace(14.9067,17,300)
+    y4vals= np.linspace(14.9067,17.5,300)
     x4vals= np.ones(y4vals.shape)*1.7
     #plt.plot(x1vals,y1vals, color= ncolor, label="Nicola's cut")
     #plt.plot(x1vals,y1vals, color= ncolor, label="Gentile Fusillo et al. (2019)")
-    plt.plot(x1vals,y1vals, color= ncolor, label="Gentile Fusillo et al. (2019) cuts")
+    plt.plot(x1vals,y1vals, color= ncolor, label="Gentile Fusillo et al. (2019)")
     plt.plot(x2vals, y2vals, color= ncolor)
     plt.plot(x3vals, y3vals, color= ncolor)
     plt.plot(x4vals, y4vals, color= ncolor)
-    plt.legend()
+    #plt.legend()
     return
 
 def plot_nicola_flag():
@@ -307,7 +319,7 @@ def get_filter_vals(table, filter_string):
 
 
 
-def get_colour_dif(table, plot_all = False, verbose =True, colours=['bp','rp']):
+def get_colour_dif(table, plot_all = False, verbose =False, colours=['bp','rp']):
     """
     Inputs:
         table: an astropy table of Gaia values
@@ -352,7 +364,7 @@ def get_colour_dif(table, plot_all = False, verbose =True, colours=['bp','rp']):
 
 
 
-def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = True):
+def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = False):
     mean_flux, flux_dist = get_filter_vals(table, passband_string)
     mag = get_mag(mean_flux, passband_string)
     flux_dist= remove_negative(flux_dist, verbose=verbose)
@@ -377,8 +389,8 @@ def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = Tr
     distance = 1./parallax
     distance_dist = 1./parallax_dist
     index_length = distance_dist.shape[0]
-    print("index_length",index_length)
-    print("mag_dist.shape", mag_dist.shape)
+    #print("index_length",index_length)
+    #print("mag_dist.shape", mag_dist.shape)
     mag_dist = mag_dist[:index_length]
     mag_dist, distance_dist= match_sizes(mag_dist, distance_dist)
     abs_mag = distance_modulus(mag, distance)
@@ -408,8 +420,8 @@ def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color
             target_colour_dif = 1./target_pseudo_colour*1e4
             plt.xlabel('1./astrometric_pseudo_colour (angstroms)')
             plt.errorbar(np.copy(target_colour_dif), np.copy(target_absmag), yerr = np.copy(target_absmag_err),  xerr = np.copy(target_colour_dif_err), marker = 'o', markersize = markersize, color = list_color, capsize = 4, linestyle ='none')
-            print(target_colour_dif, target_absmag)
-            print(row['name'])
+            #print(target_colour_dif, target_absmag)
+            #print(row['name'])
             if annotate:
                 plt.annotate(str(row['name']),xy=(np.copy(target_colour_dif), np.copy(target_absmag)), xycoords='data', xytext=(np.copy(target_colour_dif+0.01),np.copy(target_absmag-0.1)), textcoords= 'data' , fontsize=8, color =list_color)
             else:
@@ -482,7 +494,8 @@ def plot_bkg_cmd(generic_table= generic_table, absmag='g', colours=['bp','rp'], 
         generic_absmag= generic_table['mg']
         generic_colour_dif= generic_table['bp_rp']
     #polything = plt.hexbin(generic_colour_dif, generic_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
-    polything = plt.hexbin(generic_colour_dif, generic_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label='')
+    #polything = plt.hexbin(generic_colour_dif, generic_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label='')
+    polything = plt.hexbin(generic_colour_dif, generic_absmag, gridsize=(grid_num, grid_num), cmap = default_cmap, mincnt = 1, label='',norm=colors.LogNorm())
     counts = polything.get_array()
     print(counts.shape)
     counts= np.sqrt(counts)
@@ -578,9 +591,9 @@ def plot_abs_v_abs(generic_table= generic_table, colours=['g','rp']):
         absmag0 = distance_modulus(mag0, generic_distance)
         absmag1=distance_modulus(mag1,generic_distance)
         plt.xlabel('M_'+colours[0])
-        polything = plt.hexbin(absmag0, absmag1, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
+        polything = plt.hexbin(absmag0, absmag1, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R",norm='power')
         counts = polything.get_array()
-        print(counts.shape)
+        #print(counts.shape)
         counts= np.sqrt(counts)
         #counts=np.log(counts)
         polything.set_array(counts)

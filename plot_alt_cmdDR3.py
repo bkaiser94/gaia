@@ -43,6 +43,10 @@ plt.rc('lines', markersize = 7)
 absmag_band= 'g'
 colours= ['g','rp']
 
+default_cmap='hot'
+default_cmap='gray'
+default_cmap='Greys'
+
 
 
 
@@ -63,8 +67,8 @@ y_fill=-4.
 
 list_color = '#1ca1f2'
 single_list=False#turns off the original for-loop method for plotting from a single list
-error_bar=True #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
-annotate= True #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
+error_bar=False #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
+annotate= False #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
 #parallax_correction = 0.029 #from Lindgren et al 2018
 parallax_correction=0.
 
@@ -322,6 +326,12 @@ def plot_nicola_cuts():
     plt.plot(x3vals, y3vals, color= ncolor)
     plt.plot(x4vals, y4vals, color= ncolor)
     plt.legend()
+    return
+
+def plot_nicola_eDR3_cuts():
+    xvals=np.linspace(-0.5,2.5)
+    yvals=6+5*xvals #equation 1 from Gentile Fusillo et al. (2021) eDR3 WD catalogue. It's the only HRD boundary
+    plt.plot(xvals,yvals,color=ncolor,label='Gentile Fusillo et al. (2021)') #technically for eDR3
     return
 
 def plot_hbetadipper_box():
@@ -591,7 +601,7 @@ def plot_bkg_cmd(generic_table= generic_table, absmag='g', colours=['bp','rp'], 
         generic_absmag= generic_table['mg']
         generic_colour_dif= generic_table['bp_rp']
     #polything = plt.hexbin(generic_colour_dif, generic_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label = "H-R")
-    polything = plt.hexbin(generic_colour_dif, generic_absmag, gridsize=(grid_num, grid_num), cmap = 'hot', mincnt = 1, label='')
+    polything = plt.hexbin(generic_colour_dif, generic_absmag, gridsize=(grid_num, grid_num),cmap = default_cmap,  mincnt = 1, label='')
     counts = polything.get_array()
     print(counts.shape)
     counts= np.sqrt(counts)
@@ -603,7 +613,7 @@ def plot_bkg_cmd(generic_table= generic_table, absmag='g', colours=['bp','rp'], 
     #plt.xlabel(r'$G_{BP} - G_{RP}$')
     #plt.ylabel(r'$M_G$')
     plt.ylabel('M_'+absmag)
-    plt.subplots_adjust(wspace = 0, hspace = 0, top = 0.90, bottom = 0.10, left = 0.10, right = 0.90)
+    #plt.subplots_adjust(wspace = 0, hspace = 0, top = 0.90, bottom = 0.10, left = 0.10, right = 0.90)
     
     
     return
