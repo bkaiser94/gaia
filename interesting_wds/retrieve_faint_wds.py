@@ -81,11 +81,10 @@ for chunk in chunks:
     #"""
     adql = f"""
       SELECT *
-      FROM gaiadr3.panstarrs1_best_neighbour AS ps1
-      WHERE ps1.source_id IN ({id_list})
-      JOIN gaiadr2.panstarrs1_original_valid as ps1photo
-      ON ps1.original_ext_source_id = ps1photo.obj_id
-      
+      FROM gaiadr3.panstarrs1_best_neighbour as ps1
+        JOIN gaiadr2.panstarrs1_original_valid as ps1photo
+            ON ps1.original_ext_source_id = ps1photo.obj_id
+        WHERE ps1.source_id IN ({id_list})
     """
     job = Gaia.launch_job_async(adql)
     results.append(job.get_results())
