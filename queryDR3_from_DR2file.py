@@ -80,13 +80,13 @@ mag_offset=14.6
 #################################################
 
 
-#name_index=0
-#ra_index=1
-#dec_index=2
+name_index=0
+ra_index=1
+dec_index=2
 
-name_index=2
-ra_index=0
-dec_index=1
+#name_index=2
+#ra_index=0
+#dec_index=1
 
 
 
@@ -156,7 +156,8 @@ dec_index=1
 #input_file='Kesseli_2019_subdwarfs_J2016coords_simbad.csv'
 #input_file='WDJ0212m5522_coolDZ_gaiaDR3.csv'
 #input_file='WDpec_gaia.csv'
-input_file='20250313_1125_hbetadipper_locus_500pcG18.csv'
+#input_file='20250313_1125_hbetadipper_locus_500pcG18.csv'
+input_file='Miller_clusterWDs_susages.txt'
 
 additional_suffixes= ''
 
@@ -248,7 +249,8 @@ coord_list= []
 
 ######### The stuff above was from the original query file, but I'm going to read-in astropy tables, so I don't want numpy arrays.
 
-all_table=Table.read(input_file, delimiter=',')
+#all_table=Table.read(input_file, delimiter=',')
+all_table=Table.read(input_file, format='ascii.tab')
 ra_array=all_table['ra']
 dec_array=all_table['dec']
 name_array=all_table['name']

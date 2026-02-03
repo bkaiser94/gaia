@@ -1,5 +1,5 @@
 """
-Created by Ben Kaiser (UNC-Chapel Hill) 2025-07-29 with the assistance of Microsoft's Copilot
+Created by Ben Kaiser (UNC-Chapel Hill) 2025-08-01 with the assistance of Microsoft's Copilot, spun out of retrieve_faint_wds.py
 
 This should get the white dwarfs in the Gentile Fusillo Catalogue for Gaia eDR3 that are sufficiently intrinsically faint for lithium to be present in their atmospheres and then it should get the Panstarrs photometry for all of those objects too. It should probably first filter on quality filters.
 
@@ -34,31 +34,28 @@ sys.path.append('../')
 
 
 
-GentileFusillo_catname="J/MNRAS/508/3877"
+#GentileFusillo_catname="J/MNRAS/508/3877"
 #gfviz=Vizier(catalog=GentileFusillo_catname,columns=['GaiaDR2'])
 #print(Vizier(catalog=GentileFusillo_catname).get_catalog_metadata())
 
 #from astroquery.vizier import Vizier
-#from astroquery.gaia   import Gaia
+from astroquery.gaia   import Gaia
 from astroquery.mast   import Catalogs
 import astropy.table    as tbl
 
 gabslimit=14.8 #Li detection limit I used for the el-Badry selection based on LHS 2534
-output_name='gf21_GaiaeDR3_faintWDs.csv'
+output_name='gf21_GaiaeDR3_faintWDs_gaiaadded.csv'
 
 Gaia.login(credentials_file='../Gaia_credentials.txt')
 
 # 1. Query Gentile Fusillo (Gaia DR3) for Gmag > 15
 Vizier.ROW_LIMIT = -1
 Vizier.TIMEOUT   = 120
-viz = Vizier(
-    columns        = ["source_id", "GMAG"],
-    column_filters = {"GMAG": "["+str(gabslimit)+",]"},
-)
+
 #gf = viz.get_catalogs("J/MNRAS/508/3877")
 #It's the allcaps GMAG that is the absolute Gmag while Gmag is the apparent G magnitude. Yep, thanks a lot, Nicola.
-gf=Vizier.query_constraints(catalog=GentileFusillo_catname, GMAG='>'+str(gabslimit), RPlx='>10')[0]
-gf.pprint()
+#gf=Vizier.query_constraints(catalog=GentileFusillo_catname, GMAG='>'+str(gabslimit), RPlx='>10')[0]
+#gf.pprint()
 # 2. Fetch Gaia→PS1 neighbor mapping via TAP
 #ids_list = ",".join(map(str, gf["GaiaEDR3"]))
 #adql = f"""
@@ -68,6 +65,9 @@ gf.pprint()
 #"""
 #job   = Gaia.launch_job_async(adql)
 #neigh = job.get_results()
+
+gf=Table.read('gf21_GaiaeDR3_faintWDs.csv')
+
 
 ids=np.unique(gf["GaiaEDR3"])
 chunks = np.array_split(ids, 10)  # ten ~equal pieces
@@ -82,25 +82,23 @@ for chunk in chunks:
     #"""
     adql = f"""
       SELECT *
-      FROM gaiadr3.panstarrs1_best_neighbour as ps1
-        JOIN gaiadr2.panstarrs1_original_valid as ps1photo
-            ON ps1.original_ext_source_id = ps1photo.obj_id
-        WHERE ps1.source_id IN ({id_list})
+      FROM gaiadr3.gaia_source as gaia
+    WHERE gaia.source_id IN ({id_list})
     """
     job = Gaia.launch_job_async(adql)
     results.append(job.get_results())
 
 from astropy.table import vstack
-neigh = vstack(results)
-
-for colname in neigh.colnames:
-    neigh.rename_column(colname,'ps1_'+colname)
+new_gaia = vstack(results)
 
 
+
+#for colname in new_gaia.colnames:
+    #print(colname)
 # 3. Merge Gentile Fusillo & neighbor tables on source_id
 #gf_neigh = tbl.join(gf, neigh, keys="source_id")
-gf_neigh = tbl.join(gf, neigh, keys_left='GaiaEDR3', keys_right="ps1_source_id")
-gf_neigh.remove_column('ps1_source_id')
+gf_gaia = tbl.join(gf, new_gaia, keys_left='GaiaEDR3', keys_right="source_id")
+
 ## 4. Retrieve Pan-STARRS photometry by PS1 objID via MAST
 #ps1_ids = list(set(gf_neigh["original_ext_source_id"]))
 #ps1     = Catalogs.query_criteria(catalog="Panstarrs", objID=ps1_ids)
@@ -113,7 +111,7 @@ gf_neigh.remove_column('ps1_source_id')
     #right_on = "objID"
 #)
 
-final=gf_neigh
+final=gf_gaia
 
 print(f"Total matches: {len(final)}")
 print(final[:5])

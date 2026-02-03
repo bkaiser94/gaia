@@ -30,7 +30,7 @@ import scipy.stats as scistats
 
 
 #import passband_model_convolution as pmc
-import gaia_extinction
+#import gaia_extinction
 #import wdatmos
 import plotting_dicts as pod
 
@@ -68,7 +68,9 @@ y_fill=-4.
 list_color = '#1ca1f2'
 single_list=False#turns off the original for-loop method for plotting from a single list
 error_bar=False #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
-annotate= False #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
+annotate= True #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
+annotate_offset=[-3,3]
+annotate_alignment='right' #which part of the text box the offset is to. So setting "right" means the right edge of the text will be offset from the point by the annotate_offset amount
 #parallax_correction = 0.029 #from Lindgren et al 2018
 parallax_correction=0.
 
@@ -163,11 +165,13 @@ percent_off = 34. #1-sigma equivalent
 #target_input='WDJ0523m1623_wdpec_gaiaDR3.csv'
 #target_input='20250306_hbetadippers_WDMS_widebinaries.csv'
 #target_input='full_MORDOR_survey_1681141339.csv'
-#target_input='J2053p1302A_gaiaDR3.csv'
-target_input='J1202m0412A_gaiaDR3.csv'
+target_input='J2053p1302A_gaiaDR3.csv'
+#target_input='J1202m0412A_gaiaDR3.csv'
+#target_input='gf21_GaiaeDR3_faintWDs_gaiaadded_veryinterestingwds_simbadadded.csv'
 
 
-other_target_input='Kesseli_2019_subdwarfs_spectypes_fix_gaiaDR3.csv'
+#other_target_input='Kesseli_2019_subdwarfs_spectypes_fix_gaiaDR3.csv'
+#other_target_input='gf21_GaiaeDR3_faintWDs_gaiaadded_prettyinterestingwds_simbadadded.csv'
 #other_target_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf_Vincent2023bClass_20241030update.csv'
 #other_target_input='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf_Vincent2023bClass_20250306update.csv'
 #other_target_input='20220929_reallydim_WD_search_gaia_scbd.csv'
@@ -176,7 +180,7 @@ other_target_input='Kesseli_2019_subdwarfs_spectypes_fix_gaiaDR3.csv'
 #other_target_input='mainsequence_spTs_gaia_sc_gaiaDR3.csv'
 #other_target_input='WDpec_gaia_gaiaDR3.csv'
 #other_target_input='J1312brightnearby_gaiaDR3.csv'
-#other_target_input= 'mdwarf_spTs_gaia_sc.csv'
+other_target_input= 'mdwarf_spTs_gaia_sc.csv'
 #other_target_input='WDJ0212m5522_coolDZ_gaiaDR3.csv'
 #other_target_input='SDSSJ0738p4114_camel_gaiaDR2.csv'
 #other_target_input='SDSSJ2348p2116_andcompanion_potentialfakeK_gaiadr3.csv'
@@ -247,7 +251,9 @@ generic_input='GaiaDR3_200pc_sample.csv'
 generic_input=home_path+generic_input #this should allow me to import this script other places and still open then generic_input file
 target_input=home_path+target_input
 other_target_input=home_path+other_target_input
-    
+
+#target_input=target_input
+#other_target_input=other_target_input
 ############################
 
 zeropoint_dict={"g": [25.6883657251, 0.0017850023],
@@ -510,7 +516,7 @@ def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = Tr
     return abs_mag, abs_mag_error, abs_mag_dist
 
 
-def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color=list_color, pseudo_colour=False, annotate=annotate, label='', markersize=markersize,num="",use_primary_parallax=False, error_bar=error_bar):
+def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color=list_color, pseudo_colour=False, annotate=annotate, label='', markersize=markersize,num="",use_primary_parallax=False, error_bar=error_bar,marker='o'):
     for row in input_table:
         if pseudo_colour:
             target_absmag, target_absmag_err, target_absmag_dist= get_pass_abs_mag(row, plot_all = False, passband_string= absmag)
@@ -520,11 +526,12 @@ def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color
             target_colour_dif_err= get_errors(target_pseudo_wave_dist)
             target_colour_dif = 1./target_pseudo_colour*1e4
             plt.xlabel('1./astrometric_pseudo_colour (angstroms)')
-            plt.errorbar(np.copy(target_colour_dif), np.copy(target_absmag), yerr = np.copy(target_absmag_err),  xerr = np.copy(target_colour_dif_err), marker = 'o', markersize = markersize, color = list_color, capsize = 4, linestyle ='none')
+            plt.errorbar(np.copy(target_colour_dif), np.copy(target_absmag), yerr = np.copy(target_absmag_err),  xerr = np.copy(target_colour_dif_err), marker = marker, markersize = markersize, color = list_color, capsize = 4, linestyle ='none')
             print(target_colour_dif, target_absmag)
             print(row['name'+num])
             if annotate:
-                plt.annotate(str(row['name'+num]),xy=(np.copy(target_colour_dif), np.copy(target_absmag)), xycoords='data', xytext=(np.copy(target_colour_dif+0.01),np.copy(target_absmag-0.1)), textcoords= 'data' , fontsize=8, color =list_color)
+                #plt.annotate(str(row['name'+num]),xy=(np.copy(target_colour_dif), np.copy(target_absmag)), xycoords='data', xytext=(np.copy(target_colour_dif+0.01),np.copy(target_absmag-0.1)), textcoords= 'data' , fontsize=8, color =list_color)
+                plt.annotate(str(row['name'+num]),xy=(np.copy(target_colour_dif), np.copy(target_absmag)), xycoords='data', xytext=(annotate_offset), textcoords= 'offset points' , fontsize=8, color =list_color, ha=annotate_alignment)
             else:
                 pass
         else:
@@ -544,24 +551,32 @@ def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color
             if row['parallax'+num]>1e18:
                 target_absmag=y_fill
             if error_bar:
-                plt.errorbar(np.copy(target_colour_dif), np.copy(target_absmag), yerr = np.copy(target_absmag_err),  xerr = np.copy(target_colour_dif_err), marker = 'o', markersize = markersize, color = list_color, capsize = 4, linestyle ='none')
+                plt.errorbar(np.copy(target_colour_dif), np.copy(target_absmag), yerr = np.copy(target_absmag_err),  xerr = np.copy(target_colour_dif_err), marker = marker, markersize = markersize, color = list_color, capsize = 4, linestyle ='none')
             else:
-                plt.plot(np.copy(target_colour_dif), np.copy(target_absmag),  marker = 'o', markersize = markersize, color = list_color,  linestyle ='none')
+                plt.plot(np.copy(target_colour_dif), np.copy(target_absmag),  marker = marker, markersize = markersize, color = list_color,  linestyle ='none')
             print(target_colour_dif, target_absmag)
             try:
                 print(row['name'+num])
                 if annotate:
-                    plt.annotate(str(row['name'+num]),xy=(np.copy(target_colour_dif), np.copy(target_absmag)), xycoords='data', xytext=(np.copy(target_colour_dif+0.01),np.copy(target_absmag-0.1)), textcoords= 'data' , fontsize=8, color =list_color)
+                    #plt.annotate(str(row['name'+num]),xy=(np.copy(target_colour_dif), np.copy(target_absmag)), xycoords='data', xytext=(np.copy(target_colour_dif+0.01),np.copy(target_absmag-0.1)), textcoords= 'data' , fontsize=8, color =list_color)
+                    plt.annotate(str(row['name'+num]),xy=(np.copy(target_colour_dif), np.copy(target_absmag)), xycoords='data', xytext=(annotate_offset), textcoords= 'offset points' , fontsize=8, color =list_color,ha=annotate_alignment)
             except KeyError as newerror:
                 print("KeyError:",newerror)
+                try:
+                    print(row['WDJname'+num])
+                    if annotate:
+                        #plt.annotate(str(row['WDJname'+num]),xy=(np.copy(target_colour_dif), np.copy(target_absmag)), xycoords='data', xytext=(np.copy(target_colour_dif+0.01),np.copy(target_absmag-0.1)), textcoords= 'data' , fontsize=8, color =list_color)
+                        plt.annotate(str(row['name'+num]),xy=(np.copy(target_colour_dif), np.copy(target_absmag)), xycoords='data', xytext=(annotate_offset), textcoords= 'offset points' , fontsize=8, color =list_color,ha=annotate_alignment)
+                except Keyerror as newererror:
+                    print('KeyError:', newererror)
             else:
                 pass
     if label=='':
         pass
     elif error_bar:
-        plt.errorbar(np.nan, np.nan, yerr = np.nan,  xerr = np.nan, marker = 'o', markersize = markersize, color = list_color, capsize = 4, label =label, linestyle ='none')
+        plt.errorbar(np.nan, np.nan, yerr = np.nan,  xerr = np.nan, marker = marker, markersize = markersize, color = list_color, capsize = 4, label =label, linestyle ='none')
     else:
-        plt.plot(np.nan, np.nan,marker = 'o', markersize = markersize, color = list_color, label =label, linestyle ='none')
+        plt.plot(np.nan, np.nan,marker = marker, markersize = markersize, color = list_color, label =label, linestyle ='none')
     return
 
 
@@ -745,85 +760,101 @@ def plot_abs_v_abs(generic_table= generic_table, colours=['g','rp']):
 
 if __name__ == '__main__':
     
-    plot_target_table(target_table, colours=['g','rp'],num="")
-    plot_target_table(other_target_table, colours=['g','rp'],num="",list_color='green')
-    plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
-    plot_ben_cuts()
-    plt.legend()
-    plt.show()
+    ##plot_target_table(target_table, colours=['g','rp'],num="",label='Very Interesting White Dwarfs')
+    ##plot_target_table(other_target_table, colours=['g','rp'],num="",list_color='green',label='Pretty Interesting White Dwarfs')
+    #other_target_dzs=np.where(('DZ'== other_target_table['simbad_sp_type'])|('DZ:' == other_target_table['simbad_sp_type']))
+    #plot_target_table(other_target_table[other_target_dzs], colours=['g','rp'],num="",label='DZs and DZ:s',marker='s', markersize=6,list_color='green')
+    #target_dzs=np.where(('DZ'==target_table['simbad_sp_type'])|('DZ:'==target_table['simbad_sp_type']))
+    #plot_target_table(target_table[target_dzs], colours=['g','rp'],num="",label='DZs and DZ:s',marker='s', markersize=6)
+    #plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+    #plot_ben_cuts()
+    #plt.legend()
+    #plt.show()
+    
+    #plot_target_table(target_table, colours=['bp','rp'],num="",label='Very Interesting White Dwarfs')
+    #plot_target_table(other_target_table, colours=['bp','rp'],num="",list_color='green',label='Pretty Interesting White Dwarfs')
+    ##target_dzs=np.where(('DZ'==target_table['simbad_sp_type'])|('DZ:'==target_table['simbad_sp_type']))
+    ##plot_target_table(target_table[target_dzs], colours=['bp','rp'],num="",label='DZs and DZ:s',marker='s', markersize=10)
+    ##other_target_dzs=np.where(('DZ'== other_target_table['simbad_sp_type'])|('DZ:' == other_target_table['simbad_sp_type']))
+    ##plot_target_table(other_target_table[other_target_dzs], colours=['bp','rp'],num="",label='DZs and DZ:s',marker='s', markersize=10,list_color='green')
+    #plot_bkg_cmd(generic_table=generic_table, colours=['bp','rp'])
+    #plot_nicola_eDR3_cuts()
+    #plt.title('r-i and i-y color cut-selected white dwarfs')
+    #plt.legend()
+    #plt.show()
     
     
-    #plot_target_table(target_table, colours=['g','rp'],num="",label='all',list_color='red')
-    plot_target_table(target_table[np.where(target_table['sp_type']=='DC')], colours=['g','rp'],num="",label='DC',list_color='grey')
-    plot_target_table(target_table[np.where(target_table['sp_type']=='DQpec')], colours=['g','rp'],num="",label='DQpec')
-    plot_target_table(target_table[np.where(target_table['sp_type']=='DZ')], colours=['g','rp'],num="",label='DZ',list_color='g')
-    plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
-    plot_ben_cuts()
-    plt.legend()
-    plt.show()
+    ##plot_target_table(target_table, colours=['g','rp'],num="",label='all',list_color='red')
+    #plot_target_table(target_table[np.where(target_table['sp_type']=='DC')], colours=['g','rp'],num="",label='DC',list_color='grey')
+    #plot_target_table(target_table[np.where(target_table['sp_type']=='DQpec')], colours=['g','rp'],num="",label='DQpec')
+    #plot_target_table(target_table[np.where(target_table['sp_type']=='DZ')], colours=['g','rp'],num="",label='DZ',list_color='g')
+    #plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+    #plot_ben_cuts()
+    #plt.legend()
+    #plt.show()
     
     
-    #plot_target_table(target_table, colours=['bp','rp'],num="",label='all',list_color='red')
-    plot_target_table(target_table[np.where(target_table['sp_type']=='DC')], colours=['bp','rp'],num="",label='DC',list_color='grey')
-    plot_target_table(target_table[np.where(target_table['sp_type']=='DQpec')], colours=['bp','rp'],num="",label='DQpec')
-    plot_target_table(target_table[np.where(target_table['sp_type']=='DZ')], colours=['bp','rp'],num="",label='DZ',list_color='g')
-    plot_bkg_cmd(generic_table=generic_table, colours=['bp','rp'])
-    plot_nicola_cuts()
-    plt.legend()
-    plt.show()
+    ##plot_target_table(target_table, colours=['bp','rp'],num="",label='all',list_color='red')
+    #plot_target_table(target_table[np.where(target_table['sp_type']=='DC')], colours=['bp','rp'],num="",label='DC',list_color='grey')
+    #plot_target_table(target_table[np.where(target_table['sp_type']=='DQpec')], colours=['bp','rp'],num="",label='DQpec')
+    #plot_target_table(target_table[np.where(target_table['sp_type']=='DZ')], colours=['bp','rp'],num="",label='DZ',list_color='g')
+    #plot_bkg_cmd(generic_table=generic_table, colours=['bp','rp'])
+    #plot_nicola_cuts()
+    #plt.legend()
+    #plt.show()
     
-    #search_table=Table.read('20250313_1125_hbetadipper_locus_500pcG18_gaiaDR3.csv')
-    search_table=Table.read('20250313_1125_hbetadipper_locus_500pcG18.csv')
-    plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
-    checked_inds=np.where(other_target_table['Hbeta_dip_check']==1)
-    plot_target_table(other_target_table, colours=['g','rp'],num="",list_color='blue', label='unchecked survey',annotate=False,error_bar=False)
-    plot_target_table(other_target_table[checked_inds], colours=['g','rp'],num="",list_color='magenta', label='checked survey',annotate=False,error_bar=False)
+    ##search_table=Table.read('20250313_1125_hbetadipper_locus_500pcG18_gaiaDR3.csv')
+    #search_table=Table.read('20250313_1125_hbetadipper_locus_500pcG18.csv')
+    #plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+    #checked_inds=np.where(other_target_table['Hbeta_dip_check']==1)
+    #plot_target_table(other_target_table, colours=['g','rp'],num="",list_color='blue', label='unchecked survey',annotate=False,error_bar=False)
+    #plot_target_table(other_target_table[checked_inds], colours=['g','rp'],num="",list_color='magenta', label='checked survey',annotate=False,error_bar=False)
+    ##spec_targ_ind=np.where(target_table['name']=='WD J0523-1623')
+    #plot_target_table(target_table,colours=['g','rp'],num='', list_color=list_color,error_bar=True, annotate=False, label='Hbeta dippers')
+    ##plot_target_table(search_table,colours=['g','rp'],num='', list_color='purple',error_bar=False, annotate=False, label='dipper search')
+    #plt.scatter(search_table['g_rp'],search_table['mg'], color='purple',label='dipper search')
+    #plot_hbetadipper_box()
+    #plt.legend()
+    #plt.title("White Dwarfs in Wide Binaries") 
+    #plt.show()
+    
+    
+    #plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+    #plot_target_table(other_target_table, colours=['g','rp'],num="",list_color='magenta')
     #spec_targ_ind=np.where(target_table['name']=='WD J0523-1623')
-    plot_target_table(target_table,colours=['g','rp'],num='', list_color=list_color,error_bar=True, annotate=False, label='Hbeta dippers')
-    #plot_target_table(search_table,colours=['g','rp'],num='', list_color='purple',error_bar=False, annotate=False, label='dipper search')
-    plt.scatter(search_table['g_rp'],search_table['mg'], color='purple',label='dipper search')
-    plot_hbetadipper_box()
-    plt.legend()
-    plt.title("White Dwarfs in Wide Binaries") 
-    plt.show()
+    #plot_target_table(target_table,colours=['g','rp'],num='', list_color=list_color,error_bar=True, annotate=True)
+    #plt.legend()
+    #plt.title("White Dwarfs in Wide Binaries") 
+    #plt.show()
     
     
-    plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
-    plot_target_table(other_target_table, colours=['g','rp'],num="",list_color='magenta')
-    spec_targ_ind=np.where(target_table['name']=='WD J0523-1623')
-    plot_target_table(target_table,colours=['g','rp'],num='', list_color=list_color,error_bar=True, annotate=True)
-    plt.legend()
-    plt.title("White Dwarfs in Wide Binaries") 
-    plt.show()
+    #plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+    #plot_target_table(other_target_table, colours=['g','rp'],num="",list_color='magenta',label='WDPec')
+    #spec_targ_ind=np.where(target_table['name']=='WD J0523-1623')
+    #plot_target_table(target_table[spec_targ_ind],colours=['g','rp'],num='', list_color=list_color,label='WD J0523-1623',error_bar=True, annotate=True)
+    #plt.legend()
+    #plt.title("White Dwarfs in Wide Binaries") 
+    #plt.show()
     
+    #plot_bkg_cmd(generic_table=generic_table, colours=['bp','rp'])
+    ##plot_target_table(target_table, colours=['g','rp'],num="",list_color='magenta')
+    #spec_targ_ind=np.where(target_table['name']=='WD J0523-1623')
+    #plot_target_table(target_table[spec_targ_ind],colours=['bp','rp'],num='', list_color=list_color,label='WD J0523-1623',error_bar=True, annotate=True)
+    #plt.legend()
+    #plt.title("White Dwarfs in Wide Binaries") 
+    #plt.show()
     
-    plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
-    plot_target_table(other_target_table, colours=['g','rp'],num="",list_color='magenta',label='WDPec')
-    spec_targ_ind=np.where(target_table['name']=='WD J0523-1623')
-    plot_target_table(target_table[spec_targ_ind],colours=['g','rp'],num='', list_color=list_color,label='WD J0523-1623',error_bar=True, annotate=True)
-    plt.legend()
-    plt.title("White Dwarfs in Wide Binaries") 
-    plt.show()
-    
-    plot_bkg_cmd(generic_table=generic_table, colours=['bp','rp'])
-    #plot_target_table(target_table, colours=['g','rp'],num="",list_color='magenta')
-    spec_targ_ind=np.where(target_table['name']=='WD J0523-1623')
-    plot_target_table(target_table[spec_targ_ind],colours=['bp','rp'],num='', list_color=list_color,label='WD J0523-1623',error_bar=True, annotate=True)
-    plt.legend()
-    plt.title("White Dwarfs in Wide Binaries") 
-    plt.show()
-    
-    plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
-    plot_target_table(target_table, colours=['g','rp'],num="",list_color=list_color,label='Kesseli subdwarfs')
-    plot_target_table(other_target_table, colours=['g','rp'],num="",list_color='red',label='other ref spectypes')
-    ms_line_points=[
-    [1.55,16.75],
-    [-0.03,4.58]
-    ]
-    plt.plot([ms_line_points[0][0],ms_line_points[1][0]], [ms_line_points[0][1],ms_line_points[1][1]],label='WD cut line from WD+MS wide binary survey')
-    plt.legend()
-    plt.title("Kesseli 2019 Subdwarfs (and regular dwarfs)") 
-    plt.show()
+    #plot_bkg_cmd(generic_table=generic_table, colours=['g','rp'])
+    #plot_target_table(target_table, colours=['g','rp'],num="",list_color=list_color,label='Kesseli subdwarfs')
+    #plot_target_table(other_target_table, colours=['g','rp'],num="",list_color='red',label='other ref spectypes')
+    #ms_line_points=[
+    #[1.55,16.75],
+    #[-0.03,4.58]
+    #]
+    #plt.plot([ms_line_points[0][0],ms_line_points[1][0]], [ms_line_points[0][1],ms_line_points[1][1]],label='WD cut line from WD+MS wide binary survey')
+    #plt.legend()
+    #plt.title("Kesseli 2019 Subdwarfs (and regular dwarfs)") 
+    #plt.show()
     
     #plot_bkg_cmd(generic_table=generic_table, colours=['bp','rp'])
     #plot_target_table(target_table, colours=['bp','rp'],num="",list_color=list_color,label='Kesseli subdwarfs')
@@ -838,18 +869,19 @@ if __name__ == '__main__':
     plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=True,label='MS SpT')
     #plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=annotate)
     #plot_target_table(other_target_table, colours=['g','rp'], list_color='magenta', annotate=annotate,label='WD+dM close binary broad NaD')
-    plot_target_table(subdwarf_table, colours=['g','rp'], list_color=list_color, annotate=annotate,label='Kesseli subdwarfs')
-    plot_target_table(imposter_table, colours=['g','rp'], list_color='g', annotate=True,label="WDs in sheep's clothing")
+    #plot_target_table(subdwarf_table, colours=['g','rp'], list_color=list_color, annotate=annotate,label='Kesseli subdwarfs')
+    #plot_target_table(imposter_table, colours=['g','rp'], list_color='g', annotate=True,label="WDs in sheep's clothing")
 
-    plot_target_table(target_table, colours=['g','rp'],num="",annotate=True, label='')
-    plt.legend()
+    #plot_target_table(target_table, colours=['g','rp'],num="",annotate=True, label='')
+    #plt.legend()
     plt.show()
     
     #iterate_first_band='g'
     iterate_second_band='rp'
-    iterate_first_band='bp'
-    for num in range(0,8):
+    iterate_first_band='g'
+    for num in range(0,10):
         inbounds_sub=np.char.find(subdwarf_table['name'],str(num)) #Checks each row for the string (in this case a number) and if it is there, it provides the index within that entry that corresponds to the string. If it is not present it returns -1
+        #inbounds_sub=np.char.find(subdwarf_table['name'],'K') #Checks each row for the string (in this case a number) and if it is there, it provides the index within that entry that corresponds to the string. If it is not present it returns -1
         inbounds_sub=np.where(inbounds_sub!=-1) #keeping only the rows that actually have the searched for number string
         print(inbounds_sub)
         print('\n\n'+str(num)+'\n\n')
@@ -860,8 +892,8 @@ if __name__ == '__main__':
         plot_target_table(other_target_table[inbounds_ms], colours=[iterate_first_band,iterate_second_band], list_color='r', annotate=True,label='MS SpT')
         #plot_target_table(other_target_table, colours=['g','rp'], list_color='r', annotate=annotate)
         #plot_target_table(other_target_table, colours=['g','rp'], list_color='magenta', annotate=annotate,label='WD+dM close binary broad NaD')
-        plot_target_table(subdwarf_table[inbounds_sub], colours=[iterate_first_band,iterate_second_band], list_color=list_color, annotate=annotate,label='Kesseli subdwarfs')
-        plot_target_table(imposter_table, colours=[iterate_first_band,iterate_second_band], list_color='g', annotate=True,label="WDs in sheep's clothing")
+        plot_target_table(subdwarf_table[inbounds_sub], colours=[iterate_first_band,iterate_second_band], annotate=True,label='Kesseli subdwarfs',list_color='magenta')
+        plot_target_table(imposter_table, colours=[iterate_first_band,iterate_second_band], annotate=True,label="WDs in sheep's clothing")
         plt.title('M'+str(num)+' spectral types')
         #plot_target_table(target_table, colours=['g','rp'],num="",annotate=True, label='')
         plt.legend()

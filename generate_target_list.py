@@ -38,13 +38,17 @@ from astropy.table import Table, vstack, Column
 #input_file='WDs_mistaken_for_Kstars_nofehlimit_by_SDSS_gaiaDR3_wnames_andlabels.csv'
 #input_file= 'josh_object.csv'
 #input_file='dimWDMS_allMS_minsepfunc_eDR3_highconf_notrust_justWD_gaiaDR3_d_sbf_Vincent2023bClass_20241216update.csv'
-input_file='20250313_1125_hbetadipper_locus_500pcG18_gaiaDR3_20250313namesaddedfurther.csv'
+#input_file='20250313_1125_hbetadipper_locus_500pcG18_gaiaDR3_20250313namesaddedfurther.csv'
+#input_file='interesting_wds/gf21_GaiaeDR3_faintWDs_gaiaadded_veryinterestingwds_simbadadded.csv'
+#input_file='interesting_wds/gf21_GaiaeDR3_faintWDs_gaiaadded_prettyinterestingwds_simbadadded.csv'
+#input_file='Miller_clusterWDs_susages_gaiaDR3_.csv'
+input_file='HR24members_GF21maincat_crossmatch_simbadadded_mwddadded_wdagesadded_agediffsig_gaiaadded_kaisernames_sigonly.csv'
+
 #input_file='20190516B_retargeted_purple_subset.csv'
 #comment_string='retarg_purple'
-comment_string=''
+comment_string='clusterWD_sus_age_MWDDparams'
 num=''
-start_target_num=800
-
+start_target_num=865
 output_file= input_file.split('.')[0]+'_targlist.txt'
 #output_file= input_file.split('.')[0]+'_400M1needed_targlist.txt'
 #input_table= Table.read(input_file, format= 'ascii.csv')
@@ -58,12 +62,6 @@ sort_by_ra= True
 list_length=input_table['ra'+num].shape[0]
 target_num_array=np.arange(start_target_num,list_length+start_target_num+1,1)
 
-try:
-    name_array= np.array(input_table['name'])
-except KeyError as error:
-    print(error)
-    print('No names column, so just making all Gaia names')
-    name_array=np.full(input_table['ra'+num].shape, '.')
 
 input_table.pprint()
 if sort_by_ra:
@@ -71,7 +69,16 @@ if sort_by_ra:
     print(sorted_order)
     print('sorted_order:')
     input_table=input_table[sorted_order]
-    input_table.pprint()
+    input_table.pprint() 
+
+try:
+    name_array= np.array(input_table['kcname'])
+    #name_array= np.array(input_table['WDJname'])
+except KeyError as error:
+    print(error)
+    print('No names column, so just making all Gaia names')
+    name_array=np.full(input_table['ra'+num].shape, '.')
+
     #output_array= output_array[:,sorted_order]
 
 coords= coord.SkyCoord(input_table['ra'+num], input_table['dec'+num], unit=(u.deg, u.deg))
@@ -84,6 +91,7 @@ mag_list=[]
 name_list=[]
 mag_string='g'
 full_mag_string= 'phot_'+mag_string+'_mean_mag'+num
+#full_mag_string='Gmag'
 #for thing, name, mag  in zip(string_coords, name_array, input_table[full_mag_string]):
 #for thing, name, mag, target_num  in zip(string_coords, name_array, input_table[full_mag_string], input_table['target_num']):
 
@@ -122,14 +130,14 @@ for thing, name, mag, target_num  in zip(string_coords, name_array, input_table[
         #name='GaiaJ'+small_ra+small_dec
         name=name_base+small_ra+small_dec
         print('new name:', name)
-    print(thing)
+    print('thing',thing)
     #remove spaces from names
     name=name.replace(' ','')
     name=str(int(target_num))+'_' + name
     
     name_list.append(name)
-    ra=ra.replace(':',' ')
-    dec=dec.replace(':',' ')
+    #ra=ra.replace(':',' ')
+    #dec=dec.replace(':',' ')
     
     
     ra_list.append(ra)
