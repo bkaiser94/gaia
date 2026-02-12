@@ -36,9 +36,9 @@ import plotting_dicts as pod
 
 
 #plt.rc('font', size =18)
-plt.rc('lines', markersize=12)
-#plt.rc('font', size = 11)
-plt.rc('lines', markersize = 7)
+#plt.rc('lines', markersize=12)
+##plt.rc('font', size = 11)
+#plt.rc('lines', markersize = 7)
 
 absmag_band= 'g'
 colours= ['g','rp']
@@ -68,7 +68,7 @@ y_fill=-4.
 list_color = '#1ca1f2'
 single_list=False#turns off the original for-loop method for plotting from a single list
 error_bar=False #turns off error bars on the multiple list plot, meaning it has no effect on anything if single_list==True
-annotate= True #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
+annotate= False #controls whether or not object names appear beside points in the scatter plots. Should be turned off for >~20 targets appearing close together
 annotate_offset=[-3,3]
 annotate_alignment='right' #which part of the text box the offset is to. So setting "right" means the right edge of the text will be offset from the point by the annotate_offset amount
 #parallax_correction = 0.029 #from Lindgren et al 2018
@@ -165,7 +165,9 @@ percent_off = 34. #1-sigma equivalent
 #target_input='WDJ0523m1623_wdpec_gaiaDR3.csv'
 #target_input='20250306_hbetadippers_WDMS_widebinaries.csv'
 #target_input='full_MORDOR_survey_1681141339.csv'
-target_input='J2053p1302A_gaiaDR3.csv'
+#target_input='J2053p1302A_gaiaDR3.csv'
+target_input='100pc_check_gap_GaiaDR3_photocutstoo.csv'
+#target_input='100pc_check_gap_gaiaDR3_onlyparallaxcuts.csv'
 #target_input='J1202m0412A_gaiaDR3.csv'
 #target_input='gf21_GaiaeDR3_faintWDs_gaiaadded_veryinterestingwds_simbadadded.csv'
 
@@ -268,6 +270,8 @@ generic_table = Table.read(generic_input)
 target_table = Table.read(target_input)
 other_target_table=Table.read(other_target_input)
 
+
+
 #target_table=target_table[np.where(target_table['repeat'] == 'False')]
 #target_table=target_table[np.where(target_table['priority'] <= 4.5)]
 #target_table=target_table[np.where(target_table['priority']> 98)]
@@ -369,10 +373,12 @@ def get_mag(flux, filter_string):
     return -2.5*np.log10(flux) +mag0
 
 def get_mc_distribution(value, error):
+    #print('type(value)',type(value),value)
+    #print('type(error)',type(error),error)
     error_distribution = np.random.normal(loc= value, scale = error, size = mc_number)
     return error_distribution
 
-def remove_negative(array, verbose= True):
+def remove_negative(array, verbose= False):
     output_array = array[np.where(array>0)]
     if (verbose and array.shape[0]-output_array.shape[0] >0):
         print('Removed ' +str(array.shape[0]-output_array.shape[0]) + ' negatives')
@@ -420,7 +426,7 @@ def get_filter_vals(table, filter_string,num=""):
 
 
 
-def get_colour_dif(table, plot_all = False, verbose =True, colours=['bp','rp'],num=""):
+def get_colour_dif(table, plot_all = False, verbose =False, colours=['bp','rp'],num=""):
     """
     Inputs:
         table: an astropy table of Gaia values
@@ -455,7 +461,7 @@ def get_colour_dif(table, plot_all = False, verbose =True, colours=['bp','rp'],n
         plt.axvline(np.nanmedian(colour_dif_dist), color = 'k', linestyle = '--', label = 'Median of MC Dist')
         plt.axvline(np.nanpercentile(colour_dif_dist, 84), color = 'cyan')
         #plt.errorbar(colour_dif, 0.5, xerr = colour_dif_error, marker = '*', markersize = 8, color = 'b', label = colours[0]+"-" + colours[1], capsize = 4)
-        plt.errorbar(colour_dif, 0.5, xerr = colour_dif_error, marker = '*', markersize = 8, color = 'b', label = 'changed', capsize = 4)
+        plt.errorbar(colour_dif, 0.5, xerr = colour_dif_error, marker = '*', markersize = markersize, color = 'b', label = 'changed', capsize = 4)
         #plt.xlabel(r'$G_{BP}-G_{RP}$')
         plt.xlabel(colours[0]+'-'+colours[1])
         plt.legend()
@@ -465,58 +471,64 @@ def get_colour_dif(table, plot_all = False, verbose =True, colours=['bp','rp'],n
 
 
 
-def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = True,num="",use_primary_parallax=False):
-    mean_flux, flux_dist = get_filter_vals(table, passband_string,num)
-    mag = get_mag(mean_flux, passband_string)
-    flux_dist= remove_negative(flux_dist, verbose=verbose)
-    mag_dist= get_mag(flux_dist, passband_string)
-    if use_primary_parallax:
-        parallax = table['parallax'+"1"]+parallax_correction
-        parallax_error = table['parallax_error'+"1"]*1e-3
-    else:
-        parallax = table['parallax'+num]+parallax_correction
-        parallax_error = table['parallax_error'+num]*1e-3
-    #parallax = table['parallax'+num]+parallax_correction
-    parallax = parallax*1e-3
-    distance = 1./parallax
-    #parallax_error = table['parallax_error'+num]*1e-3
-    parallax_dist = get_mc_distribution(parallax, parallax_error)
-    parallax_dist = remove_negative(parallax_dist, verbose= verbose)
-    if verbose:
-        print(passband_string+ "_calc" + "-" + passband_string+ "_measured", mag - table['phot_' +passband_string+'_mean_mag'+num],num)
-    else:
-        pass
-    if parallax < 0:
-        parallax_median = np.nanmedian(parallax_dist)
+def get_pass_abs_mag(table, plot_all = False, passband_string= 'g', verbose = False,num="",use_primary_parallax=False):
+    try:
+        mean_flux, flux_dist = get_filter_vals(table, passband_string,num)
+        mag = get_mag(mean_flux, passband_string)
+        flux_dist= remove_negative(flux_dist, verbose=verbose)
+        mag_dist= get_mag(flux_dist, passband_string)
+        if use_primary_parallax:
+            parallax = table['parallax'+"1"]+parallax_correction
+            parallax_error = table['parallax_error'+"1"]*1e-3
+        else:
+            parallax = table['parallax'+num]+parallax_correction
+            parallax_error = table['parallax_error'+num]*1e-3
+        #parallax = table['parallax'+num]+parallax_correction
+        parallax = parallax*1e-3
+        distance = 1./parallax
+        #parallax_error = table['parallax_error'+num]*1e-3
+        parallax_dist = get_mc_distribution(parallax, parallax_error)
+        parallax_dist = remove_negative(parallax_dist, verbose= verbose)
         if verbose:
-            print("PARALLAX < 0!", parallax, "setting to median of positive distribution:", parallax_median)
-        parallax = parallax_median
-    else:
-        pass
-    distance = 1./parallax
-    distance_dist = 1./parallax_dist
-    index_length = distance_dist.shape[0]
-    print("index_length",index_length)
-    print("mag_dist.shape", mag_dist.shape)
-    mag_dist = mag_dist[:index_length]
-    mag_dist, distance_dist= match_sizes(mag_dist, distance_dist)
-    abs_mag = distance_modulus(mag, distance)
-    abs_mag_dist = distance_modulus(mag_dist, distance_dist)
-    abs_mag_error= get_errors(abs_mag_dist)
-    if plot_all:
-        plt.hist(abs_mag_dist, bins=75, normed=1, label = 'MC Distribution', color = 'g')
-        plt.axvline(np.nanmedian(abs_mag_dist), color = 'k', linestyle = '--', label = 'Median of MC Dist')
-        plt.axvline(np.nanpercentile(abs_mag_dist, 84), color = 'cyan')
-        plt.errorbar(abs_mag, 0.5, xerr = abs_mag_error, marker = '*', markersize = 8, color = 'b', label = "M_"+passband_string, capsize = 4)
-        plt.xlabel('M_'+ passband_string)
-        plt.legend()
-        plt.show()
-    else:
-        pass
-    return abs_mag, abs_mag_error, abs_mag_dist
+            print(passband_string+ "_calc" + "-" + passband_string+ "_measured", mag - table['phot_' +passband_string+'_mean_mag'+num],num)
+        else:
+            pass
+        if parallax < 0:
+            parallax_median = np.nanmedian(parallax_dist)
+            if verbose:
+                print("PARALLAX < 0!", parallax, "setting to median of positive distribution:", parallax_median)
+            parallax = parallax_median
+        else:
+            pass
+        distance = 1./parallax
+        distance_dist = 1./parallax_dist
+        index_length = distance_dist.shape[0]
+        print("index_length",index_length)
+        print("mag_dist.shape", mag_dist.shape)
+        mag_dist = mag_dist[:index_length]
+        mag_dist, distance_dist= match_sizes(mag_dist, distance_dist)
+        abs_mag = distance_modulus(mag, distance)
+        abs_mag_dist = distance_modulus(mag_dist, distance_dist)
+        abs_mag_error= get_errors(abs_mag_dist)
+        if plot_all:
+            plt.hist(abs_mag_dist, bins=75, normed=1, label = 'MC Distribution', color = 'g')
+            plt.axvline(np.nanmedian(abs_mag_dist), color = 'k', linestyle = '--', label = 'Median of MC Dist')
+            plt.axvline(np.nanpercentile(abs_mag_dist, 84), color = 'cyan')
+            plt.errorbar(abs_mag, 0.5, xerr = abs_mag_error, marker = '*', markersize = markersize, color = 'b', label = "M_"+passband_string, capsize = 4)
+            plt.xlabel('M_'+ passband_string)
+            plt.legend()
+            plt.show()
+        else:
+            pass
+        return abs_mag, abs_mag_error, abs_mag_dist
+    except ValueError:
+        """This is when the input is an entire column"""
+        
+        abs_mag=distance_modulus(table['phot_' +passband_string+'_mean_mag'+num],1000./table['parallax'])
+        return abs_mag
 
 
-def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color=list_color, pseudo_colour=False, annotate=annotate, label='', markersize=markersize,num="",use_primary_parallax=False, error_bar=error_bar,marker='o'):
+def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color=list_color, pseudo_colour=False, annotate=annotate, label='', markersize=markersize,num="",use_primary_parallax=False, error_bar=error_bar,marker='o',alpha=1):
     for row in input_table:
         if pseudo_colour:
             target_absmag, target_absmag_err, target_absmag_dist= get_pass_abs_mag(row, plot_all = False, passband_string= absmag)
@@ -551,7 +563,7 @@ def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color
             if row['parallax'+num]>1e18:
                 target_absmag=y_fill
             if error_bar:
-                plt.errorbar(np.copy(target_colour_dif), np.copy(target_absmag), yerr = np.copy(target_absmag_err),  xerr = np.copy(target_colour_dif_err), marker = marker, markersize = markersize, color = list_color, capsize = 4, linestyle ='none')
+                plt.errorbar(np.copy(target_colour_dif), np.copy(target_absmag), yerr = np.copy(target_absmag_err),  xerr = np.copy(target_colour_dif_err), marker = marker, markersize = markersize, color = list_color, capsize = 4, linestyle ='none',alpha=alpha)
             else:
                 plt.plot(np.copy(target_colour_dif), np.copy(target_absmag),  marker = marker, markersize = markersize, color = list_color,  linestyle ='none')
             print(target_colour_dif, target_absmag)
@@ -567,7 +579,7 @@ def plot_target_table(input_table, absmag='g', colours= ['bp', 'rp'], list_color
                     if annotate:
                         #plt.annotate(str(row['WDJname'+num]),xy=(np.copy(target_colour_dif), np.copy(target_absmag)), xycoords='data', xytext=(np.copy(target_colour_dif+0.01),np.copy(target_absmag-0.1)), textcoords= 'data' , fontsize=8, color =list_color)
                         plt.annotate(str(row['name'+num]),xy=(np.copy(target_colour_dif), np.copy(target_absmag)), xycoords='data', xytext=(annotate_offset), textcoords= 'offset points' , fontsize=8, color =list_color,ha=annotate_alignment)
-                except Keyerror as newererror:
+                except KeyError as newererror:
                     print('KeyError:', newererror)
             else:
                 pass
@@ -733,13 +745,37 @@ def plot_abs_v_abs(generic_table= generic_table, colours=['g','rp']):
     
     return
 
-
+def get_vtan(target_table):
+    vtan=4.74/target_table['parallax']*np.sqrt(target_table['pmra']**2+target_table['pmdec']**2)
+    
+    
+    return vtan
 #def make_cmd_from_list(target_list=[target_table], generic_table=generic_table, absmag='g', colours=['bp','rp']):
     #plot_bkg_cmd(generic_table=generic_table, absmag=absmag, colours=colours)
     #for target_table in target_list:
         #plot_target_table(target_table, absmag=absmag, colours=colours)
         
-
+def make_density_plot(g_abs, bp_rp,label='',cmap='winter'):
+    #Calculate the point density
+    xy = np.vstack([bp_rp.data,g_abs.data])
+    print('xy.shape',xy.shape)
+    print('bp_rp.data.shape',bp_rp.data.shape)
+    print('g_abs.data.shape',g_abs.data.shape)
+    print('starting KDE')
+    z = scistats.gaussian_kde(xy)(xy)
+    print('finished KDE')
+    # Sort the points by density, so that the densest points are plotted last
+    idx = z.argsort()
+    g_abs, bp_rp, z = g_abs[idx], bp_rp[idx], z[idx]
+    #z= np.sqrt(z)
+    #z=np.log(z)
+    print('z.shape',z.shape,z[:20])
+    plt.scatter(bp_rp, g_abs, c=z, s=markersize, cmap= cmap,label=label)
+    #fig, ax = plt.subplots()
+    #ax.scatter(x, y, c=z, s=50, edgecolor='')
+    #plt.show()
+    #plt.show()
+    return
 ####################################
 
 #longfig= plt.figure(figsize= (36, 36))
@@ -759,6 +795,97 @@ def plot_abs_v_abs(generic_table= generic_table, colours=['g','rp']):
 
 
 if __name__ == '__main__':
+    #plot_target_table(target_table, colours=['bp','rp'],num="",alpha=0.4,markersize=4)
+    #plt.legend()
+    #plt.show()
+    
+    
+    abs_g_mag=get_pass_abs_mag(target_table,verbose=True)
+    wd_sequence=np.where((target_table['bp_rp']<1.7)&(abs_g_mag>8.5)&(target_table['phot_g_mean_flux_over_error']>10))
+    target_table=target_table[wd_sequence]
+    abs_g_mag=abs_g_mag[wd_sequence]
+    
+    vtan=get_vtan(target_table)
+    slow_indices=np.where(vtan<50)
+    fast_indices=np.where(vtan>=50)
+    slow_table=target_table[slow_indices]
+    fast_table=target_table[fast_indices]
+    slow_absmag=abs_g_mag[slow_indices]
+    fast_absmag=abs_g_mag[fast_indices]
+    
+    veryfast_indices=np.where(vtan>100)
+    veryfast_table=target_table[veryfast_indices]
+    veryfast_absmag=abs_g_mag[veryfast_indices]
+    
+    
+    plt.errorbar(slow_table['bp_rp'],slow_absmag,alpha=0.2,marker='o',linestyle='None',color='b',label='V_T < 50 km/s',mec='none',markersize=markersize)
+    plt.errorbar(fast_table['bp_rp'],fast_absmag,alpha=0.2,marker='o',linestyle='None',color='r',label='V_T > 50 km/s',mec='none',markersize=markersize)
+    plt.errorbar(veryfast_table['bp_rp'],veryfast_absmag,alpha=0.2,marker='o',linestyle='None',color='k',label='V_T > 100 km/s',mec='none',markersize=markersize)
+    #plot_target_table(target_table, colours=['bp','rp'],num="",alpha=0.4,markersize=4)
+    plt.legend()
+    plt.xlim(-0.65,1.0)
+    plt.ylim(15,8.5)
+    #plt.gca().invert_yaxis()
+    plt.xlabel(r'$G_{BP} - G_{RP}$')
+    plt.ylabel(r'$M_G$')
+    plt.title(target_input)
+    plt.grid(True)
+    plt.show()
+    
+    
+    plt.errorbar(slow_table['bp_rp'],slow_absmag,alpha=0.2,marker='o',linestyle='None',color='b',label='V_T < 50 km/s',mec='none',markersize=markersize)
+    #plot_target_table(target_table, colours=['bp','rp'],num="",alpha=0.4,markersize=4)
+    plt.legend()
+    plt.xlim(-0.65,1.0)
+    plt.ylim(15,8.5)
+    #plt.gca().invert_yaxis()
+    plt.xlabel(r'$G_{BP} - G_{RP}$')
+    plt.ylabel(r'$M_G$')
+    plt.title(target_input)
+    plt.grid(True)
+    plt.show()
+    
+    plt.errorbar(fast_table['bp_rp'],fast_absmag,alpha=0.2,marker='o',linestyle='None',color='k',label='V_T > 50 km/s',mec='none',markersize=markersize)
+    #plot_target_table(target_table, colours=['bp','rp'],num="",alpha=0.4,markersize=4)
+    plt.legend()
+    plt.xlim(0.2,1.0)
+    plt.ylim(15,12)
+    #plt.gca().invert_yaxis()
+    plt.xlabel(r'$G_{BP} - G_{RP}$')
+    plt.ylabel(r'$M_G$')
+    plt.title(target_input)
+    plt.grid(True)
+    plt.show()
+    
+    plt.errorbar(veryfast_table['bp_rp'],veryfast_absmag,alpha=0.2,marker='o',linestyle='None',color='k',label='V_T > 100 km/s',mec='none',markersize=markersize)
+    #plot_target_table(target_table, colours=['bp','rp'],num="",alpha=0.4,markersize=4)
+    plt.legend()
+    plt.xlim(-0.65,1.0)
+    plt.ylim(15,8.5)
+    #plt.gca().invert_yaxis()
+    plt.xlabel(r'$G_{BP} - G_{RP}$')
+    plt.ylabel(r'$M_G$')
+    plt.title(target_input)
+    plt.grid(True)
+    plt.show()
+    
+    make_density_plot(fast_absmag,fast_table['bp_rp'],label='V_T > 50 km/s')
+    plt.legend()
+    #plt.xlim(-0.65,1.0)
+    #plt.ylim(15,8.5)
+    plt.xlim(0.2,1.0)
+    plt.ylim(15,12)
+    #plt.gca().invert_yaxis()
+    plt.xlabel(r'$G_{BP} - G_{RP}$')
+    plt.ylabel(r'$M_G$')
+    plt.title(target_input)
+    plt.grid(True)
+    plt.show()
+    #vtan=get_vtan(target_table)
+    #low_indices=np.where(
+    
+    
+    
     
     ##plot_target_table(target_table, colours=['g','rp'],num="",label='Very Interesting White Dwarfs')
     ##plot_target_table(other_target_table, colours=['g','rp'],num="",list_color='green',label='Pretty Interesting White Dwarfs')
